@@ -1,0 +1,95 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="erd-tuan2" name="ERD 6 Bang Tuan 2">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1500" pageHeight="950">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Table 1: users -->
+        <mxCell id="tbl_users" value="users (Tài khoản người dùng)" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="280" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="fld_users" value="🔑 id : SERIAL [PK]&#xa;email : VARCHAR(255) [UNIQUE, NOT NULL]&#xa;password_hash : VARCHAR(255) [NOT NULL]&#xa;full_name : VARCHAR(100) [NOT NULL]&#xa;phone : VARCHAR(20)&#xa;role : VARCHAR(20) [candidate | hr | admin]&#xa;created_at : TIMESTAMP&#xa;updated_at : TIMESTAMP" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;fontSize=12;" vertex="1" parent="tbl_users">
+          <mxGeometry y="30" width="280" height="170" as="geometry"/>
+        </mxCell>
+
+        <!-- Table 2: companies -->
+        <mxCell id="tbl_companies" value="companies (Thông tin công ty)" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="310" width="280" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="fld_companies" value="🔑 id : SERIAL [PK]&#xa;🔗 hr_user_id : INT [FK → users.id]&#xa;company_name : VARCHAR(255) [NOT NULL]&#xa;logo_url : VARCHAR(500)&#xa;website : VARCHAR(255)&#xa;address : VARCHAR(255) [NOT NULL]&#xa;description : TEXT&#xa;created_at : TIMESTAMP" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;fontSize=12;" vertex="1" parent="tbl_companies">
+          <mxGeometry y="30" width="280" height="170" as="geometry"/>
+        </mxCell>
+
+        <!-- Table 3: jobs -->
+        <mxCell id="tbl_jobs" value="jobs (Tin tuyển dụng)" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="580" width="280" height="260" as="geometry"/>
+        </mxCell>
+        <mxCell id="fld_jobs" value="🔑 id : SERIAL [PK]&#xa;🔗 company_id : INT [FK → companies.id]&#xa;title : VARCHAR(255) [NOT NULL]&#xa;job_category : VARCHAR(100) [NOT NULL]&#xa;location : VARCHAR(100) [NOT NULL]&#xa;salary_range : VARCHAR(100)&#xa;experience_required : VARCHAR(50)&#xa;jd_text : TEXT [NOT NULL]&#xa;required_skills : Array / Object [NOT NULL]&#xa;deadline : DATE [NOT NULL]&#xa;status : VARCHAR(20) [active | closed]&#xa;created_at : TIMESTAMP" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;fontSize=12;" vertex="1" parent="tbl_jobs">
+          <mxGeometry y="30" width="280" height="230" as="geometry"/>
+        </mxCell>
+
+        <!-- Table 4: cv_profiles -->
+        <mxCell id="tbl_cv" value="cv_profiles (Hồ sơ CV ứng viên)" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="500" y="40" width="300" height="230" as="geometry"/>
+        </mxCell>
+        <mxCell id="fld_cv" value="🔑 id : SERIAL [PK]&#xa;🔗 user_id : INT [FK → users.id]&#xa;cv_title : VARCHAR(255) [NOT NULL]&#xa;file_path : VARCHAR(500) [NOT NULL]&#xa;file_name : VARCHAR(255) [NOT NULL]&#xa;raw_text : TEXT&#xa;extracted_skills : Array / Object&#xa;years_of_experience : NUMERIC(4,1)&#xa;education_level : VARCHAR(100)&#xa;created_at : TIMESTAMP" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;fontSize=12;" vertex="1" parent="tbl_cv">
+          <mxGeometry y="30" width="300" height="200" as="geometry"/>
+        </mxCell>
+
+        <!-- Table 5: applications -->
+        <mxCell id="tbl_apps" value="applications (Đơn nộp ứng tuyển)" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;html=1;fillColor=#FEF08A;strokeColor=#CA8A04;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="500" y="380" width="300" height="240" as="geometry"/>
+        </mxCell>
+        <mxCell id="fld_apps" value="🔑 id : SERIAL [PK]&#xa;🔗 job_id : INT [FK → jobs.id]&#xa;🔗 candidate_id : INT [FK → users.id]&#xa;🔗 cv_profile_id : INT [FK → cv_profiles.id]&#xa;cover_letter : TEXT&#xa;status : VARCHAR(30) [pending | reviewing |&#xa;          interviewing | accepted | rejected]&#xa;hr_notes : TEXT&#xa;applied_at : TIMESTAMP&#xa;updated_at : TIMESTAMP" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;fontSize=12;" vertex="1" parent="tbl_apps">
+          <mxGeometry y="30" width="300" height="210" as="geometry"/>
+        </mxCell>
+
+        <!-- Table 6: ai_evaluations -->
+        <mxCell id="tbl_ai" value="ai_evaluations (Kết quả đánh giá AI)" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;html=1;fillColor=#F3E8FF;strokeColor=#9333EA;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="990" y="380" width="310" height="260" as="geometry"/>
+        </mxCell>
+        <mxCell id="fld_ai" value="🔑 id : SERIAL [PK]&#xa;🔗 application_id : INT [FK → applications.id, UNIQUE]&#xa;match_score : NUMERIC(5,2) [0..100] [NOT NULL]&#xa;predicted_label : VARCHAR(30) [Good | Potential | No Fit]&#xa;prob_good : NUMERIC(5,4) [NOT NULL]&#xa;prob_potential : NUMERIC(5,4) [NOT NULL]&#xa;prob_no_fit : NUMERIC(5,4) [NOT NULL]&#xa;matched_skills : Array / Object&#xa;missing_skills : Array / Object&#xa;processed_time_ms : INT&#xa;created_at : TIMESTAMP" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;fontSize=12;" vertex="1" parent="tbl_ai">
+          <mxGeometry y="30" width="310" height="230" as="geometry"/>
+        </mxCell>
+
+        <!-- Relationships -->
+        <!-- users -> companies (1 - N) -->
+        <mxCell id="rel_u_comp" value="1 – N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2563EB;endArrow=ERmany;startArrow=ERone;" edge="1" parent="1" source="tbl_users" target="tbl_companies">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- companies -> jobs (1 - N) -->
+        <mxCell id="rel_comp_jobs" value="1 – N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2563EB;endArrow=ERmany;startArrow=ERone;" edge="1" parent="1" source="tbl_companies" target="tbl_jobs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- users -> cv_profiles (1 - N) -->
+        <mxCell id="rel_u_cv" value="1 – N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#16A34A;endArrow=ERmany;startArrow=ERone;" edge="1" parent="1" source="tbl_users" target="tbl_cv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- jobs -> applications (1 - N) -->
+        <mxCell id="rel_jobs_apps" value="1 – N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2563EB;endArrow=ERmany;startArrow=ERone;" edge="1" parent="1" source="tbl_jobs" target="tbl_apps">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="640"/>
+              <mxPoint x="430" y="500"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- cv_profiles -> applications (1 - N) -->
+        <mxCell id="rel_cv_apps" value="1 – N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#16A34A;endArrow=ERmany;startArrow=ERone;" edge="1" parent="1" source="tbl_cv" target="tbl_apps">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- applications -> ai_evaluations (1 - 1) -->
+        <mxCell id="rel_apps_ai" value="1 – 1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2.5;strokeColor=#9333EA;endArrow=ERone;startArrow=ERone;" edge="1" parent="1" source="tbl_apps" target="tbl_ai">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

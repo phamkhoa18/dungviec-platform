@@ -1,0 +1,44 @@
+# ── OS / Editor ──────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+~$*
+
+# ── Node / Next.js (web/) ────────────────────
+node_modules/
+web/.next/
+web/out/
+web/*.tsbuildinfo
+web/next-env.d.ts
+npm-debug.log*
+
+# ── Secrets ──────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Python (ai-service/) ─────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# ── Trọng số mô hình (268 MB > giới hạn 100 MB của GitHub) ──
+# Xem ai-service/models/README.md để biết cách lấy / huấn luyện lại.
+ai-service/models/**/*.safetensors
+ai-service/models/**/*.bin
+ai-service/models/**/*.pt
+
+# ── Dữ liệu chạy thật (tự sinh từ seed ở lần chạy đầu) ──
+# Chứa tài khoản người dùng thật nên KHÔNG đưa lên git.
+database/mongodb_collections.json
+
+# ── CV do người dùng tải lên (giữ lại 4 CV mẫu của seed) ──
+web/public/uploads/cvs/*
+!web/public/uploads/cvs/Le_Hoang_Nam_Junior_Data_Analyst_CV.pdf
+!web/public/uploads/cvs/Nguyen_Minh_Anh_Python_Backend_CV.pdf
+!web/public/uploads/cvs/Pham_Thao_Vy_ReactJS_Frontend_CV.pdf
+!web/public/uploads/cvs/Tran_Quoc_Bao_Civil_Engineer_CV.pdf

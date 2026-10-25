@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<mxfile host="app.diagrams.net">
+  <diagram name="AI Pipeline">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1400" pageHeight="900">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="c3" value="NH&#xC1;NH A &#x2014; BERT NER (Tr&#xED;ch xu&#x1EA5;t th&#xF4;ng tin CV)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="30" y="20" width="1340" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="c4" value="DataTurks NER 220 CV, 10 nh&#xE3;n" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="110" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c5" value="L&#xE0;m s&#x1EA1;ch + chuy&#x1EC3;n BIO (c&#x103;n offset, b&#x1ECF; overlap)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="110" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c6" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c4" target="c5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c7" value="Fine-tune bert-base-cased (lr 2e-5, 5 epoch)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="540" y="110" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c8" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c5" target="c7">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c9" value="&#x110;&#xE1;nh gi&#xE1; Entity P / R / F1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="780" y="110" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c10" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c7" target="c9">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c11" value="So s&#xE1;nh baseline spaCy NER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="110" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c12" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c9" target="c11">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c13" value="NH&#xC1;NH B &#x2014; DistilBERT CV&#x2013;JD Fit (&#x110;&#xE1;nh gi&#xE1; ph&#xF9; h&#x1EE3;p)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="30" y="340" width="1340" height="300" as="geometry"/>
+        </mxCell>
+        <mxCell id="c14" value="Resume-JD Fit 6.241 train / 1.759 test" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="440" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c15" value="L&#xE0;m s&#x1EA1;ch (lo&#x1EA1;i tr&#xF9;ng, m&#xE2;u thu&#x1EAB;n) Chia train / val" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="440" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c16" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c14" target="c15">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c17" value="Fine-tune distilbert-base-uncased (class weights)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="540" y="440" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c18" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c15" target="c17">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c19" value="&#x110;&#xE1;nh gi&#xE1; Macro F1, Confusion Matrix, NDCG@5/10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="780" y="440" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c20" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c17" target="c19">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c21" value="So s&#xE1;nh baseline TF-IDF+LR, Cosine, domynom" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="440" width="200" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c22" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c19" target="c21">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c23" value="T&#xCD;CH H&#x1EE2;P SUY LU&#x1EAC;N (khi &#x1EE9;ng vi&#xEA;n &#x1EE9;ng tuy&#x1EC3;n)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="30" y="680" width="1340" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="c24" value="File CV" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="740" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="c25" value="CV Parser (pdfplumber / python-docx)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="740" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="c26" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c24" target="c25">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c27" value="M&#xF4; h&#xEC;nh A NER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="540" y="740" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="c28" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c25" target="c27">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c29" value="M&#xF4; h&#xEC;nh B CV + JD &#x2192; 3 nh&#xE3;n" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="780" y="740" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="c30" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c27" target="c29">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c31" value="&#x110;i&#x1EC3;m S = 100&#xD7;[P(Good) +0.5&#xD7;P(Potential)]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="740" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="c32" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c29" target="c31">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-10-16T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="application-state" name="Trạng thái hồ sơ">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="title" value="SƠ ĐỒ TRẠNG THÁI ĐƠN ỨNG TUYỂN" style="text;html=1;align=center;fontSize=20;fontStyle=1;fontColor=#1F4E78;" vertex="1" parent="1"><mxGeometry x="400" y="40" width="800" height="40" as="geometry"/></mxCell>
+        <mxCell id="start" value="" style="ellipse;html=1;shape=startState;fillColor=#111827;strokeColor=#111827;" vertex="1" parent="1"><mxGeometry x="110" y="310" width="30" height="30" as="geometry"/></mxCell>
+        <mxCell id="pending" value="PENDING&#xa;Đã nộp, chờ xử lý" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="210" y="280" width="220" height="90" as="geometry"/></mxCell>
+        <mxCell id="reviewing" value="REVIEWING&#xa;HR đang xem xét" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="520" y="280" width="220" height="90" as="geometry"/></mxCell>
+        <mxCell id="shortlisted" value="SHORTLISTED&#xa;Đạt sơ tuyển / mời phỏng vấn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#9333EA;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="830" y="280" width="250" height="90" as="geometry"/></mxCell>
+        <mxCell id="accepted" value="ACCEPTED&#xa;Trúng tuyển" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1180" y="180" width="220" height="90" as="geometry"/></mxCell>
+        <mxCell id="rejected" value="REJECTED&#xa;Không phù hợp / không đạt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#DC2626;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1180" y="410" width="220" height="90" as="geometry"/></mxCell>
+        <mxCell id="end1" value="" style="ellipse;html=1;shape=endState;fillColor=#111827;strokeColor=#111827;" vertex="1" parent="1"><mxGeometry x="1480" y="205" width="30" height="30" as="geometry"/></mxCell>
+        <mxCell id="end2" value="" style="ellipse;html=1;shape=endState;fillColor=#111827;strokeColor=#111827;" vertex="1" parent="1"><mxGeometry x="1480" y="435" width="30" height="30" as="geometry"/></mxCell>
+        <mxCell id="e1" value="Ứng viên nộp hồ sơ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="start" target="pending"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="HR mở hồ sơ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="pending" target="reviewing"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="Đạt sơ tuyển" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="reviewing" target="shortlisted"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" value="Đạt phỏng vấn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;exitX=1;exitY=0.3;entryX=0;entryY=0.5;" edge="1" parent="1" source="shortlisted" target="accepted"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" value="Không đạt khi xem xét" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;exitX=0.5;exitY=1;entryX=0;entryY=0.7;" edge="1" parent="1" source="reviewing" target="rejected"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="630" y="540"/><mxPoint x="1140" y="540"/></Array></mxGeometry></mxCell>
+        <mxCell id="e6" value="Không đạt phỏng vấn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;exitX=1;exitY=0.7;entryX=0;entryY=0.3;" edge="1" parent="1" source="shortlisted" target="rejected"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="accepted" target="end1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="rejected" target="end2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="note" value="Quy tắc: chỉ HR sở hữu tin tuyển dụng được cập nhật trạng thái. Mọi lần chuyển trạng thái phải cập nhật updated_at và có thể kèm hr_notes." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;fontSize=13;align=left;spacingLeft=12;" vertex="1" parent="1"><mxGeometry x="400" y="650" width="800" height="70" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

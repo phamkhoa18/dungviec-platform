@@ -1,0 +1,60 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 1112 >>
+stream
+BT
+/F1 14 Tf
+50 780 Td
+(CURRICULUM VITAE - NGUYEN MINH ANH (SENIOR PYTHON BACKEND DEVELOPER)) Tj
+/F1 10 Tf
+0 -22 Td
+(Full Name: Nguyen Minh Anh | Email: minhanh.dev@gmail.com | Phone: 0912345678) Tj
+0 -15 Td
+(Role: Senior Python Backend Developer | Experience: 5 years of experience \(2021 - 2026\)) Tj
+0 -15 Td
+(Education: Bachelor of Information Technology - University of Technology \(DH Bach Khoa TP.HCM\)) Tj
+0 -15 Td
+(Technical Skills: Python, FastAPI, Django, PostgreSQL, MongoDB, Docker, Redis, Git, REST API, Microservices, AWS) Tj
+0 -15 Td
+(Work Experience:) Tj
+0 -15 Td
+(1. Senior Python Backend Engineer \(2023 - 2026\):) Tj
+0 -15 Td
+(   - Designed high-concurrency REST API services using Python, FastAPI, PostgreSQL and MongoDB.) Tj
+0 -15 Td
+(   - Containerized backend microservices with Docker, CI/CD and deployed on AWS Cloud.) Tj
+0 -15 Td
+(   - Integrated NLP / Transformers \(DistilBERT\) into recruitment pipeline.) Tj
+0 -15 Td
+(2. Python Backend Developer \(2021 - 2023\):) Tj
+0 -15 Td
+(   - Built backend APIs with Django REST Framework, SQL, Redis caching and Git workflow.) Tj
+0 -15 Td
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1475
+%%EOF

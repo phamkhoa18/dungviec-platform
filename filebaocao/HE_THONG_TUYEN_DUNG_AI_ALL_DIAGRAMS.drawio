@@ -1,0 +1,500 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" modified="2026-10-16T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="use-case-tong-quan" name="1. Use Case tổng quan">
+    <mxGraphModel dx="1420" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="SƠ ĐỒ USE CASE TỔNG QUAN — HỆ THỐNG TUYỂN DỤNG TÍCH HỢP AI" style="text;html=1;align=center;fontSize=20;fontStyle=1;fontColor=#1F4E78;" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="1000" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="system" value="HỆ THỐNG TUYỂN DỤNG AI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=2;dashed=1;verticalAlign=top;spacingTop=12;fontStyle=1;fontSize=15;fontColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="280" y="80" width="1040" height="800" as="geometry" />
+        </mxCell>
+        <mxCell id="candidate" value="Ứng viên" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="330" width="80" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="hr" value="Nhà tuyển dụng (HR)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="330" width="80" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="ai" value="Dịch vụ AI" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="690" width="80" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_auth" value="UC-01&#10;Đăng ký / Đăng nhập" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="640" y="130" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_search" value="UC-02&#10;Tìm kiếm và xem việc làm" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="370" y="250" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_cv" value="UC-03&#10;Quản lý hồ sơ CV" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="370" y="370" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_apply" value="UC-04&#10;Nộp hồ sơ ứng tuyển" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="370" y="490" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_track" value="UC-05&#10;Theo dõi trạng thái ứng tuyển" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="370" y="610" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_company" value="UC-06&#10;Quản lý hồ sơ công ty" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="910" y="250" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_jobs" value="UC-07&#10;Đăng và quản lý tin tuyển dụng" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="910" y="370" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_rank" value="UC-08&#10;Xem bảng xếp hạng ứng viên" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="910" y="490" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_status" value="UC-09&#10;Cập nhật trạng thái và ghi chú" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="910" y="610" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_parse" value="UC-10&#10;Trích xuất thông tin CV (BERT NER)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#9333EA;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="460" y="750" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_score" value="UC-11&#10;Chấm điểm phù hợp CV–JD" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#9333EA;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="830" y="750" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="candidate" target="uc_auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="candidate" target="uc_search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="candidate" target="uc_cv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="candidate" target="uc_apply">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="candidate" target="uc_track">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="hr" target="uc_auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a7" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="hr" target="uc_company">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a8" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="hr" target="uc_jobs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a9" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="hr" target="uc_rank">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a10" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="hr" target="uc_status">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a11" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="ai" target="uc_parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a12" style="endArrow=none;html=1;strokeWidth=2;" edge="1" parent="1" source="ai" target="uc_score">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inc1" value="" style="endArrow=open;endSize=12;dashed=1;html=1;strokeColor=#7E22CE;" edge="1" parent="1" source="uc_apply" target="uc_parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inc2" value="" style="endArrow=open;endSize=12;dashed=1;html=1;strokeColor=#7E22CE;" edge="1" parent="1" source="uc_apply" target="uc_score">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inc3" value="" style="endArrow=open;endSize=12;dashed=1;html=1;strokeColor=#7E22CE;" edge="1" parent="1" source="uc_rank" target="uc_score">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="include_legend" value="Nét đứt: quan hệ «include» (tự động gọi xử lý AI)" style="text;html=1;align=center;fontSize=12;fontStyle=2;fontColor=#7E22CE;" vertex="1" parent="1">
+          <mxGeometry x="650" y="835" width="420" height="25" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="2. Quy trình nghiệp vụ">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1400" pageHeight="900">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c3" value="HR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="380" height="760" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" value="ỨNG VIÊN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="460" y="30" width="380" height="760" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" value="HỆ THỐNG AI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="880" y="30" width="380" height="760" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" value="Bắt đầu" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="180" y="80" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" value="Đăng nhập (role HR)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="140" y="160" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c8" value="Tạo tin tuyển dụng (nhập JD)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="140" y="250" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c9" value="Tin hiển thị trên web" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="140" y="360" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c10" value="Đăng nhập (role UV)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="560" y="160" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c11" value="Xem danh sách việc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="560" y="250" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c12" value="Upload CV" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="560" y="340" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c13" value="Nhấn Ứng tuyển" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="560" y="430" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c14" value="CV Parser (PDF/DOCX → text)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="980" y="430" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c15" value="Mô hình A: BERT NER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="980" y="520" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c16" value="Mô hình B: DistilBERT Fit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="980" y="610" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c17" value="Lưu điểm + nhãn vào DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="980" y="700" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c18" value="Xem danh sách ứng viên xếp hạng theo điểm AI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="140" y="700" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c19" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c6" target="c7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c20" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c7" target="c8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c21" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c8" target="c9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c22" value="UV truy cập" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c9" target="c10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c23" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c10" target="c11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c24" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c11" target="c12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c25" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c12" target="c13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c26" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c13" target="c14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c27" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c14" target="c15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c28" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c15" target="c16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c29" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c16" target="c17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c30" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c17" target="c18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="mongodb-6-collections" name="3. MongoDB 6 collections">
+    <mxGraphModel dx="1500" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="SƠ ĐỒ DỮ LIỆU MONGODB — 06 COLLECTIONS" style="text;html=1;align=center;fontSize=20;fontStyle=1;fontColor=#1F4E78;" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="1100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Quy ước: _id dùng ObjectId; các trường kết thúc bằng _id dùng để tham chiếu document ở collection khác." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;fontSize=12;fontColor=#475569;" vertex="1" parent="1">
+          <mxGeometry x="500" y="70" width="800" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="users" value="USERS" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="70" y="150" width="360" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="users_fields" value="_id: ObjectId&#10;email: String [unique index]&#10;password_hash: String&#10;role: String [candidate, hr]&#10;full_name: String&#10;phone: String | null&#10;avatar_url: String | null&#10;created_at: Date&#10;updated_at: Date" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;whiteSpace=wrap;" vertex="1" parent="users">
+          <mxGeometry y="34" width="360" height="266" as="geometry" />
+        </mxCell>
+        <mxCell id="companies" value="COMPANIES" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="540" y="150" width="360" height="270" as="geometry" />
+        </mxCell>
+        <mxCell id="companies_fields" value="_id: ObjectId&#10;hr_user_id: ObjectId → users._id&#10;company_name: String&#10;logo_url: String | null&#10;website: String | null&#10;address: String&#10;description: String | null&#10;created_at: Date" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;whiteSpace=wrap;" vertex="1" parent="companies">
+          <mxGeometry y="34" width="360" height="236" as="geometry" />
+        </mxCell>
+        <mxCell id="jobs" value="JOBS" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="130" width="380" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="jobs_fields" value="_id: ObjectId&#10;company_id: ObjectId → companies._id&#10;title: String&#10;job_category: String&#10;location: String&#10;salary_range: Object | null&#10;experience_required: String | null&#10;jd_text: String&#10;required_skills: Array[String]&#10;deadline: Date&#10;status: String [draft, active, closed]&#10;created_at: Date&#10;updated_at: Date" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;whiteSpace=wrap;" vertex="1" parent="jobs">
+          <mxGeometry y="34" width="380" height="326" as="geometry" />
+        </mxCell>
+        <mxCell id="cv" value="CV_PROFILES" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="70" y="600" width="390" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="cv_fields" value="_id: ObjectId&#10;user_id: ObjectId → users._id&#10;cv_title: String&#10;file_path: String&#10;file_name: String&#10;file_type: String [pdf, docx]&#10;raw_text: String | null&#10;extracted_skills: Array[String]&#10;years_of_experience: Number | null&#10;education_level: String | null&#10;created_at: Date" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;whiteSpace=wrap;" vertex="1" parent="cv">
+          <mxGeometry y="34" width="390" height="296" as="geometry" />
+        </mxCell>
+        <mxCell id="apps" value="APPLICATIONS" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;html=1;fillColor=#FCE7F3;strokeColor=#DB2777;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="650" y="570" width="430" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="apps_fields" value="_id: ObjectId&#10;job_id: ObjectId → jobs._id&#10;candidate_id: ObjectId → users._id&#10;cv_profile_id: ObjectId → cv_profiles._id&#10;cover_letter: String | null&#10;status: String&#10;  [pending, reviewing, shortlisted, accepted, rejected]&#10;hr_notes: String | null&#10;applied_at: Date&#10;updated_at: Date&#10;unique index: (job_id, candidate_id)" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;whiteSpace=wrap;" vertex="1" parent="apps">
+          <mxGeometry y="34" width="430" height="326" as="geometry" />
+        </mxCell>
+        <mxCell id="evals" value="AI_EVALUATIONS" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;html=1;fillColor=#F3E8FF;strokeColor=#9333EA;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="570" width="430" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="evals_fields" value="_id: ObjectId&#10;application_id: ObjectId → applications._id&#10;match_score: Number [0..100]&#10;predicted_label: String&#10;  [No Fit, Potential Fit, Good Fit]&#10;probabilities: Object&#10;matched_skills: Array[String]&#10;missing_skills: Array[String]&#10;processed_time_ms: Number | null&#10;created_at: Date&#10;unique index: application_id" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;whiteSpace=wrap;" vertex="1" parent="evals">
+          <mxGeometry y="34" width="430" height="346" as="geometry" />
+        </mxCell>
+        <mxCell id="r1" value="1 — 0..1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERone;endArrow=ERzeroToOne;startFill=0;endFill=0;strokeWidth=2;" edge="1" parent="1" source="users" target="companies">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" value="1 — N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeWidth=2;" edge="1" parent="1" source="companies" target="jobs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" value="1 — N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeWidth=2;exitX=0.25;exitY=1;entryX=0.25;entryY=0;" edge="1" parent="1" source="users" target="cv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" value="1 — N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeWidth=2;exitX=0.7;exitY=1;entryX=0.15;entryY=0;" edge="1" parent="1" source="users" target="apps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" value="1 — N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.75;entryY=0;" edge="1" parent="1" source="jobs" target="apps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r6" value="1 — N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERone;endArrow=ERmany;startFill=0;endFill=0;strokeWidth=2;" edge="1" parent="1" source="cv" target="apps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r7" value="1 — 0..1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERone;endArrow=ERzeroToOne;startFill=0;endFill=0;strokeWidth=2;" edge="1" parent="1" source="apps" target="evals">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="4. AI Pipeline">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1400" pageHeight="900">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c3" value="NHÁNH A — BERT NER (Trích xuất thông tin CV)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="30" y="20" width="1340" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" value="DataTurks NER 220 CV, 10 nhãn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="110" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" value="Làm sạch + chuyển BIO (căn offset, bỏ overlap)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="110" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c4" target="c5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" value="Fine-tune bert-base-cased (lr 2e-5, 5 epoch)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="540" y="110" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c8" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c5" target="c7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c9" value="Đánh giá Entity P / R / F1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="780" y="110" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c10" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c7" target="c9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c11" value="So sánh baseline spaCy NER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="110" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c12" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c9" target="c11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c13" value="NHÁNH B — DistilBERT CV–JD Fit (Đánh giá phù hợp)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="30" y="340" width="1340" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="c14" value="Resume-JD Fit 6.241 train / 1.759 test" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="440" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c15" value="Làm sạch (loại trùng, mâu thuẫn) Chia train / val" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="440" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c16" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c14" target="c15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c17" value="Fine-tune distilbert-base-uncased (class weights)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="540" y="440" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c18" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c15" target="c17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c19" value="Đánh giá Macro F1, Confusion Matrix, NDCG@5/10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="780" y="440" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c20" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c17" target="c19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c21" value="So sánh baseline TF-IDF+LR, Cosine, domynom" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="440" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c22" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c19" target="c21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c23" value="TÍCH HỢP SUY LUẬN (khi ứng viên ứng tuyển)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="30" y="680" width="1340" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="c24" value="File CV" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="740" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c25" value="CV Parser (pdfplumber / python-docx)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="740" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c26" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c24" target="c25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c27" value="Mô hình A NER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="540" y="740" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c28" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c25" target="c27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c29" value="Mô hình B CV + JD → 3 nhãn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="780" y="740" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c30" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c27" target="c29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c31" value="Điểm S = 100×[P(Good) +0.5×P(Potential)]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="740" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c32" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c29" target="c31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="5. Kiến trúc">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1400" pageHeight="900">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c3" value="FRONTEND — Next.js" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="160" y="40" width="700" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" value="Đăng nhập / Đăng ký" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="180" y="80" width="200" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" value="Danh sách + Chi tiết việc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="80" width="200" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" value="UV: Upload CV + Ứng tuyển" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="620" y="80" width="200" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" value="HR: Tạo tin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="180" y="135" width="200" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c8" value="HR: Xem xếp hạng" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="135" width="200" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c9" value="BACKEND — FastAPI (Python)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="160" y="280" width="700" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="c10" value="Auth API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="180" y="330" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c11" value="Jobs API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="320" y="330" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c12" value="CV / Apply API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="460" y="330" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c13" value="AI ENGINE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="180" y="420" width="660" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c14" value="CV Parser (pdfplumber, python-docx)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="200" y="470" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c15" value="Mô hình A: BERT NER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="410" y="470" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c16" value="Mô hình B: DistilBERT Fit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="620" y="470" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c17" value="MongoDB — 06 collections&#10;users · companies · jobs&#10;cv_profiles · applications · ai_evaluations" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="160" y="660" width="340" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c18" value="File storage (CV PDF/DOCX) + checkpoint model" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="540" y="660" width="320" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c19" value="REST API (JSON)" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c3" target="c9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c20" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c9" target="c17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c21" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="c9" target="c18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="application-state" name="6. Trạng thái hồ sơ">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="SƠ ĐỒ TRẠNG THÁI ĐƠN ỨNG TUYỂN" style="text;html=1;align=center;fontSize=20;fontStyle=1;fontColor=#1F4E78;" vertex="1" parent="1">
+          <mxGeometry x="400" y="40" width="800" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="start" value="" style="ellipse;html=1;shape=startState;fillColor=#111827;strokeColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="110" y="310" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pending" value="PENDING&#10;Đã nộp, chờ xử lý" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="210" y="280" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="reviewing" value="REVIEWING&#10;HR đang xem xét" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="280" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="shortlisted" value="SHORTLISTED&#10;Đạt sơ tuyển / mời phỏng vấn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#9333EA;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="830" y="280" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="accepted" value="ACCEPTED&#10;Trúng tuyển" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="180" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="rejected" value="REJECTED&#10;Không phù hợp / không đạt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#DC2626;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="410" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="end1" value="" style="ellipse;html=1;shape=endState;fillColor=#111827;strokeColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="205" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="end2" value="" style="ellipse;html=1;shape=endState;fillColor=#111827;strokeColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="435" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="Ứng viên nộp hồ sơ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="start" target="pending">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="HR mở hồ sơ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="pending" target="reviewing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="Đạt sơ tuyển" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="reviewing" target="shortlisted">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="Đạt phỏng vấn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;exitX=1;exitY=0.3;entryX=0;entryY=0.5;" edge="1" parent="1" source="shortlisted" target="accepted">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="Không đạt khi xem xét" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;exitX=0.5;exitY=1;entryX=0;entryY=0.7;" edge="1" parent="1" source="reviewing" target="rejected">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="630" y="540" />
+              <mxPoint x="1140" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="Không đạt phỏng vấn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;exitX=1;exitY=0.7;entryX=0;entryY=0.3;" edge="1" parent="1" source="shortlisted" target="rejected">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="accepted" target="end1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeWidth=2;" edge="1" parent="1" source="rejected" target="end2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Quy tắc: chỉ HR sở hữu tin tuyển dụng được cập nhật trạng thái. Mọi lần chuyển trạng thái phải cập nhật updated_at và có thể kèm hr_notes." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;fontSize=13;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="650" width="800" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

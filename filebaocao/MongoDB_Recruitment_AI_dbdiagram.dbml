@@ -1,0 +1,97 @@
+// SO DO MONGODB - HE THONG TUYEN DUNG TICH HOP AI
+// Moi Table ben duoi duoc hieu la mot collection MongoDB.
+// Cac truong id trong he thong thuc te su dung kieu ObjectId.
+
+Table users {
+  _id ObjectId [pk]
+  email varchar [not null, unique]
+  password_hash varchar [not null]
+  role varchar [not null]
+  full_name varchar [not null]
+  phone varchar
+  avatar_url varchar
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table companies {
+  _id ObjectId [pk]
+  hr_user_id ObjectId [not null]
+  name varchar [not null]
+  description text
+  address varchar
+  website varchar
+  logo_url varchar
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table jobs {
+  _id ObjectId [pk]
+  company_id ObjectId [not null]
+  hr_user_id ObjectId [not null]
+  title varchar [not null]
+  description text [not null]
+  requirements text [not null]
+  required_skills json [not null]
+  experience_level varchar
+  location varchar
+  employment_type varchar
+  salary_range json
+  status varchar [not null]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table cv_profiles {
+  _id ObjectId [pk]
+  user_id ObjectId [not null]
+  file_name varchar [not null]
+  file_url varchar [not null]
+  raw_text text
+  extracted_skills json
+  education json
+  experience json
+  projects json
+  total_experience_months int
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table applications {
+  _id ObjectId [pk]
+  job_id ObjectId [not null]
+  candidate_id ObjectId [not null]
+  cv_profile_id ObjectId [not null]
+  cover_letter text
+  status varchar [not null]
+  applied_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    (job_id, candidate_id) [unique]
+  }
+}
+
+Table ai_evaluations {
+  _id ObjectId [pk]
+  application_id ObjectId [not null, unique]
+  model_name varchar [not null]
+  model_version varchar [not null]
+  match_score decimal [not null]
+  predicted_label varchar [not null]
+  probabilities json
+  matched_skills json
+  missing_skills json
+  explanation text
+  evaluated_at datetime [not null]
+}
+
+Ref: companies.hr_user_id > users._id
+Ref: jobs.company_id > companies._id
+Ref: jobs.hr_user_id > users._id
+Ref: cv_profiles.user_id > users._id
+Ref: applications.job_id > jobs._id
+Ref: applications.candidate_id > users._id
+Ref: applications.cv_profile_id > cv_profiles._id
+Ref: applications._id - ai_evaluations.application_id

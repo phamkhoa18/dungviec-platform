@@ -1,0 +1,91 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="usecase-tuan2" name="Use Case Tuan 2">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1350" pageHeight="850">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- System Boundary -->
+        <mxCell id="sys_box" value="HỆ THỐNG WEBSITE TUYỂN DỤNG TÍCH HỢP AI (TUẦN 2)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;dashed=1;strokeColor=#475569;strokeWidth=2;verticalAlign=top;fontStyle=1;fontSize=15;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="270" y="30" width="680" height="720" as="geometry"/>
+        </mxCell>
+
+        <!-- Actors -->
+        <mxCell id="act_hr" value="Nhà tuyển dụng&#xa;(HR / Recruiter)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=13;fontStyle=1;fillColor=#DBEAFE;strokeColor=#1E40AF;" vertex="1" parent="1">
+          <mxGeometry x="60" y="250" width="70" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="act_candidate" value="Ứng viên&#xa;(Candidate)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=13;fontStyle=1;fillColor=#DCFCE7;strokeColor=#166534;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="250" width="70" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="act_ai" value="Bộ máy AI Engine&#xa;(DistilBERT &amp; BERT NER)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7E22CE;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="580" width="160" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Use Cases -->
+        <mxCell id="uc_auth" value="Đăng ký / Đăng nhập / Phân quyền" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF08A;strokeColor=#CA8A04;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="70" width="280" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- HR Use Cases -->
+        <mxCell id="uc_01" value="UC-01: Đăng &amp; Quản lý tin tuyển dụng&#xa;(Tiêu đề, JD, Kỹ năng, Lương, Hạn nộp)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="170" width="290" height="65" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_04" value="UC-04: Sàng lọc &amp; Xếp hạng ứng viên&#xa;(Danh sách tự động xếp theo điểm S)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="300" width="290" height="65" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_preview" value="Xem trước CV (PDF) &amp; Kỹ năng đối sánh" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="420" width="270" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_status" value="Cập nhật tiến trình tuyển dụng &amp; Ghi chú&#xa;(Chờ duyệt → Phỏng vấn → Trúng tuyển)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#93C5FD;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="510" width="270" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Candidate Use Cases -->
+        <mxCell id="uc_search" value="Tìm kiếm &amp; Lọc việc làm&#xa;(Từ khóa, Địa điểm, Mức lương)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="640" y="170" width="270" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_02" value="UC-02: Nộp hồ sơ ứng tuyển&#xa;(Tải CV PDF/DOCX + Cover Letter)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="280" width="280" height="65" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_track" value="Theo dõi tiến trình hồ sơ đã nộp" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#86EFAC;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="650" y="390" width="260" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- AI Engine Use Cases -->
+        <mxCell id="uc_03" value="UC-03: Trích xuất thực thể &amp; Chấm điểm S&#xa;(BERT NER + DistilBERT Cross-Encoder)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#9333EA;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="580" width="310" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Associations HR -->
+        <mxCell id="rel_hr_auth" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="act_hr" target="uc_auth"/>
+        <mxCell id="rel_hr_01" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="act_hr" target="uc_01"/>
+        <mxCell id="rel_hr_04" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="act_hr" target="uc_04"/>
+
+        <!-- Includes for UC-04 -->
+        <mxCell id="inc_preview" value="«include»" style="endArrow=open;dashed=1;html=1;strokeWidth=1.5;fontColor=#475569;" edge="1" parent="1" source="uc_04" target="uc_preview"/>
+        <mxCell id="inc_status" value="«include»" style="endArrow=open;dashed=1;html=1;strokeWidth=1.5;fontColor=#475569;" edge="1" parent="1" source="uc_04" target="uc_status"/>
+
+        <!-- Associations Candidate -->
+        <mxCell id="rel_can_auth" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="act_candidate" target="uc_auth"/>
+        <mxCell id="rel_can_search" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="act_candidate" target="uc_search"/>
+        <mxCell id="rel_can_02" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="act_candidate" target="uc_02"/>
+        <mxCell id="rel_can_track" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="act_candidate" target="uc_track"/>
+
+        <!-- Trigger AI from UC-02 -->
+        <mxCell id="inc_ai" value="«include»&#xa;(kích hoạt ngầm)" style="endArrow=open;dashed=1;html=1;strokeWidth=1.5;fontColor=#9333EA;" edge="1" parent="1" source="uc_02" target="uc_03"/>
+
+        <!-- AI Engine links -->
+        <mxCell id="rel_ai_03" style="endArrow=none;html=1;strokeWidth=2;strokeColor=#9333EA;" edge="1" parent="1" source="act_ai" target="uc_03"/>
+        <mxCell id="rel_score_to_04" value="Cung cấp điểm số S" style="endArrow=open;dashed=1;html=1;strokeWidth=1.5;strokeColor=#2563EB;fontColor=#2563EB;" edge="1" parent="1" source="uc_03" target="uc_04"/>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
