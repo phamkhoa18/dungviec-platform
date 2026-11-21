@@ -75,9 +75,12 @@ _ACRONYMS = {
 
 
 def smart_title(s: str) -> str:
-    """'VINCODE DIGITAL COMPANY' -> 'Vincode Digital Company' (giữ nguyên các từ viết tắt)."""
+    """'VINCODE DIGITAL COMPANY' -> 'Vincode Digital Company' (giữ nguyên các từ viết tắt và cân bằng ngoặc)."""
+    s = s.strip()
+    if s.count("(") == s.count(")") + 1 and not s.endswith(")"):
+        s = s + ")"
     if not is_upper_text(s):
-        return s.strip()
+        return s
     out = []
     for w in s.split():
         core = re.sub(r"[^A-Za-zÀ-ỹĐđ]", "", w)
@@ -198,30 +201,34 @@ SECTION_HEADINGS: Dict[str, List[str]] = {
     ],
     "summary": [
         "muc tieu nghe nghiep", "muc tieu", "muc tieu cong viec", "gioi thieu", "gioi thieu ban than", "tom tat",
-        "tong quan", "ve ban than", "ve toi", "objective", "objectives", "career objective", "career objectives",
-        "career goal", "career goals", "summary", "professional summary", "career summary", "profile", "about me",
-        "about", "introduction", "dinh huong nghe nghiep",
+        "tom tat ky nang", "tom tat ban than", "gioi thieu chung", "tong quan", "ve ban than", "ve toi",
+        "objective", "objectives", "career objective", "career objectives", "career goal", "career goals",
+        "summary", "professional summary", "career summary", "executive summary", "personal summary",
+        "profile", "about me", "about", "introduction", "dinh huong nghe nghiep", "overview",
     ],
     "experience": [
         "kinh nghiem lam viec", "kinh nghiem", "qua trinh lam viec", "qua trinh cong tac", "lich su lam viec",
-        "kinh nghiem chuyen mon", "experience", "experiences", "work experience", "work experiences",
-        "working experience", "working experiences", "professional experience", "employment history",
-        "work history", "employment", "career history",
+        "lich su cong tac", "kinh nghiem chuyen mon", "kinh nghiem nghe nghiep", "kinh nghiem thuc te",
+        "experience", "experiences", "work experience", "work experiences", "working experience",
+        "working experiences", "professional experience", "employment history", "work history",
+        "employment", "career history",
     ],
     "education": [
-        "hoc van", "trinh do hoc van", "qua trinh hoc tap", "trinh do", "dao tao", "education", "educations",
-        "academic background", "educational background", "academic", "academics", "education & training",
+        "hoc van", "trinh do hoc van", "qua trinh hoc tap", "trinh do", "dao tao", "hoc van va bang cap",
+        "education", "educations", "academic background", "educational background", "academic", "academics",
+        "education & training", "academic qualifications",
     ],
     "skills": [
-        "ky nang", "ky nang chuyen mon", "ky nang cung", "ky nang ky thuat", "ky nang chuyen nganh", "skills",
-        "skill", "technical skills", "hard skills", "hard skill", "core skills", "key skills", "professional skills",
-        "technologies", "tech stack", "cong nghe", "competencies", "core competencies", "it skills",
-        "skills & abilities", "chuyen mon",
+        "ky nang", "ky nang chuyen mon", "ky nang cung", "ky nang ky thuat", "ky nang chuyen nganh",
+        "ky nang nghe nghiep", "cac ky nang", "skills", "skill", "technical skills", "hard skills", "hard skill",
+        "core skills", "key skills", "professional skills", "technologies", "tech stack", "cong nghe",
+        "competencies", "core competencies", "it skills", "skills & abilities", "chuyen mon",
     ],
     "soft_skills": ["ky nang mem", "soft skills", "soft skill", "personal skills", "interpersonal skills"],
     "projects": [
-        "du an", "du an ca nhan", "du an tieu bieu", "du an da tham gia", "du an noi bat", "projects", "project",
-        "personal projects", "academic projects", "key projects", "side projects", "featured projects",
+        "du an", "du an ca nhan", "du an tieu bieu", "du an da tham gia", "du an noi bat", "du an thuc te",
+        "do an", "do an da tham gia", "do an mon hoc", "projects", "project", "personal projects",
+        "academic projects", "key projects", "side projects", "featured projects", "project experience",
     ],
     "certifications": [
         "chung chi", "bang cap", "chung nhan", "bang cap chung chi", "chung chi bang cap", "certifications",
@@ -247,8 +254,7 @@ for _sec, _phrases in SECTION_HEADINGS.items():
 _HEADING_PHRASES_SORTED = sorted(_HEADING_LOOKUP.keys(), key=len, reverse=True)
 
 
-def match_heading_phrase(text: str) -> Optional[Tuple[str, bool]]:
-    """Trả về (tên mục, khớp_chính_xác) nếu dòng là một tiêu đề mục."""
+def _match_single_heading(text: str) -> Optional[Tuple[str, bool]]:
     t = re.sub(r"\(.*?\)", " ", text)
     k = key(t)
     k = re.sub(r"^[0-9ivx]+[.)]\s*", "", k)
@@ -263,6 +269,24 @@ def match_heading_phrase(text: str) -> Optional[Tuple[str, bool]]:
         if k.startswith(p + " ") or k.startswith(p + " &") or k.startswith(p + "/"):
             if len(words) <= len(p.split()) + 3:
                 return _HEADING_LOOKUP[p], False
+    return None
+
+
+def match_heading_phrase(text: str) -> Optional[Tuple[str, bool]]:
+    """Trả về (tên mục, khớp_chính_xác) nếu dòng là một tiêu đề mục (hỗ trợ cả tiêu đề song ngữ 'A / B')."""
+    direct = _match_single_heading(text)
+    if direct:
+        return direct
+    if any(sep in text for sep in ("/", "|", " - ", " – ", " — ")):
+        parts = [p.strip() for p in re.split(r"\s*[/|]\s*|\s+[-–—]\s+", text) if p.strip()]
+        if 2 <= len(parts) <= 3 and all(len(p.split()) <= 6 for p in parts):
+            matches = [_match_single_heading(p) for p in parts]
+            valid = [m for m in matches if m is not None]
+            if valid and len(valid) == len(parts):
+                return valid[0][0], True
+            if valid and any(m[1] for m in valid):
+                best = next(m for m in valid if m[1])
+                return best[0], True
     return None
 
 
@@ -449,6 +473,7 @@ def union_months(intervals: List[Tuple[int, int]]) -> int:
 def _remove_span(text: str, span: Tuple[int, int]) -> str:
     out = text[: span[0]] + " " + text[span[1]:]
     out = re.sub(r"[\(\[]\s*[\)\]]", " ", out)
+    out = re.sub(r"(?i)^\s*(?:thời\s*gian|thoi\s*gian|time|period|duration|date|năm|nam|từ|tu|from)\s*[:：\-–]?\s*", "", out.strip())
     out = re.sub(r"\s*[|,•·]\s*$", "", out.strip())
     out = re.sub(r"^\s*[|,•·:\-–]\s*", "", out)
     out = re.sub(r"[\s:–\-|,(]+$", "", out)
@@ -526,12 +551,29 @@ def _restore_accents_from_filename(name: str, file_name: str) -> str:
     return name
 
 
+_STANDALONE_LABEL_RE = re.compile(
+    r"^\s*(?:" + "|".join(f"(?P<{n}>{p})" for n, p in _LABELS) + r")\s*[:：]?\s*$"
+)
+
+
 def parse_labels(lines: List[Line]) -> Dict[str, Tuple[str, int]]:
-    """Đọc các cặp 'Nhãn: Giá trị' (nhiều cặp trên 1 dòng). Trả về field -> (giá trị, chỉ số dòng)."""
+    """Đọc các cặp 'Nhãn: Giá trị' (nhiều cặp trên 1 dòng hoặc Nhãn trên 1 dòng và Giá trị ở dòng kế tiếp)."""
     found: Dict[str, Tuple[str, int]] = {}
     for idx, ln in enumerate(lines):
-        text = ln.text
+        text = ln.text.strip()
         f = fold(text)
+        # Trường hợp 1: Dòng chỉ chứa riêng Nhãn (không có giá trị trên cùng dòng, phổ biến ở CV 2 cột TopCV/Canva)
+        sm = _STANDALONE_LABEL_RE.match(f)
+        if sm and idx + 1 < len(lines):
+            fld = sm.lastgroup or ""
+            nxt = lines[idx + 1].text.strip()
+            fnxt = fold(nxt)
+            if nxt and not _STANDALONE_LABEL_RE.match(fnxt) and not _LABEL_RE.match(fnxt) and not match_heading_phrase(nxt):
+                if fld not in found:
+                    found[fld] = (nxt.strip(" ,;-–|"), idx + 1)
+                continue
+
+        # Trường hợp 2: Cặp 'Nhãn: Giá trị' trên cùng 1 dòng
         matches = list(_LABEL_RE.finditer(f))
         for j, m in enumerate(matches):
             fld = m.lastgroup or ""
@@ -563,7 +605,9 @@ def _parse_dob(value: str) -> Optional[str]:
 
 def _normalize_phone(raw: str) -> Optional[str]:
     digits = re.sub(r"\D", "", raw)
-    if digits.startswith("84") and len(digits) == 11:
+    if digits.startswith("840") and len(digits) == 12:
+        digits = digits[2:]
+    elif digits.startswith("84") and len(digits) == 11:
         digits = "0" + digits[2:]
     if len(digits) == 10 and digits.startswith("0") and digits[1] in "35789":
         return digits
@@ -850,6 +894,46 @@ def _classify_parts(parts: List[str]) -> Tuple[Optional[str], Optional[str]]:
     return company, position
 
 
+def _split_outside_parens(text: str) -> List[str]:
+    """Tách chuỗi theo '|', ' - ', ' – ', ' — ', ' at ', ' tại ' nhưng KHÔNG cắt bên trong ngoặc tròn (...)."""
+    masked = list(text)
+    depth = 0
+    for idx, ch in enumerate(masked):
+        if ch in "([":
+            depth += 1
+        elif ch in ")]" and depth > 0:
+            depth -= 1
+        elif depth > 0:
+            masked[idx] = "\x00"
+    m_str = "".join(masked)
+    spans = [m.span() for m in re.finditer(r"\s*\|\s*|\s+[–—]\s+|\s+-\s+|\s+at\s+|\s+tai\s+", fold(m_str))]
+    if not spans:
+        return [text.strip()] if text.strip() else []
+    parts: List[str] = []
+    last = 0
+    for s, e in spans:
+        seg = text[last:s].strip()
+        if seg:
+            parts.append(seg)
+        last = e
+    tail = text[last:].strip()
+    if tail:
+        parts.append(tail)
+    return parts
+
+
+def _header_candidate_above_date(ln: Line) -> bool:
+    t = ln.text.strip()
+    if not t or len(t.split()) > 15 or t.endswith(".") or _BULLET_RE.match(t):
+        return False
+    if _title_like(ln):
+        return True
+    ft = fold(t)
+    if "|" in t or " - " in t or " – " in t:
+        return True
+    return bool(_COMPANY_KW.search(ft) or _ROLE_KW.search(ft))
+
+
 def extract_experiences(lines: List[Line], tax: SkillTaxonomy) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     if not lines:
         return [], []
@@ -915,7 +999,7 @@ def extract_experiences(lines: List[Line], tax: SkillTaxonomy) -> Tuple[List[Dic
         while j > prev_date and i - j <= 2 and not _POSITION_LABEL.match(fold(lines[j].text)) and (
             _title_like(lines[j])
             or ("page_height" in lines[j].extra and abs(lines[j].y0 - lines[i].y0) < 3 and lines[j].page == lines[i].page)
-            or (i - j == 1 and not lines[j].styled and _COMPANY_KW.search(fold(lines[j].text)) and len(lines[j].text.split()) <= 10 and not _BULLET_RE.match(lines[j].text))
+            or (i - j == 1 and _header_candidate_above_date(lines[j]))
         ):
             s = j
             j -= 1
@@ -983,7 +1067,7 @@ def extract_experiences(lines: List[Line], tax: SkillTaxonomy) -> Tuple[List[Dic
         if company is None or position is None:
             parts: List[str] = []
             for p in header_parts:
-                parts.extend(x.strip() for x in re.split(r"\s+[|–—]\s+|\s+-\s+|\s+at\s+|\s+tai\s+|\s*\|\s*", p) if x.strip())
+                parts.extend(_split_outside_parens(p))
             if position is not None:
                 parts = [p for p in parts if fold(p) != fold(position)]
                 company = company or (" ".join(parts) if parts else None)
@@ -1066,6 +1150,14 @@ def extract_educations(lines: List[Line], inline_values: List[str]) -> List[Dict
     for text, ln in all_items:
         if not text:
             continue
+        # Hỗ trợ dòng Học vấn gộp bằng dấu '|' (VD: "Trường ĐH Bách Khoa | Cử nhân KHMT (2016 - 2020) | GPA: 8.3/10")
+        if "|" in text:
+            pieces_pipe = [p.strip() for p in text.split("|") if p.strip()]
+            if len(pieces_pipe) >= 2 and any(_SCHOOL_KW.search(fold(p)) for p in pieces_pipe):
+                school_seg = next((p for p in pieces_pipe if _SCHOOL_KW.search(fold(p))), pieces_pipe[0])
+                groups.append({"school_parts": [school_seg], "details": [p for p in pieces_pipe if p != school_seg]})
+                cur, school_open = groups[-1], False
+                continue
         ft = fold(text)
         upper = is_upper_text(text)
         has_school = bool(_SCHOOL_KW.search(ft))
@@ -1121,20 +1213,25 @@ def extract_educations(lines: List[Line], inline_values: List[str]) -> List[Dict
             fd = fold(d)
             mm = re.match(r"^\s*(?:chuyen nganh|nganh hoc|nganh|major|faculty|khoa|field of study|specialization)\s*[:：]\s*(.+)$", fd)
             if mm and not major:
-                major = d[len(d) - len(mm.group(1)):].strip()
+                raw_maj = d[len(d) - len(mm.group(1)):].strip()
+                gm_in_maj = _GPA_RE.search(fold(raw_maj))
+                if gm_in_maj:
+                    raw_maj = (raw_maj[:gm_in_maj.start()] + " " + raw_maj[gm_in_maj.end():]).strip(" -–,|")
+                major = raw_maj
             gm = _GPA_RE.search(fd)
             if gm and not gpa:
                 gpa = gm.group(1).replace(",", ".") + (f"/{gm.group(2).replace(',', '.')}" if gm.group(2) else "")
         if not major:
             for d in details:
-                fd = fold(d)
-                if _GPA_RE.search(fd) or find_ranges(d) and len(_remove_span(d, find_ranges(d)[0]["span"]).split()) < 2:
-                    continue
-                cand = re.sub(r"\(.*?\)|\(.*$", "", d).strip()
-                cand = re.sub(r"(?i)^(bachelor|master|engineer|b\.?sc|m\.?sc|cử nhân|kỹ sư|thạc sĩ)(?:'s)?\s*(of|in|degree in|ngành)?\s*", "", cand).strip(" -–,:")
+                cand = d
+                gm_cand = _GPA_RE.search(fold(cand))
+                if gm_cand:
+                    cand = (cand[:gm_cand.start()] + " " + cand[gm_cand.end():]).strip(" -–,|")
                 for r in find_ranges(cand):
                     cand = _remove_span(cand, r["span"])
                     break
+                cand = re.sub(r"\(.*?\)|\(.*$", "", cand).strip(" -–,|:")
+                cand = re.sub(r"(?i)^(bachelor|master|engineer|b\.?sc|m\.?sc|cử nhân|kỹ sư|thạc sĩ)(?:'s)?\s*(of|in|degree in|ngành|chuyên ngành)?\s*", "", cand).strip(" -–,:")
                 if cand and 1 <= len(cand.split()) <= 10 and not _SCHOOL_KW.search(fold(cand)):
                     major = cand
                     break

@@ -65,20 +65,23 @@ class Line:
 # Tiện ích văn bản
 # ---------------------------------------------------------------------------
 def normalize_text(text: str) -> str:
-    """Chuẩn hoá Unicode NFC (sửa dấu tiếng Việt tổ hợp), bỏ lỗi font CID và ký tự vô hình."""
+    """Chuẩn hoá Unicode NFC (sửa dấu tiếng Việt tổ hợp), bỏ lỗi font CID, icon PUA và chuẩn hoá dấu gạch ngang."""
     if not text:
         return ""
     text = unicodedata.normalize("NFC", text)
     text = re.sub(r"\(cid:\d+\)", " ", text)
+    # Loại bỏ ký tự icon Private Use Area (FontAwesome/TopCV/Canva)
+    text = re.sub(r"[\ue000-\uf8ff]", " ", text)
+    for dash_ch in ("\u00ad", "\u2010", "\u2011", "\u2012", "\u2212", "\ufe63", "\uff0d"):
+        text = text.replace(dash_ch, "-")
     text = (
         text.replace("\u00a0", " ")
         .replace("\u200b", "")
         .replace("\ufeff", "")
-        .replace("\u2011", "-")
         .replace("\uf0b7", "•")
         .replace("\uf0a7", "•")
     )
-    return text.strip()
+    return re.sub(r"[ \t]{2,}", " ", text).strip()
 
 
 _DATEISH_RE = re.compile(
