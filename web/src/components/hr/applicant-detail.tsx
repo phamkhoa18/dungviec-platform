@@ -494,7 +494,15 @@ function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
                       )}
                     </p>
                     <span className="text-[11.5px] font-semibold text-[#64748B]">
-                      {formatPeriod(exp.start, exp.end, exp.is_current)}
+                      {formatPeriod(
+                        exp.start ??
+                          (exp as { start_date?: string | null }).start_date ??
+                          null,
+                        exp.end ??
+                          (exp as { end_date?: string | null }).end_date ??
+                          null,
+                        exp.is_current
+                      )}
                     </span>
                   </div>
                   {exp.description && exp.description.length > 0 && (
@@ -1409,7 +1417,7 @@ export function ApplicantDetail({
               id: "activity",
               label: "Ghi chú & Lịch sử",
               icon: History,
-              count: app.notes_count ?? 0,
+              count: app.notes?.length ?? app.notes_count ?? 0,
             },
           ] as const
         ).map((t) => {

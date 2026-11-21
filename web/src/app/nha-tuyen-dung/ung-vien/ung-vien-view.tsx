@@ -27,6 +27,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -200,6 +207,10 @@ function CandidatesView() {
   const [selectedId, setSelectedId] = useState<number | null>(initialAppId);
   const [checkedIds, setCheckedIds] = useState<number[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
+  const [bulkRejectReason, setBulkRejectReason] = useState<string>(
+    REJECTION_REASONS[0]
+  );
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -259,16 +270,14 @@ function CandidatesView() {
     );
   }
 
-  async function runBulkStatus(targetStatus: HrStatus) {
+  async function runBulkStatus(
+    targetStatus: HrStatus,
+    rejectionReason?: string
+  ) {
     if (checkedIds.length === 0) return;
-    let rejectionReason: string | undefined;
-    if (targetStatus === "rejected") {
-      const input = window.prompt(
-        `Chọn lý do từ chối cho ${checkedIds.length} hồ sơ:\n(Gợi ý: ${REJECTION_REASONS[0]})`,
-        REJECTION_REASONS[0]
-      );
-      if (!input || !input.trim()) return;
-      rejectionReason = input.trim();
+    if (targetStatus === "rejected" && !rejectionReason) {
+      setBulkRejectOpen(true);
+      return;
     }
     try {
       const res = await bulkMut.mutateAsync({
@@ -278,6 +287,7 @@ function CandidatesView() {
       });
       toast.success(res.message);
       setCheckedIds([]);
+      setBulkRejectOpen(false);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Không thể cập nhật hàng loạt."
@@ -412,6 +422,11 @@ function CandidatesView() {
                     <Scale className="size-3" />
                     So sánh {checkedIds.length} ứng viên
                   </button>
+                )}
+                {checkedIds.length > 3 && (
+                  <span className="text-[11px] font-medium text-[#64748B]">
+                    (Chọn 2–3 hồ sơ để so sánh)
+                  </span>
                 )}
                 <button
                   type="button"
@@ -638,6 +653,66 @@ function CandidatesView() {
           setViewMode("list");
         }}
       />
+
+      <Dialog open={bulkRejectOpen} onOpenChange={setBulkRejectOpen}>
+        <DialogContent className="rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-[17px] font-extrabold text-[#B91C1C]">
+              Từ chối hàng loạt ({checkedIds.length} hồ sơ)
+            </DialogTitle>
+            <DialogDescription className="text-[12.5px]">
+              Chọn lý do từ chối chung để cập nhật trạng thái và gửi thông báo
+              tới các ứng viên đã chọn.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              {REJECTION_REASONS.map((r) => (
+                <label
+                  key={r}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2 text-[12.5px] font-medium transition-colors",
+                    bulkRejectReason === r
+                      ? "border-[#DC2626] bg-[#FEF2F2] font-bold text-[#B91C1C]"
+                      : "border-[#E2E8F0] bg-white text-[#334155]"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="bulkRejectReason"
+                    checked={bulkRejectReason === r}
+                    onChange={() => setBulkRejectReason(r)}
+                    className="accent-[#DC2626]"
+                  />
+                  {r}
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setBulkRejectOpen(false)}
+                className="h-9 rounded-full border border-[#D9D9D9] px-4 text-[12.5px] font-bold text-[#444444]"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={bulkMut.isPending}
+                onClick={() =>
+                  void runBulkStatus("rejected", bulkRejectReason)
+                }
+                className="flex h-9 items-center gap-1.5 rounded-full bg-[#DC2626] px-5 text-[12.5px] font-bold text-white hover:bg-[#B91C1C]"
+              >
+                {bulkMut.isPending && (
+                  <Loader2 className="size-3.5 animate-spin" />
+                )}
+                Xác nhận từ chối
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -145,9 +145,18 @@ export function useHrApplication(id: number | null) {
   return useQuery({
     queryKey: hrKeys.application(id || 0),
     enabled: !!id,
+    staleTime: 15_000,
     queryFn: async () => {
       const data = await request<{ application: EnrichedApplication }>(`/api/applications/${id}`);
-      qc.invalidateQueries({ queryKey: hrKeys.applications });
+      qc.setQueryData<EnrichedApplication[]>(hrKeys.applications, (old) =>
+        old
+          ? old.map((a) =>
+              a.id === data.application.id
+                ? { ...a, viewed_by_hr_at: data.application.viewed_by_hr_at, is_new: false }
+                : a
+            )
+          : old
+      );
       return data.application;
     },
   });
@@ -206,6 +215,7 @@ export function useAddNote() {
       request<{ note: ApplicationNoteRecord }>(`/api/applications/${appId}/notes`, jsonInit("POST", { content })),
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: hrKeys.notes(v.appId) });
+      qc.invalidateQueries({ queryKey: hrKeys.application(v.appId) });
       qc.invalidateQueries({ queryKey: hrKeys.applications });
     },
   });
@@ -216,7 +226,11 @@ export function useDeleteNote() {
   return useMutation({
     mutationFn: ({ appId, noteId }: { appId: number; noteId: number }) =>
       request(`/api/applications/${appId}/notes?noteId=${noteId}`, { method: "DELETE" }),
-    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: hrKeys.notes(v.appId) }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: hrKeys.notes(v.appId) });
+      qc.invalidateQueries({ queryKey: hrKeys.application(v.appId) });
+      qc.invalidateQueries({ queryKey: hrKeys.applications });
+    },
   });
 }
 

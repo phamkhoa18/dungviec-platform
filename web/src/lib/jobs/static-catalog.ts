@@ -77,9 +77,16 @@ export function importStaticCatalog(db: DatabaseDocument, h: Helpers): void {
   }
 
   staticJobs.forEach((sj, idx) => {
-    if (db.jobs.some((j) => j.slug === sj.slug)) return;
     const company = companyIdBySlug.get(sj.company);
     if (!company) return;
+    if (
+      db.jobs.some(
+        (j) =>
+          j.slug === sj.slug ||
+          (j.company_id === company.id && j.title.toLowerCase() === sj.title.toLowerCase())
+      )
+    )
+      return;
     const id = (db.counters.jobs || db.jobs.length) + 1;
     db.counters.jobs = id;
     const cat = categories.find((c) => c.slug === sj.category);

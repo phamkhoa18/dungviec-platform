@@ -73,9 +73,10 @@ CATEGORY_DEFAULT_ROLES: Dict[str, Tuple[str, str]] = {
 
 BAD_NAME_PATTERNS = re.compile(
     r"(?i)^(personal|information|details|persional|curriculum|vitae|resume|education|summary|about\s*me|contact|me|profile|"
-    r"tom\s*luoc|thong\s*tin|ho\s*va\s*ten|ho\s*ten|ky\s*nang|kinh\s*nghiem|hoc\s*van|muc\s*tieu|chung\s*chi|"
-    r"dai\s*hoc|university|college|programming|languages|page|candidate|cv|ung\s*vien|0\d|\d+|none|null|n/a|"
-    r"work\s*experience|professional|skills|projects|objective|career|reference|interests|activities|honors|awards)"
+    r"tom\s*luoc|thong\s*tin|ho\s*va\s*ten|ho\s*ten|ky\s*nang|kinh\s*nghiem|hoc\s*van|muc\s*tieu|chung\s*chi|so\s*yeu|ly\s*lich|"
+    r"dai\s*hoc|university|college|programming|languages|page|candidate|cv|ung\s*vien|0\d|\d+|none|null|n/a|nhan\s*vien|ky\s*thuat|"
+    r"work\s*experience|professional|skills|projects|objective|career|reference|interests|activities|honors|awards|"
+    r"accountant|staff|senior|junior|manager|director|finance|assistant|personnel|operations|investment|engineer|developer|specialist)"
 )
 
 
@@ -357,6 +358,8 @@ def main() -> None:
                 {
                     "company": "Doanh nghiệp trong ngành (" + cat_label.split("-")[0].strip() + ")",
                     "position": headline,
+                    "start": f"{start_yr}-03",
+                    "end": None,
                     "start_date": f"{start_yr}-03",
                     "end_date": "present",
                     "is_current": True,
@@ -370,8 +373,10 @@ def main() -> None:
             parsed["educations"] = [
                 {
                     "school": "Trường Đại học Chuyên ngành" if lang.startswith("VI") else "University of Technology & Economics",
-                    "degree": parsed.get("highest_education") if parsed.get("highest_education") != "Chưa rõ" else "Cử nhân / Kỹ sư",
+                    "degree": parsed.get("highest_education") if parsed.get("highest_education") not in ("Chưa rõ", "Chưa xác định") else "Đại học / Kỹ sư (Bachelor)",
                     "major": headline,
+                    "start": "2016-09",
+                    "end": "2020-06",
                     "start_date": "2016-09",
                     "end_date": "2020-06",
                     "gpa": None,

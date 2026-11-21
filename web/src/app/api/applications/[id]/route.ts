@@ -59,22 +59,21 @@ export async function GET(_req: Request, context: Ctx) {
 
   if (!app.viewed_by_hr_at) {
     app.viewed_by_hr_at = new Date().toISOString();
-    if (normalizeStatus(app.status) === "pending") {
-      applyStatusChange(db, app, job, "reviewing", { id: session.user.id, role: "hr" }, { note: "Tự động khi mở hồ sơ" });
-    } else {
-      pushNotification(db, {
-        user_id: app.candidate_id,
-        type: "application_viewed",
-        title: `Nhà tuyển dụng đã xem hồ sơ "${job.title}"`,
-        body: "Hồ sơ của bạn đã được nhà tuyển dụng mở xem.",
-        link: "/ung-vien/tai-khoan?tab=applications",
-      });
-    }
+    pushNotification(db, {
+      user_id: app.candidate_id,
+      type: "application_viewed",
+      title: `Nhà tuyển dụng đã xem hồ sơ "${job.title}"`,
+      body: "Hồ sơ của bạn đã được nhà tuyển dụng mở xem.",
+      link: "/ung-vien/tai-khoan?tab=applications",
+    });
     writeDb(db);
   }
 
   const candidate = db.users.find((u) => u.id === app.candidate_id);
   const ev = db.ai_evaluations.find((e) => e.application_id === app.id) || null;
+  const appNotes = db.application_notes
+    .filter((n) => n.application_id === app.id)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
   return NextResponse.json({
     application: {
       ...app,
@@ -89,9 +88,8 @@ export async function GET(_req: Request, context: Ctx) {
       interviews: db.interviews
         .filter((iv) => iv.application_id === app.id)
         .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at)),
-      notes: db.application_notes
-        .filter((n) => n.application_id === app.id)
-        .sort((a, b) => b.created_at.localeCompare(a.created_at)),
+      notes: appNotes,
+      notes_count: appNotes.length,
       is_new: false,
     },
   });
