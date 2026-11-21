@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type {
+  CandidateProfileRecord,
   CompanyRecord,
   CvProfileRecord,
   UserRole,
@@ -31,6 +32,7 @@ interface AuthContextValue {
   user: AuthenticatedUser | null;
   company: CompanyRecord | null;
   cvProfiles: CvProfileRecord[];
+  candidateProfile: CandidateProfileRecord | null;
   isLoading: boolean;
   refreshAuth: () => Promise<void>;
   login: (
@@ -44,6 +46,7 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   company: null,
   cvProfiles: [],
+  candidateProfile: null,
   isLoading: true,
   refreshAuth: async () => {},
   login: async () => ({ ok: false }),
@@ -55,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [company, setCompany] = useState<CompanyRecord | null>(null);
   const [cvProfiles, setCvProfiles] = useState<CvProfileRecord[]>([]);
+  const [candidateProfile, setCandidateProfile] = useState<CandidateProfileRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshAuth = useCallback(async () => {
@@ -64,16 +68,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setCompany(null);
         setCvProfiles([]);
+        setCandidateProfile(null);
         return;
       }
       const data = await res.json();
       setUser(data.user || null);
       setCompany(data.company || null);
       setCvProfiles(Array.isArray(data.cv_profiles) ? data.cv_profiles : []);
+      setCandidateProfile(data.candidate_profile || null);
     } catch {
       setUser(null);
       setCompany(null);
       setCvProfiles([]);
+      setCandidateProfile(null);
     } finally {
       setIsLoading(false);
     }
@@ -112,6 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setCompany(null);
       setCvProfiles([]);
+      setCandidateProfile(null);
       toast.success("Đã đăng xuất khỏi tài khoản.");
       router.push("/");
       router.refresh();
@@ -126,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         company,
         cvProfiles,
+        candidateProfile,
         isLoading,
         refreshAuth,
         login,

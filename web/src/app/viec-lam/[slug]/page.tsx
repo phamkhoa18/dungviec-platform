@@ -16,94 +16,34 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { JobCardCompact } from "@/components/job/job-card-compact";
 import { EmployerContactActions } from "@/components/job/job-detail-actions";
-import { categories, getCompany, getJob, jobs, type Job } from "@/lib/data";
-import { readDb } from "@/lib/db/store";
-
-function resolveJobBySlug(slug: string): Job | undefined {
-  const staticJob = getJob(slug);
-  if (staticJob) return staticJob;
-
-  try {
-    const db = readDb();
-    const dbJob = db.jobs.find(
-      (j) => j.slug === slug || String(j.id) === slug || j._id === slug
-    );
-    if (!dbJob) return undefined;
-    const dbCo = db.companies.find((c) => c.id === dbJob.company_id);
-    return {
-      slug: dbJob.slug,
-      title: dbJob.title,
-      company: "fpt",
-      companyName: dbCo?.company_name || "Doanh nghiệp Đối tác Đúng Việc",
-      salary: dbJob.salary_range || "Thỏa thuận",
-      salaryMax: 35,
-      payType: "Theo tháng",
-      location: dbJob.location,
-      address: dbCo?.address || dbJob.location,
-      city: dbJob.location.includes("Hà Nội")
-        ? "Hà Nội"
-        : dbJob.location.includes("Đà Nẵng")
-          ? "Đà Nẵng"
-          : "TP.HCM",
-      type:
-        dbJob.employment_type === "Bán thời gian"
-          ? "Bán thời gian"
-          : dbJob.employment_type === "Thực tập"
-            ? "Thực tập"
-            : "Toàn thời gian",
-      level: dbJob.experience_required || "1 - 2 năm",
-      category: "van-phong",
-      tags: dbJob.required_skills,
-      posted: "Hôm nay",
-      urgent: true,
-      partner: Boolean(dbCo?.verified),
-      thumbnail:
-        dbCo?.logo_url ||
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80",
-      description: dbJob.description
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
-      requirements: dbJob.requirements
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
-    };
-  } catch {
-    return undefined;
-  }
-}
-
-export function generateStaticParams() {
-  return jobs.map((j) => ({ slug: j.slug }));
-}
+import { connection } from "next/server";
+import { categories } from "@/lib/data";
+import { getPublicJob } from "@/lib/jobs/public-jobs";
+import { JobViewTracker } from "@/components/job/job-view-tracker";
 
 export async function generateMetadata({ params }: PageProps<"/viec-lam/[slug]">) {
   const { slug } = await params;
-  const job = resolveJobBySlug(slug);
+  await connection();
+  const found = getPublicJob(slug);
   return {
-    title: job
-      ? `${job.title} - ${job.companyName || "Đúng Việc"}`
-      : "Tin tuyển dụng — Đúng Việc",
+    title: found ? `${found.job.title} - ${found.job.companyName || "Đúng Việc"}` : "Tin tuyển dụng — Đúng Việc",
   };
 }
 
-export default async function JobDetailPage({
-  params,
-}: PageProps<"/viec-lam/[slug]">) {
+export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[slug]">) {
   const { slug } = await params;
-  const job = resolveJobBySlug(slug);
-  if (!job) notFound();
+  await connection();
+  const found = getPublicJob(slug);
+  if (!found) notFound();
+  const { job, open, related: relatedJobs, record } = found;
 
-  const company = getCompany(job.company);
-  const companyDisplayName = job.companyName || company.name;
-  const categoryName =
-    categories.find((c) => c.slug === job.category)?.name || "Lao động phổ thông";
-
-  const relatedJobs = jobs
-    .filter((j) => j.slug !== job.slug && j.category === job.category)
-    .concat(jobs.filter((j) => j.slug !== job.slug && j.category !== job.category))
-    .slice(0, 3);
+  const company = {
+    logo: job.companyLogo || job.thumbnail,
+    size: job.companySize || "Đang cập nhật",
+    field: job.companyField || "Đang cập nhật",
+  };
+  const companyDisplayName = job.companyName || "Doanh nghiệp";
+  const categoryName = categories.find((c) => c.slug === job.category)?.name || record.job_category;
 
   const defaultDescriptions = [
     `Thực hiện công việc ở vị trí ${job.title} theo sự phân công của Quản lý trực tiếp tại ${companyDisplayName}.`,
@@ -283,7 +223,7 @@ export default async function JobDetailPage({
                 Mô tả công việc
               </h2>
               <ul className="space-y-2 text-[14.5px] leading-6 text-[#333333]">
-                {(job.description || defaultDescriptions).map((line) => (
+                {(job.description?.length ? job.description : defaultDescriptions).map((line) => (
                   <li key={line} className="flex items-start gap-2.5">
                     <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#306BD9]" />
                     <span>{line}</span>
@@ -298,7 +238,7 @@ export default async function JobDetailPage({
                 Yêu cầu công việc
               </h2>
               <ul className="space-y-2 text-[14.5px] leading-6 text-[#333333]">
-                {(job.requirements || defaultRequirements).map((line) => (
+                {(job.requirements?.length ? job.requirements : defaultRequirements).map((line) => (
                   <li key={line} className="flex items-start gap-2.5">
                     <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#306BD9]" />
                     <span>{line}</span>
@@ -313,7 +253,7 @@ export default async function JobDetailPage({
                 Quyền lợi được hưởng
               </h2>
               <ul className="space-y-2.5 text-[14.5px] leading-6 text-[#333333]">
-                {(job.benefits || defaultBenefits).map((line) => (
+                {(job.benefits?.length ? job.benefits : defaultBenefits).map((line) => (
                   <li key={line} className="flex items-start gap-2.5">
                     <CheckCircle2 className="mt-1 size-4 shrink-0 text-[#16A34A]" />
                     <span>{line}</span>
@@ -367,17 +307,39 @@ export default async function JobDetailPage({
                 </div>
               </div>
 
-              {/* Nút Ứng tuyển (UC-02) */}
+              {job.companySlug && (
+                <Link
+                  href={`/cong-ty/${job.companySlug}`}
+                  className="-mt-2 mb-3 block text-[12.5px] font-bold text-[#306BD9] hover:underline"
+                >
+                  Xem trang công ty →
+                </Link>
+              )}
+              {job.deadline && (
+                <p className="mb-3 text-[12.5px] text-[#666666]">
+                  Hạn nộp hồ sơ:{" "}
+                  <strong className={open ? "text-[#222222]" : "text-[#DC2626]"}>
+                    {job.deadline.split("-").reverse().join("/")}
+                  </strong>
+                </p>
+              )}
+              {!open ? (
+                <div className="rounded-lg border border-[#FECACA] bg-[#FEF2F2] p-3 text-center text-[13px] font-bold text-[#B91C1C]">
+                  Tin tuyển dụng đã đóng / hết hạn nhận hồ sơ
+                </div>
+              ) : (
               <EmployerContactActions
                 jobSlug={job.slug}
                 jobTitle={job.title}
                 companyName={companyDisplayName}
                 jdText={[
-                  ...(job.description || defaultDescriptions),
-                  ...(job.requirements || defaultRequirements),
+                  ...(job.description?.length ? job.description : defaultDescriptions),
+                  ...(job.requirements?.length ? job.requirements : defaultRequirements),
                 ].join("\n")}
-                requiredSkills={job.tags}
+                requiredSkills={job.requiredSkills || job.tags}
               />
+              )}
+              <JobViewTracker jobId={record.id} />
 
               <div className="mt-3 rounded-lg bg-[#F2F6FC] p-3 text-[12px] leading-[18px] text-[#1E3A8A]">
                 <strong>Hồ sơ được phân tích bằng AI:</strong> Sau khi nộp CV, hệ thống tự động bóc tách kỹ năng và chấm điểm phù hợp để hỗ trợ nhà tuyển dụng sàng lọc nhanh hơn.

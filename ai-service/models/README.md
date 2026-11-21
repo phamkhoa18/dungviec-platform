@@ -1,18 +1,13 @@
-# Trọng số mô hình DistilBERT
+# Trọng số mô hình BGE-M3 Song Ngữ Việt – Anh (`BAAI/bge-m3`)
 
-File `best_cvjd_model/model.safetensors` (~268 MB) **không được đưa lên Git** vì vượt giới hạn 100 MB/file của GitHub.
-Các file nhỏ (`config.json`, `tokenizer.json`, `tokenizer_config.json`) vẫn nằm trong repo.
+Hệ thống sử dụng kiến trúc **`BAAI/bge-m3` (`FlagOpen/FlagEmbedding`)** kết hợp tầng phân loại lai **`BGEM3HybridFitClassifier`** (`bge_m3_hybrid_head.pt`).
 
-## Cách có trọng số
+## Cách huấn luyện trên Google Colab và tích hợp vào `ai-service`
 
-1. **Huấn luyện lại** bằng notebook [`TRAIN_CV_JD_FIT_MODEL.ipynb`](../../TRAIN_CV_JD_FIT_MODEL.ipynb)
-   (hoặc bản tối ưu cho Colab trong `filebaocao/TRAIN_CV_JD_OPTIMIZED_COLAB.ipynb`), sau đó chép checkpoint tốt nhất vào
-   `ai-service/models/best_cvjd_model/`.
-2. Hoặc xin file `model.safetensors` từ tác giả và đặt đúng thư mục trên.
-
-## Khi chưa có trọng số
-
-`ai-service` vẫn chạy: [`fit_scorer.py`](../services/fit_scorer.py) tự chuyển sang chế độ suy luận trên văn bản CV/JD
-(trích kỹ năng, kinh nghiệm), dùng đúng công thức `S = 100 × [P(Good) + 0.5 × P(Potential)]`.
-Điểm số lúc này chỉ mang tính minh hoạ, **không** phải kết quả của mô hình đã huấn luyện.
-Endpoint `GET /api/v1/health` cho biết `loaded_pytorch_checkpoint` đang là `true` hay `false`.
+1. Tải file notebook **[`TRAIN_BGE_M3_BILINGUAL_COLAB.ipynb`](../../TRAIN_BGE_M3_BILINGUAL_COLAB.ipynb)** lên **Google Colab** (chọn `Runtime -> Change runtime type -> T4 GPU`) và bấm **`Runtime -> Run all`**.
+2. Sau khi chạy xong mục 10, trình duyệt sẽ tự động tải về gói **`best_cvjd_model.zip`** (chứa `bge_m3_hybrid_head.pt`, `config.json`, biểu đồ kiểm toán trùng lặp, đường cong huấn luyện, ma trận nhầm lẫn và file Excel 100 mẫu).
+3. Giải nén các tệp trong `best_cvjd_model.zip` vào thư mục:
+   ```text
+   ai-service/models/best_cvjd_model/
+   ```
+4. Dịch vụ [`fit_scorer.py`](../services/fit_scorer.py) sẽ tự động nhận diện `bge_m3_hybrid_head.pt` + nạp `BAAI/bge-m3` để chấm điểm trực tiếp cho cả CV/JD Tiếng Việt, Tiếng Anh và Xuyên ngôn ngữ (`VI-VI`, `EN-EN`, `EN-VI`, `VI-EN`).

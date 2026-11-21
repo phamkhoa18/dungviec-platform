@@ -5,6 +5,14 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { JobsExplorer } from "@/components/job/jobs-explorer";
 import { Skeleton } from "@/components/ui/skeleton";
+import { connection } from "next/server";
+import { listPublicJobs } from "@/lib/jobs/public-jobs";
+
+/** Đọc tin đang tuyển từ cơ sở dữ liệu tại thời điểm truy cập (tin HR vừa đăng hiện ngay). */
+async function LiveJobsExplorer() {
+  await connection();
+  return <JobsExplorer jobs={listPublicJobs()} />;
+}
 
 export const metadata = {
   title: "Tuyển dụng & Tìm việc làm mới nhất — Đúng Việc",
@@ -40,7 +48,7 @@ export default function JobsPage() {
             </div>
           }
         >
-          <JobsExplorer />
+          <LiveJobsExplorer />
         </Suspense>
       </main>
 

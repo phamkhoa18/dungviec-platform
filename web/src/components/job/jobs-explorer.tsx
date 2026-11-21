@@ -28,7 +28,7 @@ import {
 } from "@/components/shared/location-picker";
 import { removeVietnameseTones } from "@/lib/utils";
 import { provinceKey } from "@/lib/services/location-types";
-import { categories, jobs } from "@/lib/data";
+import { categories, type Job } from "@/lib/data";
 
 const types = ["Toàn thời gian", "Bán thời gian"];
 const levels = ["Không yêu cầu", "Junior", "Middle", "Senior"];
@@ -40,7 +40,7 @@ function toggle(list: string[], v: string) {
 /**
  * Trang tìm kiếm việc làm (UC-02): từ khóa + lọc địa điểm / ngành / hình thức / kinh nghiệm.
  */
-export function JobsExplorer() {
+export function JobsExplorer({ jobs }: { jobs: Job[] }) {
   const sp = useSearchParams();
   const [q, setQ] = useState(sp.get("q") ?? "");
   const [cats, setCats] = useState<string[]>(
@@ -83,7 +83,7 @@ export function JobsExplorer() {
     });
     if (sort === "luong") r = [...r].sort((a, b) => b.salaryMax - a.salaryMax);
     return r;
-  }, [q, city, cats, tps, lvs, sort]);
+  }, [jobs, q, city, cats, tps, lvs, sort]);
 
   const active = cats.length + (city ? 1 : 0) + tps.length + lvs.length;
 

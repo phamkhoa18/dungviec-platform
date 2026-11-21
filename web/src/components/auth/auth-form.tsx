@@ -141,6 +141,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         router.push("/nha-tuyen-dung/tong-quan");
       } else if (redirectUrl) {
         router.push(redirectUrl);
+      } else if (!isLogin) {
+        // Ứng viên mới: chuyển tới trang Hồ sơ để tải CV và tự động điền thông tin
+        router.push("/ung-vien/tai-khoan?tab=info");
       } else {
         router.push("/");
       }

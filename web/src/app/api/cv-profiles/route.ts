@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import { NextResponse } from "next/server";
 import { callPythonParseCv } from "@/lib/db/ai-client";
+import { cvFieldsFromParsed } from "@/lib/profile/cv-record";
+import { cvFileUrl, resolveCvDiskPath, saveCvFile } from "@/lib/files/cv-storage";
 import { getSessionUser } from "@/lib/db/server-auth";
 import {
   generateObjectId,
@@ -22,7 +24,7 @@ export async function GET() {
   }
   const db = readDb();
   const list = db.cv_profiles
-    .filter((cv) => cv.user_id === sessionCtx.user.id)
+    .filter((cv) => cv.user_id === sessionCtx.user.id && !cv.archived)
     .sort((a, b) => b.id - a.id);
 
   return NextResponse.json({
@@ -90,19 +92,8 @@ export async function POST(req: Request) {
       }
     }
 
-    // Lưu tệp vật lý vào /public/uploads/cvs/ để HR có thể xem trước CV gốc
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "cvs");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    const safeBaseName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const savedFileName = `${Date.now()}_${safeBaseName}`;
-    const savedDiskPath = path.join(uploadDir, savedFileName);
-    const publicFilePath = `/uploads/cvs/${savedFileName}`;
-
-    if (fileBuffer) {
-      fs.writeFileSync(savedDiskPath, fileBuffer);
-    }
+    // Lưu tệp vật lý NGOÀI thư mục public; xem/tải qua /api/files/cv/[id] có kiểm tra quyền
+    const storedPath = fileBuffer ? saveCvFile(fileBuffer, fileName).file_path : "";
 
     // Gọi sang Python AI Service (ai-service/) để đọc văn bản & bóc tách thực thể NER
     const parsed = await callPythonParseCv({
@@ -120,25 +111,20 @@ export async function POST(req: Request) {
       (c) => c.user_id === sessionCtx.user.id
     );
 
+    const autoTitle = parsed.extracted_job_title
+      ? `CV ${parsed.extracted_job_title}`
+      : `${fileName.replace(/\.(pdf|docx)$/i, "")} — ${sessionCtx.user.full_name}`;
+
     const newCv: CvProfileRecord = {
       _id: generateObjectId(),
       id: nextId,
       user_id: sessionCtx.user.id,
       user_object_id: sessionCtx.user._id,
-      cv_title:
-        cvTitle ||
-        `${fileName.replace(/\.(pdf|docx)$/i, "")} — ${sessionCtx.user.full_name}`,
-      file_path: publicFilePath,
-      file_url: publicFilePath,
+      cv_title: cvTitle || autoTitle,
+      file_path: storedPath,
+      file_url: cvFileUrl(nextId),
       file_name: fileName,
-      file_type: parsed.file_type,
-      file_size_bytes: parsed.file_size_bytes,
-      raw_text: parsed.raw_text,
-      extracted_skills: parsed.extracted_skills || [],
-      years_of_experience: parsed.years_of_experience ?? 0,
-      total_experience_months: parsed.total_experience_months ?? 0,
-      education_level: parsed.education_level || "Đại học / Cao đẳng",
-      ocr_required: parsed.ocr_required,
+      ...cvFieldsFromParsed(parsed),
       is_default: existingUserCvs.length === 0,
       created_at: now,
       updated_at: now,
@@ -151,8 +137,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       status: "ok",
       message: parsed.ocr_required
-        ? "Đã lưu tệp CV, nhưng tệp có ít lớp văn bản thuần (cần kiểm tra OCR)."
-        : `Đã tải lên và bóc tách thành công ${newCv.extracted_skills.length} kỹ năng từ tệp CV!`,
+        ? "Đã lưu tệp CV, nhưng tệp không có đủ văn bản để nhận diện."
+        : "Đã lưu CV và bóc tách thông tin. Hãy xem lại để cập nhật vào hồ sơ.",
       cv_profile: newCv,
     });
   } catch (err) {
@@ -194,7 +180,29 @@ export async function DELETE(req: Request) {
     );
   }
 
-  db.cv_profiles.splice(idx, 1);
+  const target = db.cv_profiles[idx];
+  const usedBy = db.applications.filter((a) => a.cv_profile_id === target.id).length;
+  if (usedBy > 0) {
+    // CV đã dùng để ứng tuyển: ẩn khỏi danh sách của ứng viên nhưng giữ cho nhà tuyển dụng xem đơn
+    target.archived = true;
+    target.is_default = false;
+  } else {
+    const disk = resolveCvDiskPath(target);
+    if (disk) {
+      try {
+        fs.unlinkSync(disk);
+      } catch {
+        // bỏ qua nếu tệp đã bị xoá
+      }
+    }
+    db.cv_profiles.splice(idx, 1);
+  }
+  if (target.is_default || usedBy > 0) {
+    const remaining = db.cv_profiles
+      .filter((c) => c.user_id === sessionCtx.user.id && !c.archived)
+      .sort((a, b) => b.id - a.id);
+    if (remaining[0] && !remaining.some((c) => c.is_default)) remaining[0].is_default = true;
+  }
   writeDb(db);
 
   return NextResponse.json({

@@ -1,0 +1,5 @@
+Model,Accuracy (%),Balanced Acc (%),Macro F1,Weighted F1,F1 (No Fit),F1 (Potential),F1 (Good Fit)
+Baseline 1: TF-IDF + Logistic Regression,65.05,63.66,0.6419,0.6488,0.6982,0.5982,0.6293
+"Reference Báo cáo 3: DistilBERT (English-only, 512 tokens)",44.86,38.12,0.3779,0.4385,0.6015,0.2099,0.3224
+Baseline 2: BAAI/bge-m3 Zero-Shot Cosine,48.22,45.25,0.4464,0.4683,0.6294,0.2379,0.472
+"Proposed: Fine-Tuned BAAI/bge-m3 Hybrid (Song ngữ, 2048 tokens)",72.71,72.2,0.722,0.7271,0.7619,0.7075,0.6968

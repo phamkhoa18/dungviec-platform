@@ -12,10 +12,15 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import { CATALOG_VERSION, importStaticCatalog } from "@/lib/jobs/static-catalog";
 import type {
   AiEvaluationRecord,
+  ApplicationNoteRecord,
   ApplicationRecord,
   ApplicationStatus,
+  CandidateProfileRecord,
+  InterviewRecord,
+  NotificationRecord,
   CompanyRecord,
   CvProfileRecord,
   DatabaseDocument,
@@ -342,7 +347,7 @@ function buildInitialDatabase(): DatabaseDocument {
       file_type: "pdf",
       file_size_bytes: 1420,
       raw_text:
-        "Full Name: Nguyen Minh Anh | Email: minhanh.dev@gmail.com | Phone: 0912345678\nRole: Senior Python Backend Developer | Experience: 5 years of experience (2021 - 2026)\nEducation: Bachelor of Information Technology - University of Technology (DH Bach Khoa TP.HCM)\nTechnical Skills: Python, FastAPI, Django, PostgreSQL, MongoDB, Docker, Redis, Git, REST API, Microservices, AWS\nWork Experience:\n1. Senior Python Backend Engineer (2023 - 2026): Designed high-concurrency REST API services using Python, FastAPI, PostgreSQL and MongoDB. Containerized backend microservices with Docker, CI/CD and deployed on AWS Cloud. Integrated NLP / Transformers (DistilBERT) into recruitment pipeline.\n2. Python Backend Developer (2021 - 2023): Built backend APIs with Django REST Framework, SQL, Redis caching and Git workflow.",
+        "Full Name: Nguyen Minh Anh | Email: minhanh.dev@gmail.com | Phone: 0912345678\nRole: Senior Python Backend Developer | Experience: 5 years of experience (2021 - 2026)\nEducation: Bachelor of Information Technology - University of Technology (DH Bach Khoa TP.HCM)\nTechnical Skills: Python, FastAPI, Django, PostgreSQL, MongoDB, Docker, Redis, Git, REST API, Microservices, AWS\nWork Experience:\n1. Senior Python Backend Engineer (2023 - 2026): Designed high-concurrency REST API services using Python, FastAPI, PostgreSQL and MongoDB. Containerized backend microservices with Docker, CI/CD and deployed on AWS Cloud. Integrated NLP / Transformers (BGE-M3) into recruitment pipeline.\n2. Python Backend Developer (2021 - 2023): Built backend APIs with Django REST Framework, SQL, Redis caching and Git workflow.",
       extracted_skills: [
         "Python",
         "FastAPI",
@@ -526,7 +531,7 @@ function buildInitialDatabase(): DatabaseDocument {
 
   // ---------------------------------------------------------------------------
   // BẢNG 6: ai_evaluations (Kết quả đánh giá AI 1-1 với applications)
-  // Khớp chính xác số liệu Bảng 8 trong Báo cáo số 3 (71.1, 82.4, 27.5)
+  // Khớp chính xác số liệu thực nghiệm mô hình BAAI/bge-m3 Song ngữ (Tuần 3)
   // ---------------------------------------------------------------------------
   const ai_evaluations: AiEvaluationRecord[] = [
     {
@@ -534,17 +539,17 @@ function buildInitialDatabase(): DatabaseDocument {
       id: 1,
       application_id: 1,
       application_object_id: "671900050000000000000001",
-      model_name: "distilbert-base-uncased",
-      model_version: "epoch-5-macro-f1-0.6609",
-      match_score: 71.1,
+      model_name: "BAAI/bge-m3",
+      model_version: "bge-m3-hybrid-bilingual-v2 (epoch-14-val-f1-0.7804)",
+      match_score: 98.01,
       predicted_label: "Good Fit",
-      prob_good: 0.564,
-      prob_potential: 0.294,
-      prob_no_fit: 0.142,
+      prob_good: 0.9771,
+      prob_potential: 0.006,
+      prob_no_fit: 0.0168,
       probabilities: {
-        no_fit: 0.142,
-        potential_fit: 0.294,
-        good_fit: 0.564,
+        no_fit: 0.0168,
+        potential_fit: 0.006,
+        good_fit: 0.9771,
       },
       matched_skills: [
         "Python",
@@ -557,8 +562,8 @@ function buildInitialDatabase(): DatabaseDocument {
       ],
       missing_skills: [],
       explanation:
-        "Kịch bản 1 (Báo cáo 3): Senior Python Backend ứng tuyển Python Developer đạt Good Fit (S = 71.1/100). Khớp 7/7 kỹ năng cốt lõi và đáp ứng 5 năm kinh nghiệm.",
-      processed_time_ms: 45,
+        "[BGE-M3 Song ngữ] Điểm phù hợp S = 98.01/100 (Good Fit). Ứng viên Senior Python Backend khớp 7/7 kỹ năng cốt lõi và đáp ứng 5 năm kinh nghiệm.",
+      processed_time_ms: 38,
       evaluation_status: "completed",
       created_at: "2026-10-21T09:30:01.000Z",
     },
@@ -567,23 +572,23 @@ function buildInitialDatabase(): DatabaseDocument {
       id: 2,
       application_id: 2,
       application_object_id: "671900050000000000000002",
-      model_name: "distilbert-base-uncased",
-      model_version: "epoch-5-macro-f1-0.6609",
-      match_score: 82.4,
-      predicted_label: "Good Fit",
-      prob_good: 0.722,
-      prob_potential: 0.204,
-      prob_no_fit: 0.074,
+      model_name: "BAAI/bge-m3",
+      model_version: "bge-m3-hybrid-bilingual-v2 (epoch-14-val-f1-0.7804)",
+      match_score: 1.77,
+      predicted_label: "No Fit",
+      prob_good: 0.0088,
+      prob_potential: 0.0178,
+      prob_no_fit: 0.9734,
       probabilities: {
-        no_fit: 0.074,
-        potential_fit: 0.204,
-        good_fit: 0.722,
+        no_fit: 0.9734,
+        potential_fit: 0.0178,
+        good_fit: 0.0088,
       },
       matched_skills: ["Python", "PostgreSQL", "Git"],
       missing_skills: ["FastAPI", "MongoDB", "Docker", "REST API"],
       explanation:
-        "Kịch bản 3 (Báo cáo 3): Junior Data Analyst ứng tuyển Backend Developer đạt S = 82.4/100 do mật độ từ khóa Python/SQL/PostgreSQL cao, nhưng còn thiếu FastAPI, Docker, MongoDB. HR cần xem CV gốc trước khi quyết định.",
-      processed_time_ms: 42,
+        "[BGE-M3 Song ngữ] Điểm phù hợp S = 1.77/100 (No Fit). Mô hình BAAI/bge-m3 Hybrid nhận diện chính xác ứng viên Junior Data Analyst (1 năm KN) chưa đáp ứng yêu cầu Senior Backend (3+ năm KN) và thiếu FastAPI, Docker, MongoDB, Microservices.",
+      processed_time_ms: 35,
       evaluation_status: "completed",
       created_at: "2026-10-22T10:20:01.000Z",
     },
@@ -592,17 +597,17 @@ function buildInitialDatabase(): DatabaseDocument {
       id: 3,
       application_id: 3,
       application_object_id: "671900050000000000000003",
-      model_name: "distilbert-base-uncased",
-      model_version: "epoch-5-macro-f1-0.6609",
-      match_score: 27.5,
+      model_name: "BAAI/bge-m3",
+      model_version: "bge-m3-hybrid-bilingual-v2 (epoch-14-val-f1-0.7804)",
+      match_score: 2.7,
       predicted_label: "No Fit",
-      prob_good: 0.145,
-      prob_potential: 0.26,
-      prob_no_fit: 0.595,
+      prob_good: 0.0222,
+      prob_potential: 0.0094,
+      prob_no_fit: 0.9683,
       probabilities: {
-        no_fit: 0.595,
-        potential_fit: 0.26,
-        good_fit: 0.145,
+        no_fit: 0.9683,
+        potential_fit: 0.0094,
+        good_fit: 0.0222,
       },
       matched_skills: [],
       missing_skills: [
@@ -615,8 +620,8 @@ function buildInitialDatabase(): DatabaseDocument {
         "Git",
       ],
       explanation:
-        "Kịch bản 2 (Báo cáo 3): Civil Engineer ứng tuyển Python Developer đạt No Fit (S = 27.5/100). Khác lĩnh vực chuyên môn, thiếu toàn bộ 7 kỹ năng Backend yêu cầu.",
-      processed_time_ms: 39,
+        "[BGE-M3 Song ngữ] Điểm phù hợp S = 2.70/100 (No Fit). Ứng viên Kỹ sư Xây dựng khác lĩnh vực chuyên môn, thiếu toàn bộ 7 kỹ năng Backend yêu cầu.",
+      processed_time_ms: 32,
       evaluation_status: "completed",
       created_at: "2026-10-22T11:00:01.000Z",
     },
@@ -625,17 +630,17 @@ function buildInitialDatabase(): DatabaseDocument {
       id: 4,
       application_id: 4,
       application_object_id: "671900050000000000000004",
-      model_name: "distilbert-base-uncased",
-      model_version: "epoch-5-macro-f1-0.6609",
-      match_score: 89.2,
+      model_name: "BAAI/bge-m3",
+      model_version: "bge-m3-hybrid-bilingual-v2 (epoch-14-val-f1-0.7804)",
+      match_score: 97.79,
       predicted_label: "Good Fit",
-      prob_good: 0.814,
-      prob_potential: 0.156,
-      prob_no_fit: 0.03,
+      prob_good: 0.9749,
+      prob_potential: 0.0061,
+      prob_no_fit: 0.019,
       probabilities: {
-        no_fit: 0.03,
-        potential_fit: 0.156,
-        good_fit: 0.814,
+        no_fit: 0.019,
+        potential_fit: 0.0061,
+        good_fit: 0.9749,
       },
       matched_skills: [
         "JavaScript",
@@ -648,8 +653,8 @@ function buildInitialDatabase(): DatabaseDocument {
       ],
       missing_skills: [],
       explanation:
-        "Ứng viên khớp 7/7 kỹ năng Frontend yêu cầu (ReactJS, Next.js, TypeScript, Figma, REST API) và có 3 năm kinh nghiệm thực tế.",
-      processed_time_ms: 44,
+        "[BGE-M3 Song ngữ] Điểm phù hợp S = 97.79/100 (Good Fit). Ứng viên khớp 7/7 kỹ năng Frontend yêu cầu (ReactJS, Next.js, TypeScript, Figma, REST API) và đáp ứng 3+ năm kinh nghiệm thực tế.",
+      processed_time_ms: 36,
       evaluation_status: "completed",
       created_at: "2026-10-20T15:00:01.000Z",
     },
@@ -670,7 +675,123 @@ function buildInitialDatabase(): DatabaseDocument {
     cv_profiles,
     applications,
     ai_evaluations,
+    candidate_profiles: [],
+    interviews: [],
+    notifications: [],
+    application_notes: [],
   };
+}
+
+/** Dấu vân tay nội dung JD + kỹ năng yêu cầu: đổi JD -> điểm AI cũ được đánh dấu "lỗi thời". */
+export function computeJdHash(job: Pick<JobRecord, "title" | "jd_text" | "requirements" | "required_skills">): string {
+  const basis = [job.title, job.jd_text, job.requirements, [...(job.required_skills || [])].sort().join("|")].join("\n");
+  return crypto.createHash("sha1").update(basis).digest("hex").slice(0, 16);
+}
+
+/** Bổ sung các collection mới cho file DB cũ (migration nhẹ, không mất dữ liệu). */
+function migrateDb(db: DatabaseDocument): DatabaseDocument {
+  let changed = false;
+  for (const key of ["candidate_profiles", "interviews", "notifications", "application_notes"] as const) {
+    if (!Array.isArray(db[key])) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (db as any)[key] = [];
+      changed = true;
+    }
+    if (typeof db.counters[key] !== "number") {
+      db.counters[key] = db[key].length;
+      changed = true;
+    }
+  }
+  db.meta = db.meta || {};
+
+  // Schema v2: pipeline trạng thái thống nhất + lịch sử + dấu vân tay JD
+  if ((db.meta.schema_version || 0) < 2) {
+    for (const app of db.applications) {
+      if (app.status === "shortlisted") app.status = "interviewing";
+      if (!Array.isArray(app.status_history)) {
+        app.status_history = [
+          { from: null, to: "pending", by_user_id: app.candidate_id, by_role: "candidate", at: app.applied_at },
+        ];
+        if (app.status !== "pending") {
+          app.status_history.push({
+            from: "pending",
+            to: app.status,
+            by_user_id: db.jobs.find((j) => j.id === app.job_id)?.hr_user_id || 0,
+            by_role: "hr",
+            at: app.updated_at,
+          });
+        }
+      }
+      // Ghi chú cũ (1 chuỗi) -> collection application_notes
+      if (app.hr_notes && !db.application_notes.some((n) => n.application_id === app.id)) {
+        const job = db.jobs.find((j) => j.id === app.job_id);
+        const author = db.users.find((u) => u.id === job?.hr_user_id);
+        const nextId = (db.counters.application_notes || 0) + 1;
+        db.counters.application_notes = nextId;
+        db.application_notes.push({
+          _id: generateObjectId(),
+          id: nextId,
+          application_id: app.id,
+          author_id: author?.id || 0,
+          author_name: author?.full_name || "Nhà tuyển dụng",
+          content: app.hr_notes,
+          created_at: app.updated_at,
+        });
+      }
+    }
+    for (const job of db.jobs) {
+      job.jd_hash = computeJdHash(job);
+      job.view_count = job.view_count || 0;
+      job.source = job.source || "hr";
+      if (!job.published_at && job.status === "active") job.published_at = job.created_at;
+      for (const app of db.applications.filter((a) => a.job_id === job.id)) {
+        const ev = db.ai_evaluations.find((e) => e.application_id === app.id);
+        if (ev && !ev.jd_hash) ev.jd_hash = job.jd_hash;
+      }
+    }
+    for (const c of db.companies) {
+      if (!c.slug) c.slug = `${slugifyVietnamese(c.company_name || c.name)}-${c.id}`;
+    }
+    db.meta.schema_version = 2;
+    changed = true;
+  }
+
+  // Schema v3: chuyển tệp CV cũ từ public/uploads sang kho riêng (không truy cập công khai)
+  if ((db.meta.schema_version || 0) < 3) {
+    const storageDir = path.join(process.cwd(), "storage", "cvs");
+    for (const cv of db.cv_profiles) {
+      if (!cv.file_path?.startsWith("/uploads/cvs/")) continue;
+      const src = path.join(process.cwd(), "public", cv.file_path);
+      if (!fs.existsSync(src)) continue;
+      try {
+        if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
+        const name = path.basename(src);
+        fs.renameSync(src, path.join(storageDir, name));
+        cv.file_path = `storage/cvs/${name}`;
+      } catch {
+        continue;
+      }
+    }
+    for (const cv of db.cv_profiles) cv.file_url = `/api/files/cv/${cv.id}`;
+    db.meta.schema_version = 3;
+    changed = true;
+  }
+
+  // Catalog v1: nhập tin/công ty mẫu từ lib/data.ts vào DB (một nguồn dữ liệu cho trang công khai)
+  if ((db.meta.catalog_version || 0) < CATALOG_VERSION) {
+    importStaticCatalog(db, { generateObjectId: () => generateObjectId(), computeJdHash });
+    db.meta.catalog_version = CATALOG_VERSION;
+    changed = true;
+  }
+
+  if (changed) {
+    try {
+      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), "utf-8");
+    } catch {
+      // Ghi lại lần sau
+    }
+  }
+  return db;
 }
 
 export function readDb(): DatabaseDocument {
@@ -680,11 +801,11 @@ export function readDb(): DatabaseDocument {
   if (!fs.existsSync(DB_FILE)) {
     const initial = buildInitialDatabase();
     fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), "utf-8");
-    return initial;
+    return migrateDb(initial);
   }
   try {
     const raw = fs.readFileSync(DB_FILE, "utf-8");
-    return JSON.parse(raw) as DatabaseDocument;
+    return migrateDb(JSON.parse(raw) as DatabaseDocument);
   } catch {
     const initial = buildInitialDatabase();
     fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), "utf-8");
@@ -703,12 +824,14 @@ export function writeDb(db: DatabaseDocument): void {
  * Tự động kiểm tra Quy tắc QT-03: Tin tuyển dụng quá hạn deadline tự động chuyển sang 'closed'
  */
 export function enforceJobDeadlines(db: DatabaseDocument): boolean {
-  const today = new Date().toISOString().slice(0, 10);
+  // Ngày theo giờ Việt Nam (UTC+7) để tin không bị đóng sớm/muộn 7 tiếng
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
   let changed = false;
   for (const job of db.jobs) {
     if (job.status === "active" && job.deadline && job.deadline < today) {
       job.status = "closed";
-      job.updated_at = new Date().toISOString();
+      job.closed_at = new Date().toISOString();
+      job.updated_at = job.closed_at;
       changed = true;
     }
   }
@@ -746,21 +869,31 @@ export function getUserWithContext(userId: number) {
   const cvProfiles =
     user.role === "candidate"
       ? db.cv_profiles
-          .filter((cv) => cv.user_id === user.id)
+          .filter((cv) => cv.user_id === user.id && !cv.archived)
           .sort((a, b) => b.id - a.id)
       : [];
+
+  const candidateProfile =
+    user.role === "candidate"
+      ? db.candidate_profiles.find((p) => p.user_id === user.id) || null
+      : null;
 
   return {
     user: sanitizeUser(user),
     company,
     cv_profiles: cvProfiles,
+    candidate_profile: candidateProfile,
   };
 }
 
 export type {
   AiEvaluationRecord,
+  ApplicationNoteRecord,
   ApplicationRecord,
   ApplicationStatus,
+  CandidateProfileRecord,
+  InterviewRecord,
+  NotificationRecord,
   CompanyRecord,
   CvProfileRecord,
   DatabaseDocument,

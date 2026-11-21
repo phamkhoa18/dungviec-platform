@@ -1,8 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
-import { BadgeCheck, Building2, Hash, Loader2, MapPin } from "lucide-react";
+import {
+  BadgeCheck,
+  Building2,
+  ExternalLink,
+  Gift,
+  Globe,
+  Hash,
+  Image as ImageIcon,
+  Loader2,
+  MapPin,
+  Plus,
+  X,
+} from "lucide-react";
 import { PageHeader } from "@/components/hr/hr-shell";
 import { EmptyState, Panel } from "@/components/hr/ui-parts";
 import { Input } from "@/components/ui/input";
@@ -19,10 +32,27 @@ import { useSaveCompany } from "@/hooks/hr/use-hr-data";
 import { useAuth } from "@/hooks/use-auth";
 import type { CompanyRecord } from "@/lib/db/types";
 
-const SIZES = ["1 - 10 nhân viên", "11 - 50 nhân viên", "51 - 200 nhân viên", "201 - 500 nhân viên", "Trên 500 nhân viên"];
+const SIZES = [
+  "1 - 10 nhân viên",
+  "11 - 50 nhân viên",
+  "51 - 200 nhân viên",
+  "201 - 500 nhân viên",
+  "Trên 500 nhân viên",
+];
+
+const BENEFIT_SUGGESTIONS = [
+  "Lương tháng 13 + thưởng hiệu suất",
+  "Bảo hiểm sức khỏe toàn diện",
+  "Xét tăng lương 2 lần/năm",
+  "Làm việc Hybrid linh hoạt",
+  "MacBook / Thiết bị làm việc hiện đại",
+  "Du lịch công ty & Team building",
+  "Đào tạo & Tài trợ chứng chỉ quốc tế",
+];
+
 const fieldCls =
-  "h-11 rounded-[10px] border-[#D9D9D9] bg-white px-3.5 text-[14px] shadow-none placeholder:text-[#9AA0A6] focus-visible:border-[#306BD9] focus-visible:ring-4 focus-visible:ring-[#306BD9]/12";
-const labelCls = "text-[13px] font-semibold text-[#222222]";
+  "h-10 rounded-[10px] border-[#D9D9D9] bg-white px-3.5 text-[13.5px] shadow-none placeholder:text-[#9AA0A6] focus-visible:border-[#306BD9] focus-visible:ring-4 focus-visible:ring-[#306BD9]/12";
+const labelCls = "text-[12.5px] font-bold text-[#222222]";
 
 function ReadonlyRow({
   icon: Icon,
@@ -39,8 +69,10 @@ function ReadonlyRow({
         <Icon className="size-[18px]" />
       </span>
       <div className="min-w-0">
-        <p className="text-[12px] font-semibold text-[#777777]">{label}</p>
-        <p className="text-[14px] leading-5 font-bold break-words text-[#111111]">{value}</p>
+        <p className="text-[11.5px] font-semibold text-[#777777]">{label}</p>
+        <p className="text-[13.5px] leading-5 font-bold break-words text-[#111111]">
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -53,7 +85,26 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
   const [industry, setIndustry] = useState(company.industry ?? "");
   const [size, setSize] = useState(company.company_size ?? "");
   const [description, setDescription] = useState(company.description ?? "");
+  const [logoUrl, setLogoUrl] = useState(company.logo_url ?? "");
+  const [coverUrl, setCoverUrl] = useState(company.cover_url ?? "");
+  const [benefits, setBenefits] = useState<string[]>(company.benefits ?? []);
+  const [benefitDraft, setBenefitDraft] = useState("");
+  const [facebook, setFacebook] = useState(
+    company.social_links?.facebook ?? ""
+  );
+  const [linkedin, setLinkedin] = useState(
+    company.social_links?.linkedin ?? ""
+  );
   const [websiteError, setWebsiteError] = useState("");
+
+  function addBenefit(raw: string) {
+    const t = raw.trim();
+    if (!t) return;
+    if (!benefits.some((b) => b.toLowerCase() === t.toLowerCase())) {
+      setBenefits([...benefits, t]);
+    }
+    setBenefitDraft("");
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,76 +120,107 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
         industry: industry.trim(),
         company_size: size,
         description: description.trim(),
+        logo_url: logoUrl.trim() || undefined,
+        cover_url: coverUrl.trim() || undefined,
+        benefits,
+        social_links: {
+          facebook: facebook.trim() || undefined,
+          linkedin: linkedin.trim() || undefined,
+        },
       });
       await refreshAuth();
-      toast.success("Đã cập nhật hồ sơ công ty.");
+      toast.success("Đã cập nhật hồ sơ doanh nghiệp.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không lưu được hồ sơ công ty.");
+      toast.error(
+        err instanceof Error ? err.message : "Không lưu được hồ sơ công ty."
+      );
     }
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_1.3fr]">
-      <Panel className="h-fit p-5">
-        <div className="mb-4 flex items-center justify-between gap-2">
-          <h2 className="text-[15px] font-extrabold">Thông tin pháp lý</h2>
-          {company.verified && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#F0FDF4] px-2.5 py-1 text-[12px] font-bold text-[#15803D] ring-1 ring-[#BBF7D0]">
-              <BadgeCheck className="size-3.5" />
-              Đã xác thực MST
-            </span>
-          )}
-        </div>
-        <div className="space-y-4 rounded-xl bg-[#F5F9FF] p-4">
-          <ReadonlyRow icon={Building2} label="Tên doanh nghiệp" value={company.company_name} />
-          {company.tax_code && <ReadonlyRow icon={Hash} label="Mã số thuế" value={company.tax_code} />}
-          <ReadonlyRow icon={MapPin} label="Địa chỉ" value={company.address} />
-        </div>
-        <p className="mt-3 text-[12px] leading-[18px] text-[#777777]">
-          {company.verified
-            ? "Thông tin lấy từ dữ liệu Tổng cục Thuế khi đăng ký nên không chỉnh sửa tại đây."
-            : "Thông tin này chưa được xác thực bằng mã số thuế."}
-        </p>
-      </Panel>
-
-      <Panel className="p-5">
-        <h2 className="mb-4 text-[15px] font-extrabold">Giới thiệu công ty</h2>
-        <form onSubmit={onSubmit} noValidate className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="co-website" className={labelCls}>
-              Website
-            </Label>
-            <Input
-              id="co-website"
-              value={website}
-              onChange={(e) => {
-                setWebsite(e.target.value);
-                setWebsiteError("");
-              }}
-              placeholder="https://tencongty.vn"
-              aria-invalid={!!websiteError}
-              className={fieldCls}
-            />
-            {websiteError && (
-              <p role="alert" className="text-[12.5px] font-medium text-[#DC2626]">
-                {websiteError}
-              </p>
+    <div className="grid gap-5 lg:grid-cols-[1fr_1.45fr]">
+      <div className="space-y-4">
+        <Panel className="h-fit p-5">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <h2 className="text-[15px] font-extrabold">Thông tin pháp lý</h2>
+            {company.verified && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#F0FDF4] px-2.5 py-1 text-[12px] font-bold text-[#15803D] ring-1 ring-[#BBF7D0]">
+                <BadgeCheck className="size-3.5" />
+                Đã xác thực MST
+              </span>
             )}
           </div>
+          <div className="space-y-4 rounded-xl bg-[#F5F9FF] p-4">
+            <ReadonlyRow
+              icon={Building2}
+              label="Tên doanh nghiệp"
+              value={company.company_name}
+            />
+            {company.tax_code && (
+              <ReadonlyRow
+                icon={Hash}
+                label="Mã số thuế"
+                value={company.tax_code}
+              />
+            )}
+            <ReadonlyRow
+              icon={MapPin}
+              label="Địa chỉ đăng ký"
+              value={company.address}
+            />
+          </div>
+          <p className="mt-3 text-[12px] leading-[18px] text-[#777777]">
+            {company.verified
+              ? "Thông tin pháp lý được đối chiếu từ dữ liệu Tổng cục Thuế khi đăng ký nên không chỉnh sửa trực tiếp tại đây."
+              : "Thông tin này chưa được xác thực bằng mã số thuế."}
+          </p>
 
+          {company.slug && (
+            <div className="mt-4 border-t border-[#EBEBEB] pt-4">
+              <Link
+                href={`/cong-ty/${company.slug}`}
+                target="_blank"
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#306BD9] bg-[#F5F9FF] py-2.5 text-[13px] font-bold text-[#306BD9] transition-colors hover:bg-[#EBF2FF]"
+              >
+                <ExternalLink className="size-4" />
+                Xem trang công ty công khai
+              </Link>
+            </div>
+          )}
+        </Panel>
+      </div>
+
+      <Panel className="p-5">
+        <h2 className="mb-4 text-[15px] font-extrabold">
+          Hồ sơ thương hiệu tuyển dụng
+        </h2>
+        <form onSubmit={onSubmit} noValidate className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="co-industry" className={labelCls}>
-                Lĩnh vực hoạt động
+              <Label htmlFor="co-website" className={labelCls}>
+                Website chính thức
               </Label>
               <Input
-                id="co-industry"
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
-                placeholder="VD: Phần mềm, Tài chính"
+                id="co-website"
+                value={website}
+                onChange={(e) => {
+                  setWebsite(e.target.value);
+                  setWebsiteError("");
+                }}
+                placeholder="https://tencongty.vn"
+                aria-invalid={!!websiteError}
                 className={fieldCls}
               />
+              {websiteError && (
+                <p
+                  role="alert"
+                  className="text-[12px] font-medium text-[#DC2626]"
+                >
+                  {websiteError}
+                </p>
+              )}
             </div>
+
             <div className="space-y-1.5">
               <Label className={labelCls}>Quy mô nhân sự</Label>
               <Select value={size} onValueChange={setSize}>
@@ -157,24 +239,171 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="co-desc" className={labelCls}>
-              Mô tả công ty
+            <Label htmlFor="co-industry" className={labelCls}>
+              Lĩnh vực hoạt động
             </Label>
-            <Textarea
-              id="co-desc"
-              rows={6}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Giới thiệu ngắn về công ty, văn hóa và môi trường làm việc..."
-              className="rounded-[10px] border-[#D9D9D9] px-3.5 py-3 text-[14px] shadow-none focus-visible:border-[#306BD9] focus-visible:ring-4 focus-visible:ring-[#306BD9]/12"
+            <Input
+              id="co-industry"
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              placeholder="VD: Phát triển phần mềm, Trí tuệ nhân tạo & Chuyển đổi số"
+              className={fieldCls}
             />
           </div>
 
-          <div className="flex justify-end">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="co-logo" className={labelCls}>
+                <span className="inline-flex items-center gap-1">
+                  <ImageIcon className="size-3.5 text-[#306BD9]" />
+                  URL Logo công ty
+                </span>
+              </Label>
+              <Input
+                id="co-logo"
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                placeholder="https://.../logo.png"
+                className={fieldCls}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="co-cover" className={labelCls}>
+                <span className="inline-flex items-center gap-1">
+                  <ImageIcon className="size-3.5 text-[#306BD9]" />
+                  URL Ảnh bìa (Cover)
+                </span>
+              </Label>
+              <Input
+                id="co-cover"
+                value={coverUrl}
+                onChange={(e) => setCoverUrl(e.target.value)}
+                placeholder="https://.../cover.jpg"
+                className={fieldCls}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="co-desc" className={labelCls}>
+              Giới thiệu công ty &amp; Văn hóa làm việc
+            </Label>
+            <Textarea
+              id="co-desc"
+              rows={5}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Giới thiệu về sứ mệnh, sản phẩm chủ lực, văn hóa kỹ thuật và cơ hội phát triển tại doanh nghiệp..."
+              className="rounded-[10px] border-[#D9D9D9] px-3.5 py-2.5 text-[13.5px] shadow-none focus-visible:border-[#306BD9] focus-visible:ring-4 focus-visible:ring-[#306BD9]/12"
+            />
+          </div>
+
+          {/* Phúc lợi nổi bật */}
+          <div className="space-y-2 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3.5">
+            <Label className={labelCls}>
+              <span className="inline-flex items-center gap-1.5">
+                <Gift className="size-4 text-[#306BD9]" />
+                Phúc lợi &amp; Đãi ngộ nổi bật ({benefits.length})
+              </span>
+            </Label>
+            {benefits.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {benefits.map((b) => (
+                  <span
+                    key={b}
+                    className="inline-flex items-center gap-1 rounded-full bg-[#EBF2FF] py-1 pr-1.5 pl-2.5 text-[12px] font-semibold text-[#1D4ED8]"
+                  >
+                    {b}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setBenefits(benefits.filter((x) => x !== b))
+                      }
+                      className="grid size-4 place-items-center rounded-full hover:bg-[#306BD9]/15"
+                    >
+                      <X className="size-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Input
+                value={benefitDraft}
+                onChange={(e) => setBenefitDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addBenefit(benefitDraft);
+                  }
+                }}
+                placeholder="Nhập phúc lợi rồi nhấn Enter..."
+                className={fieldCls}
+              />
+              <button
+                type="button"
+                onClick={() => addBenefit(benefitDraft)}
+                className="shrink-0 rounded-[10px] border border-[#306BD9] bg-white px-3.5 text-[12.5px] font-bold text-[#306BD9] hover:bg-[#EBF2FF]"
+              >
+                Thêm
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {BENEFIT_SUGGESTIONS.filter(
+                (s) =>
+                  !benefits.some((b) => b.toLowerCase() === s.toLowerCase())
+              ).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => addBenefit(s)}
+                  className="inline-flex items-center gap-0.5 rounded-full border border-[#E2E8F0] bg-white px-2 py-0.5 text-[11px] font-medium text-[#475569] hover:border-[#306BD9] hover:text-[#306BD9]"
+                >
+                  <Plus className="size-2.5" />
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className={labelCls}>
+                <span className="inline-flex items-center gap-1">
+                  <Globe className="size-3.5 text-[#306BD9]" />
+                  Trang LinkedIn
+                </span>
+              </Label>
+              <Input
+                value={linkedin}
+                onChange={(e) => setLinkedin(e.target.value)}
+                placeholder="https://linkedin.com/company/..."
+                className={fieldCls}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className={labelCls}>
+                <span className="inline-flex items-center gap-1">
+                  <Globe className="size-3.5 text-[#306BD9]" />
+                  Trang Facebook Tuyển dụng
+                </span>
+              </Label>
+              <Input
+                value={facebook}
+                onChange={(e) => setFacebook(e.target.value)}
+                placeholder="https://facebook.com/..."
+                className={fieldCls}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
             <button
               type="submit"
               disabled={save.isPending}
-              className="flex h-11 items-center gap-2 rounded-full bg-[#306BD9] px-7 text-[14px] font-bold text-white transition-colors hover:bg-[#2458BD] disabled:opacity-70"
+              className="flex h-10 items-center gap-2 rounded-full bg-[#306BD9] px-7 text-[13.5px] font-bold text-white transition-colors hover:bg-[#2458BD] disabled:opacity-70"
             >
               {save.isPending && <Loader2 className="size-4 animate-spin" />}
               Lưu thay đổi
@@ -190,7 +419,10 @@ export default function HrCompanyPage() {
   const { company } = useAuth();
   return (
     <>
-      <PageHeader title="Công ty" subtitle="Hồ sơ doanh nghiệp hiển thị cho ứng viên trên tin tuyển dụng." />
+      <PageHeader
+        title="Hồ sơ công ty"
+        subtitle="Thông tin thương hiệu doanh nghiệp hiển thị cho ứng viên trên các tin tuyển dụng và trang công ty."
+      />
       {company ? (
         <CompanyForm key={company.id} company={company} />
       ) : (

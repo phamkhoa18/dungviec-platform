@@ -7,14 +7,15 @@
 import { spawnSync } from "child_process";
 import path from "path";
 import fs from "fs";
+import type { ParsedCvData } from "./types";
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://127.0.0.1:8000";
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://127.0.0.1:8008";
 
 function getPythonBinary(): string {
   const candidates = [
+    "/usr/bin/python3",
     "/opt/homebrew/bin/python3.11",
     "/opt/homebrew/bin/python3",
-    "/usr/bin/python3",
     "python3",
   ];
   for (const bin of candidates) {
@@ -62,10 +63,29 @@ export interface ParsedCvResult {
   file_size_bytes: number;
   raw_text: string;
   ocr_required: boolean;
+  ocr_applied?: boolean;
+  two_column_detected?: boolean;
+  extraction_method?: string;
+  page_count?: number;
+  processing_time_ms?: number;
+  extracted_full_name?: string | null;
+  extracted_email?: string | null;
+  extracted_phone?: string | null;
+  extracted_job_title?: string | null;
+  extracted_location?: string | null;
   extracted_skills: string[];
   years_of_experience: number;
   total_experience_months: number;
   education_level: string;
+  certifications?: string[];
+  candidate_info?: {
+    full_name: string | null;
+    email: string | null;
+    phone: string | null;
+    job_title: string | null;
+    location: string | null;
+  };
+  parsed_data?: ParsedCvData;
 }
 
 export interface AiFitEvaluationResult {
@@ -108,7 +128,7 @@ export async function callPythonParseCv(params: {
 
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4500);
+    const timer = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(`${AI_SERVICE_URL}/api/v1/parse-cv`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

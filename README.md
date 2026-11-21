@@ -11,7 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org)
-[![PyTorch](https://img.shields.io/badge/PyTorch-DistilBERT-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org)
+[![PyTorch](https://img.shields.io/badge/PyTorch-BGE--M3-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org)
 [![Tiểu luận](https://img.shields.io/badge/Tiểu_luận-tốt_nghiệp-1E5CE6)](#-thông-tin-đề-tài)
 
 *Nhà tuyển dụng đăng tin → ứng viên nộp CV → AI chấm điểm CV–JD → HR xem danh sách đã xếp hạng và ra quyết định.*
@@ -79,9 +79,9 @@ Phạm vi được giữ gọn theo đúng báo cáo số 2 — chỉ làm nhữ
 | **Công ty** | Thông tin pháp lý chỉ đọc (đã xác thực MST), phần giới thiệu công ty chỉnh sửa được |
 
 ### 🤖 AI
-- Bóc tách văn bản và thực thể (kỹ năng, số năm kinh nghiệm, học vấn) từ CV thật.
-- Chấm điểm CV – JD bằng DistilBERT Cross-Encoder, 3 mức: **Good Fit**, **Potential Fit**, **No Fit**.
-- Ghi lại xác suất từng lớp, kỹ năng khớp / thiếu; cảnh báo khi CV là ảnh quét (cần OCR).
+- Bóc tách văn bản (hỗ trợ PDF 2 cột, OCR Tesseract tiếng Việt + Anh, DOCX) và thực thể (kỹ năng, số năm kinh nghiệm, học vấn) từ CV thật.
+- Chấm điểm CV – JD song ngữ Việt – Anh bằng mô hình lai **`BAAI/bge-m3` (`BGEM3HybridFitClassifier`)**, 3 mức: **Good Fit**, **Potential Fit**, **No Fit**.
+- Ghi lại xác suất từng lớp, kỹ năng khớp / thiếu.
 
 ---
 
@@ -100,9 +100,9 @@ flowchart LR
     end
 
     subgraph AI["ai-service/ — Python"]
-        PARSE["cv_parser<br/>PDF / DOCX"]
+        PARSE["cv_parser<br/>PDF / DOCX / OCR"]
         NER["entity_extractor"]
-        SCORE["fit_scorer<br/>DistilBERT"]
+        SCORE["fit_scorer<br/>BAAI/bge-m3"]
     end
 
     EXT1["VietQR<br/>tra cứu MST"]
@@ -110,14 +110,14 @@ flowchart LR
 
     UI --> API
     API --> STORE
-    API -->|"HTTP :8000 hoặc CLI"| PARSE
+    API -->|"HTTP :8008 hoặc CLI"| PARSE
     PARSE --> NER --> SCORE
     API --> SVC
     SVC --> EXT1
     SVC --> EXT2
 ```
 
-- `web/` và `ai-service/` tách riêng. Web gọi AI qua HTTP `:8000`; nếu cổng chưa bật sẽ tự gọi `ai-service/cli.py` (JSON qua stdin/stdout), nên khi chạy thử không bắt buộc bật dịch vụ AI riêng.
+- `web/` và `ai-service/` tách riêng. Web gọi AI qua HTTP `:8008`; nếu cổng chưa bật sẽ tự gọi `ai-service/cli.py` (JSON qua stdin/stdout), nên khi chạy thử không bắt buộc bật dịch vụ AI riêng.
 - Dữ liệu lưu dạng **document store** trong một file JSON (`database/mongodb_collections.json`), mô phỏng 6 collection của MongoDB theo báo cáo. File được sinh tự động từ dữ liệu mẫu ở lần chạy đầu.
 
 ### Luồng ứng tuyển và chấm điểm
@@ -146,11 +146,10 @@ sequenceDiagram
 
 ## 🧠 Mô-đun AI
 
-**Mô hình:** `distilbert-base-uncased` fine-tune làm Cross-Encoder phân loại 3 lớp trên bộ dữ liệu
-[`cnamuangtoun/resume-job-description-fit`](https://huggingface.co/datasets/cnamuangtoun/resume-job-description-fit)
-(5.298 train · 936 val · 1.759 test).
+**Mô hình:** **`BAAI/bge-m3`** kết hợp tầng phân loại lai **`BGEM3HybridFitClassifier`** (`bge_m3_hybrid_head.pt`) huấn luyện trên bộ dữ liệu
+[`cnamuangtoun/resume-job-description-fit`](https://huggingface.co/datasets/cnamuangtoun/resume-job-description-fit) (đã tách không rò rỉ thực thể CV/JD) + tập dữ liệu Song ngữ Việt – Anh (`VI-VI`, `EN-EN`, `EN-VI`, `VI-EN`).
 
-**Smart Dual Truncation:** `[CLS] CV (≤384 token) [SEP] JD (≤125 token) [SEP]` ≤ 512 token.
+**Ngữ cảnh dài:** CV tối đa `1.024` token + JD tối đa `1.024` token = `2.048` token (hỗ trợ mở rộng tới `8.192` token).
 
 **Điểm phù hợp liên tục:**
 
@@ -168,31 +167,22 @@ Ngưỡng nằm ở [`web/src/lib/ai-thresholds.ts`](web/src/lib/ai-thresholds.t
 
 ### Kết quả thực nghiệm
 
-| Chỉ số | Validation (epoch 5) | Test (1.759 mẫu) — DistilBERT | Test — TF-IDF + LR (baseline) |
+| Chỉ số | Validation (epoch 14) | Test độc lập — `BAAI/bge-m3 Hybrid` | Test — TF-IDF + LR (baseline) |
 |---|---|---|---|
-| Accuracy | 0,660 | 0,449 | 0,456 |
-| Macro-F1 | 0,661 | 0,378 | 0,427 |
+| Accuracy | 79,11% | 72,71% | 65,05% |
+| Macro-F1 | 0,7804 | 0,7220 | 0,6419 |
 
-Chỉ số xếp hạng: **NDCG@5 = 0,584**, **NDCG@10 = 0,726**.
-
-> [!IMPORTANT]
-> Kết quả trên tập test **chưa vượt baseline TF-IDF**. Bộ dữ liệu công khai là CV – JD tiếng Anh, nhãn nhiễu và 3 lớp khó phân biệt. Vì vậy điểm AI chỉ là **tham khảo để HR ưu tiên xem hồ sơ**, mọi quyết định cuối cùng do con người đưa ra (QT-04). Chi tiết phương pháp ở báo cáo số 3.
-
-Ma trận nhầm lẫn:
-
-<div align="center">
-<img src="kqtrain/confusion_matrix.png" alt="Ma trận nhầm lẫn DistilBERT" width="460" />
-</div>
+Chỉ số xếp hạng: **NDCG@5 = 0,9192**, **NDCG@10 = 0,9302**, **Recall@5 = 0,8905**.
 
 > [!NOTE]
-> File trọng số `model.safetensors` (~268 MB) **không nằm trong repo** do vượt giới hạn của GitHub. Khi thiếu file này, `ai-service` tự chạy chế độ suy luận trên văn bản CV/JD để demo vẫn hoạt động. Xem [`ai-service/models/README.md`](ai-service/models/README.md).
+> Trọng số tầng phân loại `bge_m3_hybrid_head.pt` nằm tại [`ai-service/models/best_cvjd_model/`](ai-service/models/best_cvjd_model). Xem [`ai-service/models/README.md`](ai-service/models/README.md).
 
 ### Endpoint của AI Service
 
 | Method | Đường dẫn | Mô tả |
 |---|---|---|
 | GET | `/api/v1/health` | Trạng thái dịch vụ, mô hình đã nạp hay chưa |
-| GET | `/api/v1/model-info` | Thông số thực nghiệm DistilBERT |
+| GET | `/api/v1/model-info` | Thông số thực nghiệm `BAAI/bge-m3` |
 | POST | `/api/v1/parse-cv` | Đọc CV `.pdf` / `.docx`, trích kỹ năng, kinh nghiệm, học vấn |
 | POST | `/api/v1/evaluate-fit` | Chấm điểm CV – JD, trả xác suất 3 lớp và điểm S |
 
@@ -217,7 +207,7 @@ Ma trận nhầm lẫn:
 | Giao diện | Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind CSS 4, shadcn/ui (Radix), lucide-react, sonner |
 | Dữ liệu client | TanStack Query 5, react-hook-form + zod, react-dropzone |
 | Backend | Next.js Route Handlers, phiên đăng nhập bằng cookie ký (HMAC), băm mật khẩu `scrypt` |
-| AI | Python 3.11, PyTorch, 🤗 Transformers (DistilBERT), pdfplumber, pypdf, python-docx, scikit-learn |
+| AI | Python 3.11, PyTorch, 🤗 Transformers (`BAAI/bge-m3`), PyMuPDF, Tesseract OCR, pdfplumber, pypdf, python-docx, scikit-learn |
 | Dịch vụ ngoài | VietQR Business API, provinces.open-api.vn (có dữ liệu dự phòng offline) |
 
 **Nhận diện thương hiệu:** logo *tờ CV + kính lúp có dấu tick + tia sáng AI*, bảng màu xanh `#306BD9` / navy `#0F1F4D`. Bộ biểu tượng, favicon, ảnh chia sẻ OG sinh bằng [`web/scripts/generate-brand-assets.mjs`](web/scripts/generate-brand-assets.mjs).
@@ -244,14 +234,14 @@ Ma trận nhầm lẫn:
 │   │   └── ai-thresholds.ts     # Ngưỡng 70 / 50 dùng chung
 │   └── scripts/                 # Tạo logo / favicon / OG image
 ├── ai-service/                  # Python AI microservice
-│   ├── main.py  cli.py          # HTTP server (:8000) và cầu nối CLI
-│   ├── services/                # cv_parser · entity_extractor · fit_scorer
-│   └── models/                  # Checkpoint DistilBERT (trọng số không đưa lên git)
+│   ├── main.py  cli.py          # HTTP server (:8008) và cầu nối CLI
+│   ├── services/                # cv_parser · layout_engine · cv_structurer · entity_extractor · fit_scorer
+│   └── models/                  # Checkpoint BAAI/bge-m3 Hybrid (best_cvjd_model/bge_m3_hybrid_head.pt)
 ├── database/                    # Schema MongoDB / PostgreSQL (dữ liệu chạy thật tự sinh)
 ├── docs/                        # Báo cáo, sơ đồ draw.io + PNG
 ├── filebaocao/ tailieuchuan/    # Các báo cáo tuần 1–3 của tiểu luận
-├── kqtrain/                     # Kết quả huấn luyện (confusion matrix, notebook)
-└── TRAIN_CV_JD_FIT_MODEL.ipynb  # Notebook huấn luyện mô hình
+├── ketqua/                      # Kết quả huấn luyện BGE-M3
+└── TRAIN_BGE_M3_BILINGUAL_COLAB.ipynb # Notebook huấn luyện mô hình BGE-M3 Song ngữ
 ```
 
 ---
@@ -282,12 +272,10 @@ Mở <http://localhost:3000>. Lần chạy đầu tiên, hệ thống tự tạo
 
 ```bash
 cd ai-service
-python3.11 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python main.py                  # http://127.0.0.1:8000
+python3 main.py                  # http://127.0.0.1:8008
 ```
 
-Kiểm tra: `curl http://127.0.0.1:8000/api/v1/health`.
+Kiểm tra: `curl http://127.0.0.1:8008/api/v1/health`.
 Nếu chưa bật, web sẽ tự gọi `ai-service/cli.py` bằng `python3` có sẵn trên máy (cần đã cài `requirements.txt`).
 
 ### 4. Biến môi trường
@@ -295,8 +283,8 @@ Nếu chưa bật, web sẽ tự gọi `ai-service/cli.py` bằng `python3` có 
 | Biến | Mặc định | Ý nghĩa |
 |---|---|---|
 | `JWT_SECRET` | khoá dev tích hợp sẵn | Khoá ký phiên đăng nhập — **đặt giá trị riêng khi triển khai thật** |
-| `AI_SERVICE_URL` | `http://127.0.0.1:8000` | Địa chỉ AI service |
-| `AI_SERVICE_HOST` / `AI_SERVICE_PORT` | `127.0.0.1` / `8000` | Địa chỉ lắng nghe của AI service |
+| `AI_SERVICE_URL` | `http://127.0.0.1:8008` | Địa chỉ AI service |
+| `AI_SERVICE_HOST` / `AI_SERVICE_PORT` | `127.0.0.1` / `8008` | Địa chỉ lắng nghe của AI service |
 
 ### 5. Kiểm tra mã nguồn
 

@@ -3,9 +3,15 @@ import { getSessionUser } from "@/lib/db/server-auth";
 import {
   generateObjectId,
   readDb,
+  slugifyVietnamese,
   writeDb,
   type CompanyRecord,
 } from "@/lib/db/store";
+import { publicCompany } from "@/lib/hr/hr-server";
+
+const URL_RE = /^(https?:\/\/)?[\w.-]+\.[a-z]{2,}(\/\S*)?$/i;
+const strList = (v: unknown, max = 12) =>
+  Array.isArray(v) ? v.map((x) => String(x).trim().slice(0, 120)).filter(Boolean).slice(0, max) : undefined;
 
 export async function GET() {
   const db = readDb();
@@ -16,7 +22,7 @@ export async function GET() {
       : null;
 
   return NextResponse.json({
-    companies: db.companies,
+    companies: db.companies.map((c) => publicCompany(c)),
     myCompany,
   });
 }
@@ -42,6 +48,19 @@ export async function PUT(req: Request) {
     const description = String(body.description || "").trim() || null;
     const industry = String(body.industry || "").trim() || null;
     const companySize = String(body.company_size || "").trim() || null;
+
+    if (website && !URL_RE.test(website)) {
+      return NextResponse.json({ error: "Địa chỉ website không hợp lệ." }, { status: 400 });
+    }
+    const coverUrl = typeof body.cover_url === "string" ? body.cover_url.trim() || null : undefined;
+    const benefits = strList(body.benefits);
+    const social =
+      body.social_links && typeof body.social_links === "object"
+        ? {
+            facebook: String(body.social_links.facebook || "").trim() || null,
+            linkedin: String(body.social_links.linkedin || "").trim() || null,
+          }
+        : undefined;
 
     if (companyName.length < 2) {
       return NextResponse.json(
@@ -75,6 +94,13 @@ export async function PUT(req: Request) {
         website,
         address,
         description,
+        industry,
+        company_size: companySize,
+        verified: false,
+        slug: `${slugifyVietnamese(companyName)}-${nextId}`,
+        cover_url: coverUrl ?? null,
+        benefits: benefits ?? [],
+        social_links: social ?? {},
         created_at: now,
         updated_at: now,
       } satisfies CompanyRecord;
@@ -92,6 +118,10 @@ export async function PUT(req: Request) {
       company.company_size = companySize;
       if (logoUrl !== null) company.logo_url = logoUrl;
       company.description = description;
+      if (coverUrl !== undefined) company.cover_url = coverUrl;
+      if (benefits !== undefined) company.benefits = benefits;
+      if (social !== undefined) company.social_links = social;
+      if (!company.slug) company.slug = `${slugifyVietnamese(company.company_name)}-${company.id}`;
       company.updated_at = now;
     }
 

@@ -5,7 +5,24 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { JobCardCompact } from "@/components/job/job-card-compact";
 import { OccupationIcon } from "@/components/shared/occupation-icons";
 import { HeroSearchBar } from "@/components/home/home-client";
-import { popularOccupations, jobs } from "@/lib/data";
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { popularOccupations } from "@/lib/data";
+import { listPublicJobs } from "@/lib/jobs/public-jobs";
+
+/** 6 tin mới nhất đọc trực tiếp từ cơ sở dữ liệu (gồm tin HR vừa đăng). */
+async function NewestJobs() {
+  await connection();
+  return (
+    <>
+      {listPublicJobs()
+        .slice(0, 6)
+        .map((job) => (
+          <JobCardCompact key={job.slug} job={job} />
+        ))}
+    </>
+  );
+}
 
 export const metadata = {
   title: "Đúng Việc — Tuyển dụng ứng dụng AI phân tích CV",
@@ -22,7 +39,7 @@ const aiSteps = [
   {
     icon: Cpu,
     title: "2. AI phân tích & chấm điểm",
-    desc: "BERT NER bóc tách kỹ năng; DistilBERT Cross-Encoder tính điểm phù hợp CV – JD (0–100).",
+    desc: "Bóc tách thực thể kỹ năng; mô hình BAAI/bge-m3 Song ngữ tính điểm phù hợp CV – JD (0–100).",
   },
   {
     icon: ListChecks,
@@ -32,8 +49,6 @@ const aiSteps = [
 ];
 
 export default function HomePage() {
-  const newestJobs = jobs.slice(0, 6);
-
   return (
     <div className="min-h-screen bg-[#F4F6FA] text-[#222222]">
       {/* 1. Hero + tìm kiếm */}
@@ -104,9 +119,13 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {newestJobs.map((job) => (
-              <JobCardCompact key={job.slug} job={job} />
-            ))}
+            <Suspense
+              fallback={Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-24 animate-pulse rounded-xl bg-[#F1F5F9]" />
+              ))}
+            >
+              <NewestJobs />
+            </Suspense>
           </div>
         </section>
 

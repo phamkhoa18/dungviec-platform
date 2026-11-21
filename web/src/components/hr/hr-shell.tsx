@@ -6,7 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   BadgeCheck,
   Building2,
+  CalendarClock,
   ChevronDown,
+  ExternalLink,
   Home,
   LayoutDashboard,
   LogOut,
@@ -15,6 +17,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { Logo } from "@/components/shared/brand";
+import { NotificationBell } from "@/components/shared/notification-bell";
 import { JobFormDialog } from "@/components/hr/job-form-dialog";
 import {
   DropdownMenu,
@@ -32,6 +35,7 @@ const NAV = [
   { href: "/nha-tuyen-dung/tong-quan", label: "Tổng quan", icon: LayoutDashboard },
   { href: "/nha-tuyen-dung/tin-tuyen-dung", label: "Tin tuyển dụng", icon: Briefcase },
   { href: "/nha-tuyen-dung/ung-vien", label: "Ứng viên", icon: Users },
+  { href: "/nha-tuyen-dung/lich-phong-van", label: "Lịch phỏng vấn", icon: CalendarClock },
   { href: "/nha-tuyen-dung/cong-ty", label: "Công ty", icon: Building2 },
 ] as const;
 
@@ -97,6 +101,8 @@ export function HrShell({ children }: { children: React.ReactNode }) {
                 <span className="hidden sm:inline">Đăng tin</span>
               </button>
 
+              <NotificationBell />
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
@@ -122,6 +128,17 @@ export function HrShell({ children }: { children: React.ReactNode }) {
                     <p className="truncate text-[11.5px] font-normal text-[#666666]">{user?.email}</p>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {company?.slug && (
+                    <DropdownMenuItem asChild className="rounded-lg py-2.5">
+                      <Link
+                        href={`/cong-ty/${company.slug}`}
+                        className="flex cursor-pointer items-center gap-2.5 text-[13px]"
+                      >
+                        <ExternalLink className="size-4 text-[#306BD9]" />
+                        Trang công ty công khai
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild className="rounded-lg py-2.5">
                     <Link href="/" className="flex cursor-pointer items-center gap-2.5 text-[13px]">
                       <Home className="size-4 text-[#306BD9]" />

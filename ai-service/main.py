@@ -1,9 +1,9 @@
 """
 Python AI Microservice tách riêng (Port 8000) — Phục vụ Tiểu luận Tốt nghiệp:
-- Endpoint 1: GET  /api/v1/health       -> Kiểm tra trạng thái AI Engine & thư mục best_cvjd_model
-- Endpoint 2: GET  /api/v1/model-info   -> Thông số thực nghiệm DistilBERT từ Báo cáo số 3
-- Endpoint 3: POST /api/v1/parse-cv     -> Đọc file CV thật (.pdf / .docx) & bóc tách thực thể NER
-- Endpoint 4: POST /api/v1/evaluate-fit -> Chấm điểm CV - JD (Smart Dual Truncation 384/125 tokens)
+- Endpoint 1: GET  /api/v1/health       -> Kiểm tra trạng thái AI Engine & thư mục best_cvjd_model (bge_m3_hybrid_head.pt)
+- Endpoint 2: GET  /api/v1/model-info   -> Thông số thực nghiệm BAAI/bge-m3 Song ngữ từ Báo cáo Tuần 3
+- Endpoint 3: POST /api/v1/parse-cv     -> Đọc file CV thật (.pdf / .docx) & bóc tách thực thể kỹ năng/kinh nghiệm
+- Endpoint 4: POST /api/v1/evaluate-fit -> Chấm điểm CV - JD Song ngữ Việt - Anh bằng BAAI/bge-m3 Hybrid (2048 tokens)
 """
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ import base64
 import json
 import os
 import sys
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Dict, Any
@@ -27,7 +28,7 @@ from services.fit_scorer import scorer_instance  # noqa: E402
 def handle_health() -> Dict[str, Any]:
     return {
         "status": "ok",
-        "service": "Đúng Việc — Python AI Engine (CV Parser & DistilBERT Cross-Encoder)",
+        "service": "Đúng Việc — Python AI Engine (CV Parser & BAAI/bge-m3 Bilingual Hybrid Matcher)",
         "model": scorer_instance.get_status_info(),
     }
 
@@ -43,7 +44,8 @@ def handle_model_info() -> Dict[str, Any]:
 def handle_parse_cv_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     Nhận file_name + file_base64 (hoặc raw_text) của tệp CV .pdf/.docx thật,
-    kiểm tra QT-01, bóc tách văn bản thuần và trích xuất kỹ năng/kinh nghiệm/học vấn.
+    kiểm tra QT-01, bóc tách văn bản thuần (PyMuPDF 2-Col + OpenCV/Tesseract OCR)
+    và trích xuất Họ tên, Email, SĐT, Vị trí, Kỹ năng, Kinh nghiệm, Học vấn, Chứng chỉ.
     """
     file_name = str(payload.get("file_name") or "cv.pdf")
     file_b64 = payload.get("file_base64")
@@ -53,18 +55,39 @@ def handle_parse_cv_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         file_bytes = base64.b64decode(file_b64)
         parsed = parse_cv_file(file_name, file_bytes)
         raw_text = parsed["raw_text"]
+        lines = parsed["lines"]
         ocr_required = parsed["ocr_required"]
+        ocr_applied = parsed.get("ocr_applied", False)
+        two_column_detected = parsed.get("two_column_detected", False)
+        extraction_method = parsed.get("extraction_method", "pymupdf_digital")
+        page_count = parsed.get("page_count", 1)
+        processing_time_ms = parsed.get("processing_time_ms", 0.0)
         file_type = parsed["file_type"]
         file_size_bytes = parsed["file_size_bytes"]
     elif raw_text_input is not None:
         raw_text = str(raw_text_input).strip()
+        lines = None
         ocr_required = len(raw_text) < 30
+        ocr_applied = False
+        two_column_detected = False
+        extraction_method = "raw_text_input"
+        page_count = 1
+        processing_time_ms = 0.0
         file_type = Path(file_name).suffix.lower().lstrip(".") or "pdf"
         file_size_bytes = len(raw_text.encode("utf-8"))
     else:
         raise ValueError("Thiếu dữ liệu tệp CV (file_base64 hoặc raw_text).")
 
-    entities = extract_cv_entities(raw_text)
+    t_struct = time.perf_counter()
+    entities = extract_cv_entities(raw_text, lines=lines, file_name=file_name)
+    processing_time_ms = round(processing_time_ms + (time.perf_counter() - t_struct) * 1000, 1)
+    entities["parsed_data"]["layout"] = {
+        "extraction_method": extraction_method,
+        "two_column_detected": two_column_detected,
+        "ocr_applied": ocr_applied,
+        "page_count": page_count,
+        "processing_time_ms": processing_time_ms,
+    }
     return {
         "status": "ok",
         "file_name": file_name,
@@ -72,6 +95,11 @@ def handle_parse_cv_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         "file_size_bytes": file_size_bytes,
         "raw_text": raw_text,
         "ocr_required": ocr_required,
+        "ocr_applied": ocr_applied,
+        "two_column_detected": two_column_detected,
+        "extraction_method": extraction_method,
+        "page_count": page_count,
+        "processing_time_ms": processing_time_ms,
         **entities,
     }
 
@@ -104,8 +132,8 @@ try:
     from typing import List, Optional
 
     app = FastAPI(
-        title="Đúng Việc — Python AI Service (DistilBERT CV-JD Matcher)",
-        version="1.0.0",
+        title="Đúng Việc — Python AI Service (BAAI/bge-m3 Bilingual CV-JD Matcher)",
+        version="2.0.0",
     )
     app.add_middleware(
         CORSMiddleware,
@@ -139,17 +167,6 @@ try:
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc))
 
-    @app.post("/api/v1/parse-cv-file")
-    async def api_parse_cv_upload(file: UploadFile = File(...)):
-        try:
-            content = await file.read()
-            b64 = base64.b64encode(content).decode("ascii")
-            return handle_parse_cv_payload(
-                {"file_name": file.filename or "cv.pdf", "file_base64": b64}
-            )
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-
     @app.post("/api/v1/evaluate-fit")
     def api_evaluate_fit(body: EvaluateFitRequest):
         try:
@@ -158,7 +175,7 @@ try:
             raise HTTPException(status_code=400, detail=str(exc))
 
     HAS_FASTAPI = True
-except ImportError:
+except Exception:
     HAS_FASTAPI = False
 
 
@@ -212,20 +229,20 @@ class AIServiceHTTPHandler(BaseHTTPRequestHandler):
 
 
 def run_server() -> None:
-    port = int(os.environ.get("AI_SERVICE_PORT", "8000"))
+    port = int(os.environ.get("AI_SERVICE_PORT", "8008"))
     host = os.environ.get("AI_SERVICE_HOST", "127.0.0.1")
 
     if HAS_FASTAPI:
         try:
             import uvicorn  # type: ignore
-            print(f"🚀 Khởi chạy FastAPI AI Service tại http://{host}:{port}")
+            print(f"🚀 Khởi chạy FastAPI AI Service (BAAI/bge-m3) tại http://{host}:{port}")
             uvicorn.run(app, host=host, port=port)
             return
         except ImportError:
             pass
 
     server = ThreadingHTTPServer((host, port), AIServiceHTTPHandler)
-    print(f"🚀 Khởi chạy Python AI Service tại http://{host}:{port}")
+    print(f"🚀 Khởi chạy Python AI Service (BAAI/bge-m3) tại http://{host}:{port}")
     print(f"📂 Thư mục model checkpoint: {scorer_instance.get_status_info()['checkpoint_directory']}")
     server.serve_forever()
 

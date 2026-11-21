@@ -34,9 +34,6 @@ const MAX = 5 * 1024 * 1024;
 export function ApplyDialog({
   jobSlug,
   jobTitle,
-  companyName,
-  jdText,
-  requiredSkills,
   className,
 }: {
   jobSlug?: string;
@@ -102,12 +99,6 @@ export function ApplyDialog({
     try {
       const formData = new FormData();
       formData.append("job_slug", jobSlug || jobTitle);
-      formData.append("job_title", jobTitle);
-      if (companyName) formData.append("company_name", companyName);
-      if (jdText) formData.append("jd_text", jdText);
-      if (requiredSkills && requiredSkills.length > 0) {
-        formData.append("required_skills", requiredSkills.join(","));
-      }
       formData.append("cover_letter", coverLetter);
 
       if (useExistingCv) {

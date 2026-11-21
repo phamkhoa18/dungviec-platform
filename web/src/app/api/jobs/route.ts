@@ -1,212 +1,122 @@
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/db/server-auth";
 import {
+  computeJdHash,
   enforceJobDeadlines,
   generateObjectId,
   readDb,
   slugifyVietnamese,
   writeDb,
   type JobRecord,
-  type JobStatus,
 } from "@/lib/db/store";
+import { jobStats, ownsJob, publicCompany, requireHr } from "@/lib/hr/hr-server";
+import { parseJobInput } from "@/lib/hr/job-input";
+import { categorySlugOf, isPubliclyOpen } from "@/lib/jobs/public-jobs";
 
+/**
+ * GET /api/jobs
+ * - scope=hr (hoặc mine=1): tin của công ty HR đang đăng nhập + thống kê
+ * - mặc định (public): chỉ tin đang tuyển; lọc q, category, city, type; phân trang page/limit
+ */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const scope = searchParams.get("scope"); // 'hr' | 'public' | 'all'
+  const scope = searchParams.get("scope") || (searchParams.get("mine") ? "hr" : "public");
   const statusFilter = searchParams.get("status");
+
+  if (scope === "hr") {
+    const auth = await requireHr();
+    if (!auth.ok) return auth.response;
+    const { db, session, company } = auth;
+    enforceJobDeadlines(db);
+    let jobs = db.jobs.filter((j) => ownsJob(j, session.user.id, company));
+    if (statusFilter && statusFilter !== "all") jobs = jobs.filter((j) => j.status === statusFilter);
+    return NextResponse.json({
+      jobs: jobs
+        .sort((a, b) => b.id - a.id)
+        .map((job) => ({ ...job, company: publicCompany(company), ...jobStats(db, job) })),
+    });
+  }
 
   const db = readDb();
   enforceJobDeadlines(db);
+  const q = (searchParams.get("q") || "").toLowerCase().trim();
+  const category = searchParams.get("category");
+  const city = (searchParams.get("city") || "").toLowerCase();
+  const type = searchParams.get("type");
+  const page = Math.max(1, Number(searchParams.get("page") || 1));
+  const limit = Math.min(100, Math.max(1, Number(searchParams.get("limit") || 20)));
 
-  let jobs = [...db.jobs];
-
-  if (scope === "hr") {
-    const sessionCtx = await getSessionUser();
-    if (!sessionCtx || sessionCtx.user.role !== "hr") {
-      return NextResponse.json(
-        { error: "QT-05: Chỉ Nhà tuyển dụng mới được xem danh sách quản lý tin." },
-        { status: 403 }
-      );
-    }
-    const myCompany = db.companies.find(
-      (c) => c.hr_user_id === sessionCtx.user.id
-    );
-    jobs = jobs.filter(
-      (j) =>
-        j.hr_user_id === sessionCtx.user.id ||
-        (myCompany && j.company_id === myCompany.id)
-    );
-  } else if (scope === "public") {
-    jobs = jobs.filter((j) => j.status === "active");
-  }
-
-  if (statusFilter && statusFilter !== "all") {
-    jobs = jobs.filter((j) => j.status === statusFilter);
-  }
-
-  // Gắn kèm thông tin Công ty và thống kê số lượng đơn ứng tuyển + điểm AI
-  const enrichedJobs = jobs
-    .sort((a, b) => b.id - a.id)
-    .map((job) => {
-      const company = db.companies.find((c) => c.id === job.company_id) || null;
-      const jobApps = db.applications.filter((a) => a.job_id === job.id);
-      const appIds = new Set(jobApps.map((a) => a.id));
-      const evals = db.ai_evaluations.filter((ev) =>
-        appIds.has(ev.application_id)
-      );
-      const goodFitCount = evals.filter(
-        (ev) => ev.predicted_label === "Good Fit"
-      ).length;
-      const avgScore =
-        evals.length > 0
-          ? Number(
-              (
-                evals.reduce((sum, ev) => sum + ev.match_score, 0) / evals.length
-              ).toFixed(1)
-            )
-          : null;
-
-      return {
-        ...job,
-        company,
-        applications_count: jobApps.length,
-        good_fit_count: goodFitCount,
-        avg_ai_score: avgScore,
-      };
-    });
-
+  let jobs = db.jobs.filter(isPubliclyOpen);
+  if (q) jobs = jobs.filter((j) => `${j.title} ${j.required_skills.join(" ")} ${j.location}`.toLowerCase().includes(q));
+  if (category) jobs = jobs.filter((j) => categorySlugOf(j) === category);
+  if (city) jobs = jobs.filter((j) => j.location.toLowerCase().includes(city));
+  if (type) jobs = jobs.filter((j) => j.employment_type === type);
+  jobs.sort((a, b) => (b.published_at || b.created_at).localeCompare(a.published_at || a.created_at));
+  const total = jobs.length;
   return NextResponse.json({
-    jobs: enrichedJobs,
+    jobs: jobs.slice((page - 1) * limit, page * limit).map((job) => ({
+      ...job,
+      company: publicCompany(db.companies.find((c) => c.id === job.company_id)),
+    })),
+    total,
+    page,
+    limit,
   });
 }
 
+/** POST /api/jobs — HR đăng tin mới (status: draft | active). */
 export async function POST(req: Request) {
-  const sessionCtx = await getSessionUser();
-  if (!sessionCtx || sessionCtx.user.role !== "hr") {
-    return NextResponse.json(
-      { error: "UC-01 / QT-05: Vui lòng đăng nhập tài khoản Nhà tuyển dụng (HR) để đăng tin." },
-      { status: 403 }
-    );
+  const auth = await requireHr();
+  if (!auth.ok) return auth.response;
+  const { db, session, company } = auth;
+  if (!company) {
+    return NextResponse.json({ error: "Vui lòng cập nhật hồ sơ công ty trước khi đăng tin." }, { status: 400 });
   }
-
   try {
-    const body = await req.json();
-    const title = String(body.title || "").trim();
-    const jobCategory = String(body.job_category || "Công nghệ thông tin").trim();
-    const location = String(body.location || "TP. Hồ Chí Minh").trim();
-    const salaryRange = String(body.salary_range || "Thỏa thuận").trim();
-    const experienceRequired = String(body.experience_required || "1 năm").trim();
-    const employmentType = String(body.employment_type || "Toàn thời gian").trim();
-    const jdText = String(body.jd_text || body.description || "").trim();
-    const requirements = String(body.requirements || jdText).trim();
-    const deadline = String(body.deadline || "").trim();
-    const status: JobStatus =
-      body.status === "draft" || body.status === "closed"
-        ? body.status
-        : "active";
-
-    let requiredSkills: string[] = [];
-    if (Array.isArray(body.required_skills)) {
-      requiredSkills = body.required_skills
-        .map((s: unknown) => String(s).trim())
-        .filter(Boolean);
-    } else if (typeof body.required_skills === "string") {
-      requiredSkills = body.required_skills
-        .split(",")
-        .map((s: string) => s.trim())
-        .filter(Boolean);
-    }
-
-    if (title.length < 3) {
-      return NextResponse.json(
-        { error: "UC-01: Tiêu đề vị trí tuyển dụng phải có tối thiểu 3 ký tự." },
-        { status: 400 }
-      );
-    }
-    if (jdText.length < 20) {
-      return NextResponse.json(
-        { error: "UC-01: Nội dung mô tả công việc (JD) phải có tối thiểu 20 ký tự để AI phân tích." },
-        { status: 400 }
-      );
-    }
-    if (requiredSkills.length === 0) {
-      return NextResponse.json(
-        { error: "UC-01: Vui lòng nhập ít nhất 1 kỹ năng yêu cầu (required_skills)." },
-        { status: 400 }
-      );
-    }
-    if (!deadline) {
-      return NextResponse.json(
-        { error: "UC-01: Vui lòng chọn hạn chót nộp hồ sơ (deadline)." },
-        { status: 400 }
-      );
-    }
-
-    const today = new Date().toISOString().slice(0, 10);
-    if (status === "active" && deadline < today) {
-      return NextResponse.json(
-        { error: "Hạn chót nộp hồ sơ không được nhỏ hơn ngày hiện tại." },
-        { status: 400 }
-      );
-    }
-
-    const db = readDb();
-    const company = db.companies.find(
-      (c) => c.hr_user_id === sessionCtx.user.id
-    );
-    if (!company) {
-      return NextResponse.json(
-        { error: "Vui lòng cập nhật hồ sơ công ty trước khi đăng tin." },
-        { status: 400 }
-      );
-    }
-
+    const body = (await req.json()) as Record<string, unknown>;
+    const parsed = parseJobInput({ status: "active", ...body });
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const p = parsed.patch;
     const now = new Date().toISOString();
     const nextJobId = (db.counters.jobs || db.jobs.length) + 1;
-    const slug = `${slugifyVietnamese(title)}-${nextJobId}`;
-
     const newJob: JobRecord = {
       _id: generateObjectId(),
       id: nextJobId,
-      slug,
+      slug: `${slugifyVietnamese(p.title || "tin-tuyen-dung")}-${nextJobId}`,
       company_id: company.id,
       company_object_id: company._id,
-      hr_user_id: sessionCtx.user.id,
-      title,
-      job_category: jobCategory,
-      location,
-      salary_range: salaryRange,
-      experience_required: experienceRequired,
-      employment_type: employmentType,
-      jd_text: jdText,
-      description: jdText,
-      requirements,
-      required_skills: requiredSkills,
-      deadline,
-      status,
+      hr_user_id: session.user.id,
+      title: p.title || "",
+      job_category: p.job_category || "Khác",
+      category_slug: p.category_slug || null,
+      location: p.location || "",
+      salary_range: p.salary_range || "Thỏa thuận",
+      experience_required: p.experience_required || "Không yêu cầu",
+      employment_type: p.employment_type || "Toàn thời gian",
+      jd_text: p.jd_text || p.description || "",
+      description: p.description || "",
+      requirements: p.requirements || "",
+      required_skills: p.required_skills || [],
+      deadline: p.deadline || "",
+      status: p.status === "draft" ? "draft" : "active",
+      view_count: 0,
+      published_at: p.status === "draft" ? null : now,
+      closed_at: null,
+      source: "hr",
       created_at: now,
       updated_at: now,
-    };
-
+      ...p,
+    } as JobRecord;
+    newJob.jd_hash = computeJdHash(newJob);
     db.counters.jobs = nextJobId;
     db.jobs.push(newJob);
     writeDb(db);
-
     return NextResponse.json({
       status: "ok",
-      message: "Đã đăng tin tuyển dụng mới thành công!",
-      job: {
-        ...newJob,
-        company,
-        applications_count: 0,
-        good_fit_count: 0,
-        avg_ai_score: null,
-      },
+      message: newJob.status === "draft" ? "Đã lưu bản nháp tin tuyển dụng." : "Đã đăng tin tuyển dụng mới thành công!",
+      job: { ...newJob, company: publicCompany(company), ...jobStats(db, newJob) },
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Lỗi tạo tin tuyển dụng." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Lỗi tạo tin tuyển dụng." }, { status: 500 });
   }
 }
+

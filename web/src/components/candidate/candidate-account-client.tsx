@@ -20,6 +20,17 @@ import {
   AlertTriangle,
   Loader2,
   UserRound,
+  RefreshCw,
+  Star,
+  ListChecks,
+  IdCard,
+  CalendarClock,
+  Video,
+  MapPin,
+  Download,
+  Undo2,
+  Check,
+  X,
 } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -34,11 +45,20 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { CandidateProfileTab } from "@/components/candidate/profile/candidate-profile-tab";
+import { CvReviewDialog, extractionLabel } from "@/components/candidate/profile/cv-review-dialog";
+import { formatPeriod } from "@/lib/profile/profile-utils";
+import {
+  CANDIDATE_CAN_WITHDRAW,
+  normalizeStatus,
+  STATUS_META as RECRUITMENT_STATUS_META,
+} from "@/lib/recruitment/status";
 import type {
   AiEvaluationRecord,
   ApplicationRecord,
   CompanyRecord,
   CvProfileRecord,
+  InterviewRecord,
   JobRecord,
 } from "@/lib/db/types";
 
@@ -47,59 +67,25 @@ type EnrichedApplication = ApplicationRecord & {
   company: CompanyRecord | null;
   cv_profile: CvProfileRecord | null;
   ai_evaluation: AiEvaluationRecord | null;
-};
-
-const STATUS_META: Record<
-  string,
-  { label: string; badgeCls: string; stepIndex: number }
-> = {
-  pending: {
-    label: "Đã nộp hồ sơ",
-    badgeCls: "bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]",
-    stepIndex: 0,
-  },
-  reviewing: {
-    label: "Nhà tuyển dụng đang xem",
-    badgeCls: "bg-[#EBF2FF] text-[#2563EB] border border-[#BFDBFE]",
-    stepIndex: 1,
-  },
-  interviewing: {
-    label: "Mời phỏng vấn",
-    badgeCls: "bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]",
-    stepIndex: 2,
-  },
-  shortlisted: {
-    label: "Mời phỏng vấn",
-    badgeCls: "bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]",
-    stepIndex: 2,
-  },
-  accepted: {
-    label: "Đã trúng tuyển",
-    badgeCls: "bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]",
-    stepIndex: 3,
-  },
-  rejected: {
-    label: "Chưa phù hợp",
-    badgeCls: "bg-[#FFE4E6] text-[#BE123C] border border-[#FECDD3]",
-    stepIndex: -1,
-  },
+  interviews?: InterviewRecord[];
 };
 
 const PIPELINE_STEPS = [
   { key: "pending", label: "Đã nộp hồ sơ" },
   { key: "reviewing", label: "Đang xem xét" },
   { key: "interviewing", label: "Mời phỏng vấn" },
+  { key: "offered", label: "Đề nghị nhận việc" },
   { key: "accepted", label: "Trúng tuyển" },
 ];
 
 export function CandidateAccountClient({
   defaultTab = "cv",
 }: {
-  defaultTab?: "cv" | "applications" | "profile";
+  defaultTab?: "info" | "cv" | "applications" | "profile";
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, cvProfiles, isLoading, refreshAuth, logout } = useAuth();
+  const { user, cvProfiles, candidateProfile, isLoading, refreshAuth, logout } = useAuth();
 
   const tabParam = searchParams.get("tab") as
     | "cv"
@@ -107,11 +93,11 @@ export function CandidateAccountClient({
     | "profile"
     | null;
   const [activeTab, setActiveTab] = useState<
-    "cv" | "applications" | "profile"
+    "info" | "cv" | "applications" | "profile"
   >(tabParam || defaultTab);
 
   useEffect(() => {
-    if (tabParam && ["cv", "applications", "profile"].includes(tabParam)) {
+    if (tabParam && ["info", "cv", "applications", "profile"].includes(tabParam)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(tabParam);
     }
@@ -163,45 +149,151 @@ export function CandidateAccountClient({
     }
   }, [user]);
 
+  // Hộp thoại "Xem lại thông tin từ CV" (mở ngay sau khi tải CV hoặc khi bấm "Cập nhật vào hồ sơ")
+  const [reviewCv, setReviewCv] = useState<CvProfileRecord | null>(null);
+  const [reviewNonce, setReviewNonce] = useState(0);
+  const [busyCvId, setBusyCvId] = useState<number | null>(null);
+  const [busyAppId, setBusyAppId] = useState<number | null>(null);
+  const [busyInterviewId, setBusyInterviewId] = useState<number | null>(null);
+  const [rescheduleModal, setRescheduleModal] = useState<{
+    interviewId: number;
+    mode: "reschedule_requested" | "declined";
+  } | null>(null);
+  const [rescheduleNote, setRescheduleNote] = useState("");
+
+  async function handleWithdrawApplication(appId: number) {
+    if (!window.confirm("Bạn có chắc chắn muốn rút hồ sơ ứng tuyển này?")) return;
+    setBusyAppId(appId);
+    try {
+      const res = await fetch(`/api/applications/${appId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "withdrawn" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error || "Không thể rút hồ sơ ứng tuyển.");
+        return;
+      }
+      toast.success(data.message || "Đã rút hồ sơ ứng tuyển.");
+      await fetchCandidateApplications();
+    } finally {
+      setBusyAppId(null);
+    }
+  }
+
+  async function handleInterviewResponse(
+    interviewId: number,
+    response: "accepted" | "reschedule_requested" | "declined",
+    note?: string
+  ) {
+    setBusyInterviewId(interviewId);
+    try {
+      const res = await fetch(`/api/interviews/${interviewId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          response,
+          note: note?.trim() || undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error || "Không thể gửi phản hồi phỏng vấn.");
+        return;
+      }
+      toast.success(data.message || "Đã gửi phản hồi phỏng vấn tới Nhà tuyển dụng.");
+      setRescheduleModal(null);
+      setRescheduleNote("");
+      await fetchCandidateApplications();
+    } finally {
+      setBusyInterviewId(null);
+    }
+  }
+
+  function openReview(cv: CvProfileRecord) {
+    setReviewNonce((n) => n + 1);
+    setReviewCv(cv);
+  }
+
+  /** Tải CV lên -> lưu CV + bóc tách -> mở hộp thoại duyệt để điền vào hồ sơ. */
+  async function uploadCvFile(file: File, title?: string): Promise<boolean> {
+    if (!/\.(pdf|docx)$/i.test(file.name)) {
+      toast.error("Chỉ hỗ trợ tệp .pdf hoặc .docx.");
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Dung lượng CV tối đa 5 MB.");
+      return false;
+    }
+    setUploadingCv(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("cv_title", title?.trim() || "");
+      const res = await fetch("/api/cv-profiles", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Không thể tải lên CV.");
+        return false;
+      }
+      toast.success(data.message || "Đã lưu CV.");
+      await refreshAuth();
+      if (data.cv_profile?.parsed_data) openReview(data.cv_profile);
+      return true;
+    } catch {
+      toast.error("Lỗi kết nối khi tải lên CV.");
+      return false;
+    } finally {
+      setUploadingCv(false);
+    }
+  }
+
   async function handleUploadRealCv(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedFile) {
       toast.error("Vui lòng chọn tệp CV (.pdf hoặc .docx) từ máy tính.");
       return;
     }
-
-    setUploadingCv(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append(
-        "cv_title",
-        cvTitleInput.trim() ||
-          selectedFile.name.replace(/\.(pdf|docx)$/i, "")
-      );
-      formData.append("is_default", cvProfiles.length === 0 ? "true" : "false");
-
-      const res = await fetch("/api/cv-profiles", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "Không thể tải lên CV.");
-        return;
-      }
-
-      toast.success(data.message || "Tải lên và phân tích CV thành công!");
+    const ok = await uploadCvFile(selectedFile, cvTitleInput);
+    if (ok) {
       setSelectedFile(null);
       setCvTitleInput("");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleSetDefault(cvId: number) {
+    setBusyCvId(cvId);
+    try {
+      const res = await fetch(`/api/cv-profiles/${cvId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_default: true }),
+      });
+      if (res.ok) {
+        toast.success("Đã đặt làm CV chính.");
+        await refreshAuth();
       }
-      await refreshAuth();
-    } catch {
-      toast.error("Lỗi kết nối khi tải lên CV.");
     } finally {
-      setUploadingCv(false);
+      setBusyCvId(null);
+    }
+  }
+
+  async function handleReparse(cvId: number) {
+    setBusyCvId(cvId);
+    try {
+      const res = await fetch(`/api/cv-profiles/${cvId}/reparse`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Không thể bóc tách lại CV.");
+        return;
+      }
+      toast.success(data.message || "Đã bóc tách lại CV.");
+      await refreshAuth();
+      if (data.cv_profile?.parsed_data) openReview(data.cv_profile);
+    } finally {
+      setBusyCvId(null);
     }
   }
 
@@ -341,6 +433,13 @@ export function CandidateAccountClient({
                 <nav className="p-2.5">
                   {[
                     {
+                      id: "info" as const,
+                      label: "Hồ sơ cá nhân",
+                      sub: "Thông tin, kinh nghiệm, kỹ năng",
+                      icon: IdCard,
+                      badge: undefined as number | undefined,
+                    },
+                    {
                       id: "cv" as const,
                       label: "Quản lý hồ sơ CV",
                       sub: "Tải lên & phân tích kỹ năng",
@@ -422,6 +521,19 @@ export function CandidateAccountClient({
 
             {/* Cột Phải: Nội dung chi tiết từng Tab */}
             <div className="min-w-0 space-y-5">
+              {/* TAB 0: HỒ SƠ CÁ NHÂN (tự điền từ CV, sửa linh động) */}
+              {activeTab === "info" && user && (
+                <CandidateProfileTab
+                  user={{ full_name: user.full_name, phone: user.phone, email: user.email }}
+                  profile={candidateProfile}
+                  cvProfiles={cvProfiles}
+                  onRefresh={refreshAuth}
+                  onQuickUpload={(f) => uploadCvFile(f)}
+                  uploading={uploadingCv}
+                  onOpenReview={openReview}
+                />
+              )}
+
               {/* TAB 1: QUẢN LÝ HỒ SƠ CV */}
               {activeTab === "cv" && (
                 <>
@@ -430,15 +542,13 @@ export function CandidateAccountClient({
                       <div>
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[11px] font-bold text-[#306BD9]">
                           <Sparkles className="size-3" />
-                          Phân tích CV thông minh
+                          Phân tích CV đa tầng · PyMuPDF 2-Cột &amp; AI OCR Việt-Anh
                         </span>
                         <h1 className="mt-1.5 text-[19px] font-extrabold text-[#222222] sm:text-[21px]">
                           Tải lên hồ sơ CV của bạn
                         </h1>
                         <p className="mt-0.5 text-[13px] text-[#666666]">
-                          Hỗ trợ định dạng PDF hoặc Word (.docx) dung lượng tối
-                          đa 5 MB. Hệ thống sẽ tự động nhận diện kỹ năng chuyên
-                          môn, kinh nghiệm và học vấn để gợi ý công việc phù hợp.
+                          Hỗ trợ PDF chuẩn, PDF thiết kế 2 cột (TopCV/Canva), PDF bản scan ảnh (tự động quét OCR Tiếng Việt + Anh) và Word (.docx) tối đa 5 MB. Hệ thống tự động trích xuất thông tin liên hệ, kỹ năng, kinh nghiệm và học vấn.
                         </p>
                       </div>
                     </div>
@@ -563,10 +673,23 @@ export function CandidateAccountClient({
                                       CV chính
                                     </span>
                                   )}
-                                  {cv.ocr_required && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[10.5px] font-bold text-[#1D4ED8]">
+                                    {cv.ocr_applied && <Sparkles className="size-3" />}
+                                    {extractionLabel(cv)}
+                                  </span>
+                                  {cv.parse_status === "needs_review" && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[10.5px] font-bold text-[#B45309]">
-                                      <AlertTriangle className="size-3" />
-                                      Bản scan ảnh
+                                      <AlertTriangle className="size-3" /> Cần kiểm tra
+                                    </span>
+                                  )}
+                                  {(cv.ocr_required || cv.parse_status === "failed") && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE2E2] px-2 py-0.5 text-[10.5px] font-bold text-[#B91C1C]">
+                                      <AlertTriangle className="size-3" /> Không đọc được chữ
+                                    </span>
+                                  )}
+                                  {!cv.parsed_data && (
+                                    <span className="rounded-full bg-[#F1F5F9] px-2 py-0.5 text-[10.5px] font-semibold text-[#64748B]">
+                                      Parser cũ
                                     </span>
                                   )}
                                 </div>
@@ -579,11 +702,75 @@ export function CandidateAccountClient({
                                   {new Date(cv.created_at).toLocaleDateString(
                                     "vi-VN"
                                   )}
+                                  {cv.processing_time_ms
+                                    ? ` · Xử lý ${cv.processing_time_ms}ms`
+                                    : ""}
                                 </p>
+                                {(cv.extracted_job_title ||
+                                  cv.extracted_phone ||
+                                  cv.extracted_location) && (
+                                  <p className="mt-1 text-[12px] text-[#334155]">
+                                    {cv.extracted_job_title && (
+                                      <span>
+                                        Vị trí:{" "}
+                                        <strong className="text-[#1E3A8A]">
+                                          {cv.extracted_job_title}
+                                        </strong>{" "}
+                                        ·{" "}
+                                      </span>
+                                    )}
+                                    {cv.extracted_phone && (
+                                      <span>
+                                        SĐT: <strong>{cv.extracted_phone}</strong>{" "}
+                                        ·{" "}
+                                      </span>
+                                    )}
+                                    {cv.extracted_location && (
+                                      <span>
+                                        Khu vực:{" "}
+                                        <strong>{cv.extracted_location}</strong>
+                                      </span>
+                                    )}
+                                  </p>
+                                )}
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                disabled={busyCvId === cv.id}
+                                onClick={() => (cv.parsed_data ? openReview(cv) : handleReparse(cv.id))}
+                                className="rounded-lg bg-[#306BD9] text-[12px] font-bold text-white hover:bg-[#2456B6]"
+                              >
+                                <ListChecks className="size-3.5" />
+                                Cập nhật vào hồ sơ
+                              </Button>
+                              {!cv.is_default && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={busyCvId === cv.id}
+                                  onClick={() => handleSetDefault(cv.id)}
+                                  className="rounded-lg text-[12px] font-bold"
+                                  title="Đặt làm CV chính"
+                                >
+                                  <Star className="size-3.5" />
+                                </Button>
+                              )}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={busyCvId === cv.id}
+                                onClick={() => handleReparse(cv.id)}
+                                className="rounded-lg text-[12px] font-bold"
+                                title="Bóc tách lại bằng Parser mới nhất"
+                              >
+                                <RefreshCw className={`size-3.5 ${busyCvId === cv.id ? "animate-spin" : ""}`} />
+                              </Button>
                               <Button
                                 type="button"
                                 variant="outline"
@@ -648,7 +835,7 @@ export function CandidateAccountClient({
                             cv.extracted_skills.length > 0 && (
                               <div className="mt-3">
                                 <p className="mb-1.5 text-[11.5px] font-bold text-[#555555]">
-                                  Kỹ năng nổi bật trong CV:
+                                  Kỹ năng chuyên môn &amp; chứng chỉ bóc tách từ CV:
                                 </p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {cv.extracted_skills.map((skill) => (
@@ -657,6 +844,14 @@ export function CandidateAccountClient({
                                       className="rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-2.5 py-0.5 text-[11.5px] font-semibold text-[#1D4ED8]"
                                     >
                                       {skill}
+                                    </span>
+                                  ))}
+                                  {cv.certifications?.map((cert) => (
+                                    <span
+                                      key={cert}
+                                      className="rounded-full border border-[#BBF7D0] bg-[#F0FDF4] px-2.5 py-0.5 text-[11.5px] font-semibold text-[#15803D]"
+                                    >
+                                      {cert}
                                     </span>
                                   ))}
                                 </div>
@@ -704,8 +899,10 @@ export function CandidateAccountClient({
                     </div>
                   ) : (
                     applications.map((app) => {
-                      const stMeta =
-                        STATUS_META[app.status] || STATUS_META.pending;
+                      const normStatus = normalizeStatus(app.status);
+                      const stMeta = RECRUITMENT_STATUS_META[normStatus];
+                      const canWithdraw = CANDIDATE_CAN_WITHDRAW.includes(normStatus);
+                      const interviews = app.interviews || [];
 
                       return (
                         <article
@@ -716,9 +913,9 @@ export function CandidateAccountClient({
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span
-                                  className={`rounded-full px-2.5 py-0.5 text-[11.5px] font-bold ${stMeta.badgeCls}`}
+                                  className={`rounded-full border px-2.5 py-0.5 text-[11.5px] font-bold ${stMeta.badge}`}
                                 >
-                                  {stMeta.label}
+                                  {stMeta.candidateLabel}
                                 </span>
                                 <span className="text-[11.5px] text-[#8C8C8C]">
                                   Ứng tuyển ngày{" "}
@@ -726,6 +923,13 @@ export function CandidateAccountClient({
                                     "vi-VN"
                                   )}
                                 </span>
+                                {app.viewed_by_hr_at && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[11px] font-semibold text-[#1D4ED8]">
+                                    <Eye className="size-3" />
+                                    NTD đã xem{" "}
+                                    {new Date(app.viewed_by_hr_at).toLocaleDateString("vi-VN")}
+                                  </span>
+                                )}
                               </div>
 
                               <Link
@@ -744,18 +948,47 @@ export function CandidateAccountClient({
                               <p className="mt-1 text-[12px] text-[#666666]">
                                 CV đã nộp:{" "}
                                 <strong>
-                                  {app.cv_profile?.cv_title ||
+                                  {app.cv_snapshot?.cv_title ||
+                                    app.cv_profile?.cv_title ||
                                     app.cv_profile?.file_name ||
                                     "Hồ sơ CV"}
                                 </strong>
+                                {app.cv_profile?.file_url && (
+                                  <>
+                                    {" "}
+                                    ·{" "}
+                                    <a
+                                      href={app.cv_profile.file_url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="font-semibold text-[#306BD9] hover:underline"
+                                    >
+                                      Xem tệp CV
+                                    </a>
+                                  </>
+                                )}
                               </p>
                             </div>
+
+                            {canWithdraw && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={busyAppId === app.id}
+                                onClick={() => handleWithdrawApplication(app.id)}
+                                className="rounded-lg border-[#FECACA] text-[12px] font-bold text-[#DC2626] hover:bg-[#FEF2F2]"
+                              >
+                                <Undo2 className="size-3.5" />
+                                Rút đơn
+                              </Button>
+                            )}
                           </div>
 
-                          {app.status !== "rejected" ? (
-                            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {normStatus !== "rejected" && normStatus !== "withdrawn" ? (
+                            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
                               {PIPELINE_STEPS.map((step, idx) => {
-                                const passed = idx <= stMeta.stepIndex;
+                                const passed = idx <= stMeta.step;
                                 return (
                                   <div key={step.key} className="text-center">
                                     <div
@@ -779,10 +1012,187 @@ export function CandidateAccountClient({
                                 );
                               })}
                             </div>
+                          ) : normStatus === "withdrawn" ? (
+                            <div className="mt-4 rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2 text-[12.5px] font-medium text-[#64748B]">
+                              Bạn đã chủ động rút hồ sơ ứng tuyển cho vị trí này.
+                            </div>
                           ) : (
                             <div className="mt-4 rounded-[10px] border border-[#FECDD3] bg-[#FFF1F2] px-3.5 py-2 text-[12.5px] font-medium text-[#BE123C]">
                               Nhà tuyển dụng đã xem hồ sơ và hiện chưa thể sắp
-                              xếp vị trí phù hợp trong đợt tuyển này.
+                              xếp vị trí phù hợp trong đợt tuyển này
+                              {app.rejection_reason ? ` (${app.rejection_reason})` : ""}.
+                            </div>
+                          )}
+
+                          {/* Danh sách lịch phỏng vấn */}
+                          {interviews.length > 0 && (
+                            <div className="mt-4 space-y-2.5 border-t border-[#EBEBEB] pt-4">
+                              <p className="flex items-center gap-1.5 text-[12.5px] font-extrabold text-[#1E3A8A]">
+                                <CalendarClock className="size-4 text-[#306BD9]" />
+                                Lịch phỏng vấn từ Nhà tuyển dụng ({interviews.length})
+                              </p>
+                              {interviews.map((iv) => {
+                                const canRespond = iv.status === "scheduled";
+                                const locStr = iv.location ?? "";
+                                const ivBadge =
+                                  iv.status === "cancelled"
+                                    ? {
+                                        text: "NTD đã hủy lịch",
+                                        cls: "bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0]",
+                                      }
+                                    : iv.status === "completed"
+                                      ? {
+                                          text: "Đã hoàn thành",
+                                          cls: "bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]",
+                                        }
+                                      : iv.candidate_response === "accepted"
+                                        ? {
+                                            text: "Đã xác nhận tham gia",
+                                            cls: "bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]",
+                                          }
+                                        : iv.candidate_response === "reschedule_requested"
+                                          ? {
+                                              text: "Đã xin đổi lịch",
+                                              cls: "bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]",
+                                            }
+                                          : iv.candidate_response === "declined"
+                                            ? {
+                                                text: "Đã từ chối",
+                                                cls: "bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]",
+                                              }
+                                            : {
+                                                text: "Chờ bạn xác nhận",
+                                                cls: "bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]",
+                                              };
+
+                                return (
+                                  <div
+                                    key={iv.id}
+                                    className="rounded-[12px] border border-[#DCE7F9] bg-[#F8FAFF] p-3.5 text-[12.5px]"
+                                  >
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span className="font-extrabold text-[#1E3A8A]">
+                                          {new Date(iv.scheduled_at).toLocaleString("vi-VN", {
+                                            dateStyle: "short",
+                                            timeStyle: "short",
+                                          })}
+                                        </span>
+                                        <span className="text-[#64748B]">
+                                          ({iv.duration_min} phút)
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#306BD9] shadow-2xs">
+                                          {iv.mode === "online" ? (
+                                            <Video className="size-3" />
+                                          ) : (
+                                            <MapPin className="size-3" />
+                                          )}
+                                          {iv.mode === "online" ? "Trực tuyến" : "Trực tiếp"}
+                                        </span>
+                                        <span
+                                          className={`rounded-full border px-2 py-0.5 text-[11px] font-bold ${ivBadge.cls}`}
+                                        >
+                                          {ivBadge.text}
+                                        </span>
+                                      </div>
+
+                                      <a
+                                        href={`/api/interviews/${iv.id}/ics`}
+                                        className="inline-flex items-center gap-1 rounded-lg border border-[#BFDBFE] bg-white px-2.5 py-1 text-[11.5px] font-bold text-[#306BD9] hover:bg-[#EFF6FF]"
+                                      >
+                                        <Download className="size-3" />
+                                        Tải lịch (.ics)
+                                      </a>
+                                    </div>
+
+                                    <p className="mt-1.5 text-[#334155]">
+                                      <strong>
+                                        {iv.mode === "online" ? "Link tham gia:" : "Địa điểm:"}
+                                      </strong>{" "}
+                                      {locStr.startsWith("http") ? (
+                                        <a
+                                          href={locStr}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="font-semibold text-[#306BD9] underline"
+                                        >
+                                          {locStr}
+                                        </a>
+                                      ) : (
+                                        locStr || "—"
+                                      )}
+                                      {iv.interviewer && (
+                                        <>
+                                          {" "}
+                                          · <strong>Người phỏng vấn:</strong> {iv.interviewer}
+                                        </>
+                                      )}
+                                    </p>
+
+                                    {iv.message && (
+                                      <p className="mt-1 rounded-lg bg-white/80 px-2.5 py-1.5 text-[12px] text-[#475569]">
+                                        <strong>Lời nhắn từ NTD:</strong> {iv.message}
+                                      </p>
+                                    )}
+
+                                    {iv.candidate_note && (
+                                      <p className="mt-1 text-[11.5px] text-[#0369A1]">
+                                        <strong>Ghi chú của bạn:</strong> {iv.candidate_note}
+                                      </p>
+                                    )}
+
+                                    {canRespond && (
+                                      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          disabled={busyInterviewId === iv.id}
+                                          onClick={() =>
+                                            handleInterviewResponse(iv.id, "accepted")
+                                          }
+                                          className="h-8 rounded-lg bg-[#16A34A] px-3 text-[11.5px] font-bold text-white hover:bg-[#15803D]"
+                                        >
+                                          <Check className="size-3.5" />
+                                          Xác nhận tham gia
+                                        </Button>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant="outline"
+                                          disabled={busyInterviewId === iv.id}
+                                          onClick={() => {
+                                            setRescheduleNote(iv.candidate_note || "");
+                                            setRescheduleModal({
+                                              interviewId: iv.id,
+                                              mode: "reschedule_requested",
+                                            });
+                                          }}
+                                          className="h-8 rounded-lg border-[#BAE6FD] bg-white px-3 text-[11.5px] font-bold text-[#0369A1] hover:bg-[#F0F9FF]"
+                                        >
+                                          Xin đổi lịch
+                                        </Button>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant="outline"
+                                          disabled={busyInterviewId === iv.id}
+                                          onClick={() => {
+                                            setRescheduleNote("");
+                                            setRescheduleModal({
+                                              interviewId: iv.id,
+                                              mode: "declined",
+                                            });
+                                          }}
+                                          className="h-8 rounded-lg border-[#FECACA] bg-white px-3 text-[11.5px] font-bold text-[#DC2626] hover:bg-[#FEF2F2]"
+                                        >
+                                          <X className="size-3.5" />
+                                          Từ chối
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </article>
@@ -889,12 +1299,43 @@ export function CandidateAccountClient({
 
           {previewCv && (
             <div className="space-y-4">
-              {previewCv.file_type === "pdf" && previewCv.file_path && (
+              <div className="grid gap-2.5 rounded-[12px] border border-[#DCE7F9] bg-[#F8FAFF] p-3.5 text-[12.5px] sm:grid-cols-2">
+                <div>
+                  <span className="text-[#64748B]">Họ tên nhận diện: </span>
+                  <strong className="text-[#0F172A]">
+                    {previewCv.extracted_full_name || user?.full_name || "—"}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-[#64748B]">Email nhận diện: </span>
+                  <strong className="text-[#0F172A]">
+                    {previewCv.extracted_email || user?.email || "—"}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-[#64748B]">Số điện thoại: </span>
+                  <strong className="text-[#0F172A]">
+                    {previewCv.extracted_phone || user?.phone || "—"}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-[#64748B]">Công nghệ đọc CV: </span>
+                  <strong className="text-[#1D4ED8]">
+                    {previewCv.ocr_applied
+                      ? "Tesseract 5.5 LSTM OCR (Việt-Anh) + OpenCV"
+                      : previewCv.two_column_detected
+                        ? "PyMuPDF 2-Column Layout Reconstruction"
+                        : previewCv.extraction_method || "PyMuPDF Digital Parser"}
+                  </strong>
+                </div>
+              </div>
+
+              {previewCv.file_type === "pdf" && previewCv.file_url && (
                 <div className="overflow-hidden rounded-[12px] border border-[#E2E8F0]">
                   <div className="flex items-center justify-between bg-[#F8FAFC] px-3.5 py-2 text-[12px] font-bold text-[#334155]">
-                    <span>Bản xem trước CV</span>
+                    <span>Bản xem trước CV gốc</span>
                     <a
-                      href={previewCv.file_path}
+                      href={previewCv.file_url}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1 text-[#306BD9] hover:underline"
@@ -903,25 +1344,140 @@ export function CandidateAccountClient({
                     </a>
                   </div>
                   <iframe
-                    src={previewCv.file_path}
+                    src={previewCv.file_url}
                     title={previewCv.cv_title}
                     className="h-[340px] w-full bg-white"
                   />
                 </div>
               )}
 
-              <div className="rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-                <p className="mb-2 text-[12px] font-bold uppercase tracking-wider text-[#64748B]">
-                  Nội dung tóm tắt trích xuất từ CV:
-                </p>
-                <pre className="max-h-60 overflow-y-auto whitespace-pre-wrap font-sans text-[12.5px] leading-relaxed text-[#222222]">
+              {previewCv.parsed_data && (
+                <div className="space-y-3 rounded-[12px] border border-[#E2E8F0] p-4 text-[12.5px]">
+                  <p className="text-[12px] font-bold uppercase tracking-wider text-[#64748B]">
+                    Dữ liệu cấu trúc bóc tách ({previewCv.parsed_data.sections_detected.length} mục nhận diện)
+                  </p>
+                  {previewCv.parsed_data.summary && (
+                    <p className="text-[#334155]"><strong>Giới thiệu: </strong>{previewCv.parsed_data.summary}</p>
+                  )}
+                  {previewCv.parsed_data.experiences.length > 0 && (
+                    <div>
+                      <p className="font-bold text-[#222222]">Kinh nghiệm ({(previewCv.parsed_data.total_experience_months / 12).toFixed(1)} năm)</p>
+                      <ul className="mt-1 space-y-1">
+                        {previewCv.parsed_data.experiences.map((e, i) => (
+                          <li key={i} className="text-[#334155]">
+                            • <strong>{e.position || "?"}</strong> — {e.company || "?"}{" "}
+                            <span className="text-[#64748B]">({formatPeriod(e.start, e.end, e.is_current)})</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {previewCv.parsed_data.educations.length > 0 && (
+                    <div>
+                      <p className="font-bold text-[#222222]">Học vấn</p>
+                      {previewCv.parsed_data.educations.map((e, i) => (
+                        <p key={i} className="text-[#334155]">• {e.school} {e.major && `— ${e.major}`} {e.status && <span className="text-[#64748B]">({e.status})</span>}</p>
+                      ))}
+                    </div>
+                  )}
+                  {previewCv.parsed_data.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {previewCv.parsed_data.skills.map((s) => (
+                        <span key={s.name} className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${s.type === "soft" ? "bg-[#FDF2F8] text-[#BE185D]" : "bg-[#EFF6FF] text-[#1D4ED8]"}`}>{s.name}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <details className="rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+                <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-wider text-[#64748B]">
+                  Văn bản gốc theo thứ tự đọc
+                </summary>
+                <pre className="mt-2 max-h-60 overflow-y-auto whitespace-pre-wrap font-sans text-[12.5px] leading-relaxed text-[#222222]">
                   {previewCv.raw_text || "(Không có văn bản)"}
                 </pre>
-              </div>
+              </details>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        open={!!rescheduleModal}
+        onOpenChange={(o) => !o && setRescheduleModal(null)}
+      >
+        <DialogContent className="rounded-[16px] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-[17px] font-extrabold text-[#222222]">
+              {rescheduleModal?.mode === "reschedule_requested"
+                ? "Xin đổi lịch phỏng vấn"
+                : "Từ chối lời mời phỏng vấn"}
+            </DialogTitle>
+            <DialogDescription className="text-[12.5px] text-[#666666]">
+              {rescheduleModal?.mode === "reschedule_requested"
+                ? "Nhập khung giờ bạn mong muốn để Nhà tuyển dụng sắp xếp lại."
+                : "Nhập lý do ngắn gọn để Nhà tuyển dụng nắm thông tin (không bắt buộc)."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              value={rescheduleNote}
+              onChange={(e) => setRescheduleNote(e.target.value)}
+              placeholder={
+                rescheduleModal?.mode === "reschedule_requested"
+                  ? "VD: Tôi xin dời sang 14:00 thứ Sáu được không ạ?"
+                  : "VD: Tôi đã nhận công việc khác, cảm ơn quý công ty."
+              }
+              className="h-10 rounded-[10px]"
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setRescheduleModal(null)}
+                className="rounded-lg"
+              >
+                Hủy
+              </Button>
+              <Button
+                type="button"
+                disabled={
+                  !rescheduleModal ||
+                  busyInterviewId === rescheduleModal.interviewId ||
+                  (rescheduleModal.mode === "reschedule_requested" &&
+                    !rescheduleNote.trim())
+                }
+                onClick={() =>
+                  rescheduleModal &&
+                  handleInterviewResponse(
+                    rescheduleModal.interviewId,
+                    rescheduleModal.mode,
+                    rescheduleNote
+                  )
+                }
+                className="rounded-lg bg-[#306BD9] font-bold text-white hover:bg-[#2456B6]"
+              >
+                Gửi phản hồi
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <CvReviewDialog
+        key={`${reviewCv?.id ?? "none"}-${reviewNonce}`}
+        open={!!reviewCv}
+        onOpenChange={(o) => !o && setReviewCv(null)}
+        cv={reviewCv}
+        profile={candidateProfile}
+        user={user}
+        onApplied={async () => {
+          await refreshAuth();
+          setActiveTab("info");
+          router.replace("/ung-vien/tai-khoan?tab=info", { scroll: false });
+        }}
+      />
 
       <SiteFooter />
     </>

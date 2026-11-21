@@ -14,7 +14,7 @@ export default function CandidateAccountPage() {
         </div>
       }
     >
-      <CandidateAccountClient defaultTab="cv" />
+      <CandidateAccountClient defaultTab="info" />
     </Suspense>
   );
 }

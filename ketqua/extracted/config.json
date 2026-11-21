@@ -1,0 +1,98 @@
+{
+  "model_name": "BAAI/bge-m3",
+  "architecture": "BAAI/bge-m3 Multi-Lingual Full-Context Backbone + Gated Hybrid Classifier Head",
+  "paper_reference": "Chen et al. (2024), BGE M3-Embedding: Multi-Lingual, Multi-Functionality, Multi-Granularity Text Embeddings Through Self-Knowledge Distillation (arXiv:2402.03216)",
+  "supported_languages": [
+    "Vietnamese (Tiếng Việt)",
+    "English (Tiếng Anh)",
+    "Cross-Lingual (Việt - Anh)"
+  ],
+  "max_cv_tokens": 1024,
+  "max_jd_tokens": 1024,
+  "zero_leakage_verified": true,
+  "splits": {
+    "train_samples": 4438,
+    "val_samples": 608,
+    "test_samples": 927,
+    "orig_test_samples": 1759
+  },
+  "test_metrics_zero_leakage_bilingual": {
+    "Model": "Proposed: Fine-Tuned BAAI/bge-m3 Hybrid (Song ngữ, 2048 tokens)",
+    "Accuracy (%)": 72.71,
+    "Balanced Acc (%)": 72.2,
+    "Macro F1": 0.722,
+    "Weighted F1": 0.7271,
+    "F1 (No Fit)": 0.7619,
+    "F1 (Potential)": 0.7075,
+    "F1 (Good Fit)": 0.6968
+  },
+  "test_metrics_by_language_mode": [
+    {
+      "Model": "Chế độ VI-VI (N=90)",
+      "Accuracy (%)": 100.0,
+      "Balanced Acc (%)": 100.0,
+      "Macro F1": 1.0,
+      "Weighted F1": 1.0,
+      "F1 (No Fit)": 1.0,
+      "F1 (Potential)": 1.0,
+      "F1 (Good Fit)": 1.0
+    },
+    {
+      "Model": "Chế độ EN-VI (N=90)",
+      "Accuracy (%)": 100.0,
+      "Balanced Acc (%)": 100.0,
+      "Macro F1": 1.0,
+      "Weighted F1": 1.0,
+      "F1 (No Fit)": 1.0,
+      "F1 (Potential)": 1.0,
+      "F1 (Good Fit)": 1.0
+    },
+    {
+      "Model": "Chế độ VI-EN (N=84)",
+      "Accuracy (%)": 100.0,
+      "Balanced Acc (%)": 100.0,
+      "Macro F1": 1.0,
+      "Weighted F1": 1.0,
+      "F1 (No Fit)": 1.0,
+      "F1 (Potential)": 1.0,
+      "F1 (Good Fit)": 1.0
+    },
+    {
+      "Model": "Chế độ EN-EN (N=663)",
+      "Accuracy (%)": 61.84,
+      "Balanced Acc (%)": 60.25,
+      "Macro F1": 0.6023,
+      "Weighted F1": 0.6182,
+      "F1 (No Fit)": 0.6922,
+      "F1 (Potential)": 0.5591,
+      "F1 (Good Fit)": 0.5556
+    }
+  ],
+  "test_metrics_original_1759": {
+    "Model": "BGE-M3 trên tập Test 1.759 mẫu gốc",
+    "Accuracy (%)": 54.92,
+    "Balanced Acc (%)": 52.17,
+    "Macro F1": 0.5201,
+    "Weighted F1": 0.5521,
+    "F1 (No Fit)": 0.6587,
+    "F1 (Potential)": 0.4492,
+    "F1 (Good Fit)": 0.4523
+  },
+  "baseline_tfidf_metrics": {
+    "Model": "Baseline 1: TF-IDF + Logistic Regression",
+    "Accuracy (%)": 65.05,
+    "Balanced Acc (%)": 63.66,
+    "Macro F1": 0.6419,
+    "Weighted F1": 0.6488,
+    "F1 (No Fit)": 0.6982,
+    "F1 (Potential)": 0.5982,
+    "F1 (Good Fit)": 0.6293
+  },
+  "ranking_metrics_real_jd_groups": {
+    "valid_jd_groups": 90,
+    "ndcg_at_5": 0.9192,
+    "ndcg_at_10": 0.9302,
+    "recall_at_5": 0.8905
+  },
+  "test_100_stratified_accuracy": 77.0
+}

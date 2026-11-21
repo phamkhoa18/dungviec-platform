@@ -664,6 +664,17 @@ export type Job = {
   description?: string[];
   requirements?: string[];
   benefits?: string[];
+  // --- Thông tin bổ sung khi tin được đọc từ cơ sở dữ liệu ---
+  id?: number;
+  companyLogo?: string | null;
+  companySize?: string | null;
+  companyField?: string | null;
+  companySlug?: string | null;
+  companyVerified?: boolean;
+  deadline?: string;
+  status?: string;
+  experience?: string | null;
+  requiredSkills?: string[];
 };
 
 /**
@@ -1284,6 +1295,7 @@ export const jobs: Job[] = [
 
 export const getCompany = (slug: string) =>
   companies.find((c) => c.slug === slug) ?? companies[0];
+export const findCompany = (slug: string) => companies.find((c) => c.slug === slug) ?? null;
 export const getJob = (slug: string) => jobs.find((j) => j.slug === slug);
 
 export type TopIndustryCard = {

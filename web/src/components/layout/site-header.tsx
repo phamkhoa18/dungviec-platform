@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CalendarClock,
   ChevronDown,
   Briefcase,
   Building2,
@@ -15,6 +16,7 @@ import {
   Home,
 } from "lucide-react";
 import { Logo } from "@/components/shared/brand";
+import { NotificationBell } from "@/components/shared/notification-bell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +51,7 @@ const hrMenu = [
   { href: "/nha-tuyen-dung/tong-quan", label: "Bảng điều khiển", desc: "Thống kê tuyển dụng", icon: LayoutDashboard },
   { href: "/nha-tuyen-dung/tin-tuyen-dung", label: "Tin tuyển dụng", desc: "Đăng, sửa, đóng/mở tin", icon: Briefcase },
   { href: "/nha-tuyen-dung/ung-vien", label: "Hồ sơ ứng viên", desc: "Xếp hạng theo điểm AI", icon: Users },
+  { href: "/nha-tuyen-dung/lich-phong-van", label: "Lịch phỏng vấn", desc: "Quản lý lịch hẹn phỏng vấn", icon: CalendarClock },
   { href: "/nha-tuyen-dung/cong-ty", label: "Thông tin công ty", desc: "Cập nhật hồ sơ doanh nghiệp", icon: Building2 },
 ];
 
@@ -106,7 +109,9 @@ export function SiteHeader({ transparent }: { transparent?: boolean }) {
 
           <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap sm:gap-2">
             {user ? (
-              <DropdownMenu>
+              <>
+                <NotificationBell light={t} />
+                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
@@ -170,6 +175,7 @@ export function SiteHeader({ transparent }: { transparent?: boolean }) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </>
             ) : (
               <>
                 <Link

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MapPin } from "lucide-react";
-import { Job, getCompany } from "@/lib/data";
+import { Job, findCompany } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 /**
@@ -8,8 +8,9 @@ import { cn } from "@/lib/utils";
  * Chỉ hiển thị dữ liệu thuộc bảng `jobs`.
  */
 export function JobCardCompact({ job, className }: { job: Job; className?: string }) {
-  const company = getCompany(job.company);
-  const companyDisplayName = job.companyName || company.name;
+  const company = findCompany(job.company);
+  const companyDisplayName = job.companyName || company?.name || "Doanh nghiệp";
+  const logo = job.thumbnail || job.companyLogo || company?.logo || "";
 
   return (
     <article
@@ -24,7 +25,7 @@ export function JobCardCompact({ job, className }: { job: Job; className?: strin
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={job.thumbnail || company.logo}
+          src={logo}
           alt={`${job.title} - ${companyDisplayName}`}
           width={56}
           height={56}

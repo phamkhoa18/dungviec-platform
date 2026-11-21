@@ -1,0 +1,1237 @@
+{
+  "v1": {
+    "full_name": 0.9,
+    "full_name_accent": 0.9,
+    "email": 1.0,
+    "phone": 0.9,
+    "date_of_birth": 0.8,
+    "city": 0.9,
+    "headline": 0.9,
+    "summary": 0.6,
+    "years": 0.3,
+    "exp": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "edu": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "certs": [
+      1.0,
+      0.7,
+      0.8235294117647058
+    ],
+    "skills": [
+      0.7684210526315789,
+      0.6386554621848739,
+      0.6975545357389827
+    ]
+  },
+  "v2": {
+    "full_name": 1.0,
+    "full_name_accent": 1.0,
+    "email": 1.0,
+    "phone": 1.0,
+    "date_of_birth": 1.0,
+    "city": 1.0,
+    "headline": 1.0,
+    "summary": 1.0,
+    "years": 1.0,
+    "exp": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "edu": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "certs": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "skills": [
+      0.944,
+      0.9915966386554622,
+      0.9672131147540983
+    ]
+  },
+  "per_cv": [
+    {
+      "id": "real_pham_dang_khoa",
+      "layout": "PDF 2 cột (CV thật, tiếng Anh)",
+      "v1": {
+        "full_name": false,
+        "full_name_accent": false,
+        "email": true,
+        "phone": true,
+        "date_of_birth": false,
+        "city": true,
+        "headline": true,
+        "summary": false,
+        "years": false,
+        "years_detail": [
+          2.6,
+          2.0
+        ],
+        "exp": [
+          0,
+          0,
+          3
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          8,
+          11,
+          9,
+          17
+        ],
+        "certs": [
+          0,
+          0,
+          1
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          2.6,
+          2.6
+        ],
+        "exp": [
+          3,
+          3,
+          3
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          17,
+          20,
+          17,
+          17
+        ],
+        "certs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Phạm Đăng Khoa",
+        "email": "phamkhoa3092003@gmail.com",
+        "phone": "0859932114",
+        "date_of_birth": "2003-09-30",
+        "city": "TP. Hồ Chí Minh",
+        "headline": "Fullstack Developer",
+        "has_summary": true,
+        "years": 2.6,
+        "months": 31,
+        "educations": [
+          {
+            "school": "Ho Chi Minh City University Of Technology And Education (HCMUTE)",
+            "major": "Information Technology",
+            "degree": "Cử nhân",
+            "start": null,
+            "end": null,
+            "gpa": null,
+            "status": "Đang theo học",
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "HTML",
+          "CSS",
+          "JavaScript",
+          "Next.js",
+          "Node.js",
+          "Express.js",
+          "MongoDB",
+          "Git",
+          "Bootstrap",
+          "Ant Design",
+          "shadcn/ui",
+          "RESTful API",
+          "Responsive Design",
+          "Tự học",
+          "Chăm chỉ",
+          "Giải quyết vấn đề",
+          "Angular",
+          "Vector Database",
+          "Linux",
+          "LLM / Generative AI"
+        ],
+        "certifications": [
+          "TOEIC 450"
+        ],
+        "time_ms": 146.5
+      }
+    },
+    {
+      "id": "sample_scan_ocr",
+      "layout": "PDF scan ảnh 2 cột (OCR, tiếng Việt)",
+      "v1": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": false,
+        "years_detail": [
+          4.9,
+          4.0
+        ],
+        "exp": [
+          0,
+          0,
+          2
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          16,
+          21,
+          16,
+          18
+        ],
+        "certs": [
+          2,
+          2,
+          2
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          4.9,
+          4.9
+        ],
+        "exp": [
+          2,
+          2,
+          2
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          18,
+          19,
+          18,
+          18
+        ],
+        "certs": [
+          2,
+          2,
+          2
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Nguyễn Minh Khoa",
+        "email": "minhkhoa.ai2026@gmail.com",
+        "phone": "0909888777",
+        "date_of_birth": null,
+        "city": "TP. Hồ Chí Minh",
+        "headline": "Senior Fullstack Developer (ReactJS / FastAPI)",
+        "has_summary": false,
+        "years": 4.9,
+        "months": 59,
+        "educations": [
+          {
+            "school": "Đại học Bách Khoa TP. Hồ Chí Minh",
+            "major": "Khoa học Máy tính",
+            "degree": "Kỹ sư",
+            "start": "2018",
+            "end": "2022",
+            "gpa": "3.6/4.0",
+            "status": "Đã tốt nghiệp",
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "Python",
+          "FastAPI",
+          "Django",
+          "ReactJS",
+          "Next.js",
+          "TypeScript",
+          "PostgreSQL",
+          "MongoDB",
+          "Redis",
+          "Docker",
+          "Kubernetes",
+          "AWS",
+          "CI/CD",
+          "NLP",
+          "PyTorch",
+          "Node.js",
+          "RESTful API",
+          "Microservices",
+          "Git"
+        ],
+        "certifications": [
+          "IELTS 7.5",
+          "AWS Certified Developer"
+        ],
+        "time_ms": 1800.2
+      }
+    },
+    {
+      "id": "sample_2col_digital",
+      "layout": "PDF 2 cột điện tử (tiếng Việt)",
+      "v1": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": false,
+        "years_detail": [
+          4.9,
+          4.0
+        ],
+        "exp": [
+          0,
+          0,
+          2
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          16,
+          21,
+          16,
+          18
+        ],
+        "certs": [
+          2,
+          2,
+          2
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          4.9,
+          4.9
+        ],
+        "exp": [
+          2,
+          2,
+          2
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          18,
+          19,
+          18,
+          18
+        ],
+        "certs": [
+          2,
+          2,
+          2
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Nguyễn Minh Khoa",
+        "email": "minhkhoa.ai2026@gmail.com",
+        "phone": "0909888777",
+        "date_of_birth": null,
+        "city": "TP. Hồ Chí Minh",
+        "headline": "Senior Fullstack Developer (ReactJS / FastAPI)",
+        "has_summary": false,
+        "years": 4.9,
+        "months": 59,
+        "educations": [
+          {
+            "school": "Đại học Bách Khoa TP. Hồ Chí Minh",
+            "major": "Khoa học Máy tính",
+            "degree": "Kỹ sư",
+            "start": "2018",
+            "end": "2022",
+            "gpa": "3.6/4.0",
+            "status": "Đã tốt nghiệp",
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "Python",
+          "FastAPI",
+          "Django",
+          "ReactJS",
+          "Next.js",
+          "TypeScript",
+          "PostgreSQL",
+          "MongoDB",
+          "Redis",
+          "Docker",
+          "Kubernetes",
+          "AWS",
+          "CI/CD",
+          "NLP",
+          "PyTorch",
+          "Node.js",
+          "RESTful API",
+          "Microservices",
+          "Git"
+        ],
+        "certifications": [
+          "IELTS 7.5",
+          "AWS Certified Developer"
+        ],
+        "time_ms": 47.0
+      }
+    },
+    {
+      "id": "seed_nguyen_minh_anh",
+      "layout": "PDF 1 cột dạng nhãn (tiếng Anh)",
+      "v1": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": false,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          5.0,
+          5.0
+        ],
+        "exp": [
+          0,
+          0,
+          2
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          13,
+          14,
+          13,
+          14
+        ],
+        "certs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          5.0,
+          5.0
+        ],
+        "exp": [
+          2,
+          2,
+          2
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          14,
+          14,
+          14,
+          14
+        ],
+        "certs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Nguyen Minh Anh",
+        "email": "minhanh.dev@gmail.com",
+        "phone": "0912345678",
+        "date_of_birth": null,
+        "city": null,
+        "headline": "Senior Python Backend Developer",
+        "has_summary": false,
+        "years": 5.0,
+        "months": 60,
+        "educations": [
+          {
+            "school": "University of Technology (DH Bach Khoa TP.HCM)",
+            "major": "Information Technology",
+            "degree": "Cử nhân",
+            "start": null,
+            "end": null,
+            "gpa": null,
+            "status": null,
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "Python",
+          "FastAPI",
+          "Django",
+          "PostgreSQL",
+          "MongoDB",
+          "Docker",
+          "Redis",
+          "Git",
+          "RESTful API",
+          "Microservices",
+          "AWS",
+          "SQL",
+          "CI/CD",
+          "NLP"
+        ],
+        "certifications": [],
+        "time_ms": 33.5
+      }
+    },
+    {
+      "id": "seed_le_hoang_nam",
+      "layout": "PDF 1 cột dạng nhãn (tiếng Anh)",
+      "v1": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": false,
+        "years_detail": [
+          2.0,
+          1.5
+        ],
+        "exp": [
+          0,
+          0,
+          1
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          6,
+          6,
+          6,
+          8
+        ],
+        "certs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          2.0,
+          2.0
+        ],
+        "exp": [
+          1,
+          1,
+          1
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "certs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Le Hoang Nam",
+        "email": "hoangnam.da@gmail.com",
+        "phone": "0987654321",
+        "date_of_birth": null,
+        "city": null,
+        "headline": "Junior Data Analyst",
+        "has_summary": false,
+        "years": 2.0,
+        "months": 24,
+        "educations": [
+          {
+            "school": "University of Economics and Law",
+            "major": "Data Science",
+            "degree": "Cử nhân",
+            "start": null,
+            "end": null,
+            "gpa": null,
+            "status": null,
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "Python",
+          "SQL",
+          "PostgreSQL",
+          "Data Analysis",
+          "Excel",
+          "Power BI",
+          "Git",
+          "Pandas/NumPy"
+        ],
+        "certifications": [],
+        "time_ms": 18.8
+      }
+    },
+    {
+      "id": "seed_pham_thao_vy",
+      "layout": "PDF 1 cột dạng nhãn (tiếng Anh)",
+      "v1": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          3.0,
+          3.0
+        ],
+        "exp": [
+          0,
+          0,
+          1
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          6,
+          8,
+          7,
+          12
+        ],
+        "certs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          3.0,
+          3.0
+        ],
+        "exp": [
+          1,
+          1,
+          1
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          11,
+          11,
+          11,
+          12
+        ],
+        "certs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Pham Thao Vy",
+        "email": "thaovy.fe@gmail.com",
+        "phone": "0977889900",
+        "date_of_birth": null,
+        "city": null,
+        "headline": "Frontend Developer (ReactJS / Next.js)",
+        "has_summary": false,
+        "years": 3.0,
+        "months": 36,
+        "educations": [
+          {
+            "school": "VNU-HCM University of Science",
+            "major": "Software Engineering",
+            "degree": "Cử nhân",
+            "start": null,
+            "end": null,
+            "gpa": null,
+            "status": null,
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "JavaScript",
+          "TypeScript",
+          "ReactJS",
+          "Next.js",
+          "HTML",
+          "CSS",
+          "UI/UX Design",
+          "Figma",
+          "Git",
+          "RESTful API",
+          "Tailwind CSS"
+        ],
+        "certifications": [],
+        "time_ms": 20.4
+      }
+    },
+    {
+      "id": "seed_tran_quoc_bao",
+      "layout": "PDF 1 cột dạng nhãn (tiếng Anh, Xây dựng)",
+      "v1": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          4.0,
+          4.0
+        ],
+        "exp": [
+          0,
+          0,
+          1
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          1,
+          2,
+          1,
+          6
+        ],
+        "certs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          4.0,
+          4.0
+        ],
+        "exp": [
+          1,
+          1,
+          1
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          6,
+          6,
+          6,
+          6
+        ],
+        "certs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Tran Quoc Bao",
+        "email": "quocbao.civil@gmail.com",
+        "phone": "0933445566",
+        "date_of_birth": null,
+        "city": null,
+        "headline": "Civil & Structural Engineer",
+        "has_summary": false,
+        "years": 4.0,
+        "months": 48,
+        "educations": [
+          {
+            "school": "University of Architecture",
+            "major": "Civil Engineering",
+            "degree": "Cử nhân",
+            "start": null,
+            "end": null,
+            "gpa": null,
+            "status": null,
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "AutoCAD",
+          "ETABS/SAP2000",
+          "Project Management",
+          "Excel",
+          "Dự toán / Bóc khối lượng",
+          "Giám sát thi công"
+        ],
+        "certifications": [],
+        "time_ms": 11.6
+      }
+    },
+    {
+      "id": "docx_ke_toan",
+      "layout": "DOCX dùng bảng (tiếng Việt, Kế toán)",
+      "v1": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": false,
+        "city": true,
+        "headline": true,
+        "summary": false,
+        "years": false,
+        "years_detail": [
+          6.5,
+          10.0
+        ],
+        "exp": [
+          0,
+          0,
+          2
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          2,
+          3,
+          2,
+          10
+        ],
+        "certs": [
+          1,
+          1,
+          2
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          6.5,
+          6.5
+        ],
+        "exp": [
+          2,
+          2,
+          2
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          10,
+          11,
+          10,
+          10
+        ],
+        "certs": [
+          2,
+          2,
+          2
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Trần Thị Mai Anh",
+        "email": "maianh.ketoan@gmail.com",
+        "phone": "0987654321",
+        "date_of_birth": "1998-05-12",
+        "city": "Hà Nội",
+        "headline": "Kế toán tổng hợp",
+        "has_summary": true,
+        "years": 6.5,
+        "months": 78,
+        "educations": [
+          {
+            "school": "Học viện Tài chính",
+            "major": "Kế toán doanh nghiệp",
+            "degree": "Cử nhân",
+            "start": "2016",
+            "end": "2020",
+            "gpa": "3.4/4.0",
+            "status": "Đã tốt nghiệp",
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "MISA",
+          "Excel",
+          "Giao tiếp",
+          "Làm việc nhóm",
+          "Cẩn thận, tỉ mỉ",
+          "Kế toán tổng hợp",
+          "Kế toán thuế",
+          "Kế toán",
+          "Báo cáo tài chính",
+          "Kiểm toán",
+          "VAS/IFRS"
+        ],
+        "certifications": [
+          "TOEIC 650",
+          "Chứng chỉ Kế toán trưởng"
+        ],
+        "time_ms": 126.1
+      }
+    },
+    {
+      "id": "pdf_1col_marketing",
+      "layout": "PDF 1 cột, ngày căn phải (tiếng Việt, Marketing)",
+      "v1": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": false,
+        "summary": false,
+        "years": false,
+        "years_detail": [
+          5.9,
+          3.0
+        ],
+        "exp": [
+          0,
+          0,
+          2
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          1,
+          3,
+          2,
+          9
+        ],
+        "certs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          5.9,
+          5.9
+        ],
+        "exp": [
+          2,
+          2,
+          2
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          9,
+          9,
+          9,
+          9
+        ],
+        "certs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Lê Văn Hùng",
+        "email": "hung.le.mkt@gmail.com",
+        "phone": "0912333444",
+        "date_of_birth": null,
+        "city": "Đà Nẵng",
+        "headline": "Digital Marketing Executive",
+        "has_summary": true,
+        "years": 5.9,
+        "months": 71,
+        "educations": [
+          {
+            "school": "Đại học Kinh tế - Đại học Đà Nẵng",
+            "major": "Marketing",
+            "degree": "Cử nhân",
+            "start": "2016",
+            "end": "2020",
+            "gpa": null,
+            "status": "Đã tốt nghiệp",
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "Facebook Ads",
+          "Google Ads",
+          "SEO",
+          "Content Marketing",
+          "Google Analytics",
+          "Canva",
+          "Adobe Photoshop",
+          "Digital Marketing",
+          "Social Media"
+        ],
+        "certifications": [
+          "IELTS 6.5"
+        ],
+        "time_ms": 30.5
+      }
+    },
+    {
+      "id": "pdf_right_sidebar_en",
+      "layout": "PDF 2 cột, sidebar bên phải (tiếng Anh)",
+      "v1": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": false,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": false,
+        "years": false,
+        "years_detail": [
+          3.9,
+          2.0
+        ],
+        "exp": [
+          0,
+          0,
+          2
+        ],
+        "edu": [
+          0,
+          0,
+          1
+        ],
+        "skills": [
+          4,
+          6,
+          4,
+          7
+        ],
+        "certs": [
+          1,
+          1,
+          2
+        ]
+      },
+      "v2": {
+        "full_name": true,
+        "full_name_accent": true,
+        "email": true,
+        "phone": true,
+        "date_of_birth": true,
+        "city": true,
+        "headline": true,
+        "summary": true,
+        "years": true,
+        "years_detail": [
+          3.9,
+          3.9
+        ],
+        "exp": [
+          2,
+          2,
+          2
+        ],
+        "edu": [
+          1,
+          1,
+          1
+        ],
+        "skills": [
+          7,
+          8,
+          7,
+          7
+        ],
+        "certs": [
+          2,
+          2,
+          2
+        ]
+      },
+      "v2_pred": {
+        "full_name": "Emily Nguyen",
+        "email": "emily.nguyen@outlook.com",
+        "phone": "0908765432",
+        "date_of_birth": null,
+        "city": "TP. Hồ Chí Minh",
+        "headline": "Data Analyst",
+        "has_summary": true,
+        "years": 3.9,
+        "months": 47,
+        "educations": [
+          {
+            "school": "University of Economics Ho Chi Minh City (UEH)",
+            "major": "Business Information Systems",
+            "degree": "Cử nhân",
+            "start": "2019",
+            "end": "2023",
+            "gpa": "3.5/4.0",
+            "status": "Đã tốt nghiệp",
+            "confidence": 0.85
+          }
+        ],
+        "skills": [
+          "SQL",
+          "Python",
+          "Pandas/NumPy",
+          "Power BI",
+          "Tableau",
+          "Excel",
+          "Data Analysis",
+          "E-commerce"
+        ],
+        "certifications": [
+          "IELTS 7.0",
+          "Google Data Analytics Certificate"
+        ],
+        "time_ms": 29.3
+      }
+    }
+  ]
+}
