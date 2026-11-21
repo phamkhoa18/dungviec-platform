@@ -39,7 +39,7 @@ const aiSteps = [
   {
     icon: Cpu,
     title: "2. AI phân tích & chấm điểm",
-    desc: "Bóc tách thực thể kỹ năng; mô hình BAAI/bge-m3 Song ngữ tính điểm phù hợp CV – JD (0–100).",
+    desc: "Tự động trích xuất kỹ năng, kinh nghiệm từ CV và chấm điểm mức độ phù hợp với công việc (0–100).",
   },
   {
     icon: ListChecks,

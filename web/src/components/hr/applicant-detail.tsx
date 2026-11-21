@@ -182,12 +182,11 @@ function AiTab({ app }: { app: EnrichedApplication }) {
         <div>
           <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
             <Sparkles className="size-4 text-[#306BD9]" />
-            Kết quả phân tích mức độ phù hợp (AI BGE-M3 + TF-IDF)
+            Kết quả phân tích mức độ phù hợp
           </h3>
           {ev && !pending && (
             <p className="mt-0.5 text-[11.5px] text-[#777777]">
-              Mô hình: <strong>{ev.model_name}</strong> · Thời gian xử lý:{" "}
-              {ev.processed_time_ms} ms · Đánh giá lúc{" "}
+              Mô hình: <strong>AI Đúng Việc</strong> · Đánh giá lúc{" "}
               {formatDateTime(ev.created_at)}
             </p>
           )}
@@ -264,7 +263,7 @@ function AiTab({ app }: { app: EnrichedApplication }) {
                 />
                 <div>
                   <p className="text-[12px] font-semibold text-[#64748B]">
-                    Điểm tổng hợp S / 100
+                    Thang điểm 100
                   </p>
                   <FitBadge
                     label={ev.predicted_label}
@@ -279,17 +278,17 @@ function AiTab({ app }: { app: EnrichedApplication }) {
 
               <div className="flex flex-col justify-center space-y-2.5 rounded-2xl border border-[#F0F2F6] p-4">
                 <ProbBar
-                  label="Xác suất Rất phù hợp (Good Fit)"
+                  label="Mức độ Rất phù hợp"
                   value={pct(ev.prob_good)}
                   color={FIT_META["Good Fit"].color}
                 />
                 <ProbBar
-                  label="Xác suất Tiềm năng (Potential Fit)"
+                  label="Mức độ Tiềm năng"
                   value={pct(ev.prob_potential)}
                   color={FIT_META["Potential Fit"].color}
                 />
                 <ProbBar
-                  label="Xác suất Chưa phù hợp (No Fit)"
+                  label="Mức độ Chưa phù hợp"
                   value={pct(ev.prob_no_fit)}
                   color={FIT_META["No Fit"].color}
                 />

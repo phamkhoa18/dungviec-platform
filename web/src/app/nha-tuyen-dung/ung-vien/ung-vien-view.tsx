@@ -299,7 +299,7 @@ function CandidatesView() {
     <>
       <PageHeader
         title="Quản lý & Xếp hạng Ứng viên"
-        subtitle="AI BGE-M3 + TF-IDF tự động chấm điểm, phân loại mức độ phù hợp và bóc tách hồ sơ cấu trúc."
+        subtitle="Hệ thống AI Đúng Việc tự động chấm điểm, đánh giá mức độ phù hợp và tóm tắt hồ sơ ứng viên."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {/* Chuyển chế độ Danh sách / Kanban */}

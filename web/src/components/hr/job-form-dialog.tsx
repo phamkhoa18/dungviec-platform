@@ -504,7 +504,7 @@ function JobForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="job-skills" className={labelCls}>
-          Kỹ năng chuyên môn bắt buộc * (Dùng cho AI BGE-M3 + TF-IDF đối sánh CV)
+          Kỹ năng chuyên môn bắt buộc * (Dùng để AI đối chiếu với CV ứng viên)
         </Label>
         <SkillsInput value={skills} onChange={setSkills} />
         {err("skills")}
@@ -657,8 +657,8 @@ export function JobFormDialog({
             {job ? "Chỉnh sửa tin tuyển dụng" : "Đăng tin tuyển dụng mới"}
           </DialogTitle>
           <DialogDescription className="text-[13px]">
-            Điền đầy đủ mô tả công việc, yêu cầu và kỹ năng để ứng viên ứng
-            tuyển và hệ thống AI (BGE-M3 + TF-IDF) chấm điểm chính xác nhất.
+            Điền đầy đủ mô tả công việc, yêu cầu và kỹ năng để ứng viên nắm rõ
+            thông tin và hệ thống AI đánh giá hồ sơ chính xác nhất.
           </DialogDescription>
         </DialogHeader>
         <JobForm

@@ -399,13 +399,7 @@ def main() -> None:
         matched_sk = eval_res["matched_skills"]
         missing_sk = eval_res["missing_skills"]
 
-        explanation = (
-            f"[BGE-M3 Hybrid — {cat_label}] Điểm phù hợp S = 100 × ({eval_res['prob_good']:.4f} + 0.5 × {eval_res['prob_potential']:.4f}) "
-            f"= {score_s:.2f}/100 ({pred_label}). "
-            f"Khớp {len(matched_sk)}/{len(req_skills)} kỹ năng yêu cầu của JD"
-            + (f" ({', '.join(matched_sk)})" if matched_sk else " (Không trùng khớp kỹ năng cốt lõi)")
-            + f". Kinh nghiệm trích xuất: {yrs_exp:.1f} năm | Ngôn ngữ CV: {lang} | Bố cục: {item['layout_type']}."
-        )
+        explanation = eval_res["explanation"]
 
         ts_iso = (base_time + timedelta(minutes=i * 7)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
@@ -426,7 +420,7 @@ def main() -> None:
         )
 
         # Tạo bản ghi CV Profile
-        cv_title = f"[CV #{cid:03d} - {cat_folder[:2]}] {headline} — {full_name}"
+        cv_title = f"CV {headline} — {full_name}"
         file_url = f"/api/files/cv/{cv_id}"
         cv_record = {
             "_id": cv_oid,
@@ -514,12 +508,12 @@ def main() -> None:
                     "captured_at": ts_iso,
                 },
                 "cover_letter": (
-                    f"Hồ sơ ứng tuyển từ bộ kiểm thử 200 CV thực tế — Mã hồ sơ: CV #{cid:03d} "
-                    f"| Nhóm ngành: {cat_label} | Vị trí: {headline}."
+                    f"Kính gửi Bộ phận Tuyển dụng, tôi xin gửi hồ sơ ứng tuyển vị trí hiện tại của quý công ty. "
+                    f"Với {yrs_exp:.1f} năm kinh nghiệm làm việc ở mảng {headline}, tôi rất mong có cơ hội trao đổi sâu hơn trong buổi phỏng vấn."
                 ),
                 "status": app_status,
-                "hr_notes": f"Phân loại ngành gốc: {cat_label} ({item['relative_path']})",
-                "tags": [cat_label.split("-")[0].strip(), f"CV #{cid:03d}", lang],
+                "hr_notes": None,
+                "tags": [cat_label.split("-")[0].strip()] + (["Ưu tiên phỏng vấn"] if pred_label == "Good Fit" else []),
                 "applied_at": ts_iso,
                 "updated_at": ts_iso,
                 "status_history": [

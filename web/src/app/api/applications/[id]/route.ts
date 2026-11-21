@@ -200,9 +200,15 @@ export async function POST(_req: Request, context: Ctx) {
   try {
     const ev = await scoreApplication(db, found.app, found.job);
     writeDb(db);
+    const fitVi =
+      ev.predicted_label === "Good Fit"
+        ? "Rất phù hợp"
+        : ev.predicted_label === "Potential Fit"
+          ? "Tiềm năng"
+          : "Chưa phù hợp";
     return NextResponse.json({
       status: "ok",
-      message: `Đã chấm điểm lại bằng AI: S = ${ev.match_score}/100 (${ev.predicted_label})`,
+      message: `Đã chấm điểm lại: ${Math.round(ev.match_score)}/100 điểm (${fitVi})`,
       ai_evaluation: ev,
     });
   } catch (err) {

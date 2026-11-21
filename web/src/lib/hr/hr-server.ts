@@ -38,7 +38,7 @@ export async function requireHr(): Promise<
   const session = await getSessionUser();
   if (!session) return { ok: false, response: jsonError("Vui lòng đăng nhập.", 401) };
   if (session.user.role !== "hr") {
-    return { ok: false, response: jsonError("QT-05: Chức năng chỉ dành cho Nhà tuyển dụng.", 403) };
+    return { ok: false, response: jsonError("Chức năng này chỉ dành cho Nhà tuyển dụng.", 403) };
   }
   const db = readDb();
   const company = db.companies.find((c) => c.hr_user_id === session.user.id) || null;
@@ -61,7 +61,7 @@ export function findOwnedApplication(
   if (!app) return { error: jsonError("Không tìm thấy đơn ứng tuyển.", 404) };
   const job = db.jobs.find((j) => j.id === app.job_id);
   if (!job || !ownsJob(job, userId, company)) {
-    return { error: jsonError("QT-05: Bạn chỉ có quyền xử lý hồ sơ thuộc công ty của mình.", 403) };
+    return { error: jsonError("Bạn chỉ có quyền xử lý hồ sơ thuộc công ty của mình.", 403) };
   }
   return { app, job };
 }

@@ -239,7 +239,7 @@ export async function POST(req: Request) {
     }
     if (!selectedCv) {
       return NextResponse.json(
-        { error: "UC-02: Vui lòng tải lên tệp CV (.pdf hoặc .docx) từ máy tính hoặc chọn một CV có sẵn." },
+        { error: "Vui lòng tải lên tệp CV (.pdf hoặc .docx) từ máy tính hoặc chọn một CV có sẵn." },
         { status: 400 }
       );
     }
@@ -293,7 +293,7 @@ export async function POST(req: Request) {
         id: nextEvalId,
         application_id: newApp.id,
         application_object_id: newApp._id,
-        model_name: "BAAI/bge-m3",
+        model_name: "AI Đúng Việc",
         model_version: "pending",
         match_score: 0,
         predicted_label: "Potential Fit",
@@ -303,7 +303,7 @@ export async function POST(req: Request) {
         probabilities: { no_fit: 0, potential_fit: 0, good_fit: 0 },
         matched_skills: [],
         missing_skills: job.required_skills || [],
-        explanation: "QT-06: Đang chờ đánh giá lại từ AI Service (pending_evaluation).",
+        explanation: "Đang chờ hệ thống AI đánh giá hồ sơ.",
         processed_time_ms: 0,
         evaluation_status: "pending_evaluation",
         jd_hash: job.jd_hash,

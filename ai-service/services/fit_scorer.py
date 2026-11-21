@@ -747,15 +747,60 @@ class BGEM3CVJDScorer:
             model_version = "bge-m3-bilingual-semantic-1024"
 
         elapsed_ms = max(1, int(round((time.perf_counter() - start_time) * 1000)))
-
-        explanation = (
-            f"[BGE-M3 Song ngữ] Điểm phù hợp S = 100 × ({pred['prob_good']:.4f} + 0.5 × {pred['prob_potential']:.4f}) "
-            f"= {pred['match_score']:.2f}/100 ({pred['predicted_label']}). "
-            f"Khớp {len(matched_skills)}/{len(jd_skill_list)} kỹ năng yêu cầu của tin tuyển dụng."
+        cv_exp_years = round(min(15.0, extract_experience_years_bilingual(cv_text)), 1)
+        exp_str = (
+            f"{int(cv_exp_years) if cv_exp_years.is_integer() else cv_exp_years} năm kinh nghiệm"
+            if cv_exp_years > 0
+            else "kinh nghiệm thực tế"
         )
+        score_round = round(float(pred["match_score"]))
+        total_req = len(jd_skill_list)
+        m_cnt = len(matched_skills)
+
+        if pred["predicted_label"] == "Good Fit":
+            if total_req > 0 and m_cnt == total_req:
+                sk_part = f"đáp ứng đầy đủ {m_cnt}/{total_req} kỹ năng yêu cầu ({', '.join(matched_skills)})"
+                rec_part = "Đề xuất: Ưu tiên mời phỏng vấn."
+            elif total_req > 0 and m_cnt > 0:
+                sk_part = (
+                    f"đáp ứng {m_cnt}/{total_req} kỹ năng yêu cầu ({', '.join(matched_skills)})"
+                    + (f", có thể trao đổi thêm về {', '.join(missing_skills)} khi phỏng vấn" if missing_skills else "")
+                )
+                rec_part = "Đề xuất: Ưu tiên mời phỏng vấn."
+            else:
+                sk_part = "nội dung kinh nghiệm trong CV phù hợp tốt với mô tả công việc"
+                rec_part = "Đề xuất: Ưu tiên mời phỏng vấn."
+            explanation = (
+                f"Hồ sơ rất phù hợp với vị trí tuyển dụng ({score_round}/100 điểm). "
+                f"Ứng viên có {exp_str}, {sk_part}. {rec_part}"
+            )
+        elif pred["predicted_label"] == "Potential Fit":
+            if total_req > 0 and m_cnt > 0:
+                sk_part = (
+                    f"đã đáp ứng {m_cnt}/{total_req} kỹ năng yêu cầu ({', '.join(matched_skills)})"
+                    + (f" và còn thiếu {len(missing_skills)} kỹ năng ({', '.join(missing_skills)})" if missing_skills else "")
+                )
+            elif total_req > 0:
+                sk_part = f"có nền tảng liên quan nhưng chưa thể hiện rõ các từ khóa kỹ năng bắt buộc ({', '.join(missing_skills[:4])})"
+            else:
+                sk_part = "có kinh nghiệm liên quan một phần tới vị trí tuyển dụng"
+            explanation = (
+                f"Hồ sơ có tiềm năng phù hợp với vị trí tuyển dụng ({score_round}/100 điểm). "
+                f"Ứng viên có {exp_str}, {sk_part}. "
+                f"Đề xuất: Cân nhắc xem thêm kinh nghiệm dự án thực tế trước khi hẹn phỏng vấn."
+            )
+        else:
+            if total_req > 0 and m_cnt > 0:
+                sk_part = f"mới chỉ khớp {m_cnt}/{total_req} kỹ năng ({', '.join(matched_skills)}) và còn thiếu nhiều kỹ năng trọng tâm ({', '.join(missing_skills[:5])})"
+            else:
+                sk_part = "chưa đáp ứng các kỹ năng chuyên môn bắt buộc của vị trí này"
+            explanation = (
+                f"Hồ sơ chưa phù hợp với yêu cầu của vị trí ({score_round}/100 điểm). "
+                f"Ứng viên ({exp_str}) {sk_part}."
+            )
 
         return {
-            "model_name": BGE_M3_MODEL_NAME,
+            "model_name": "AI Đúng Việc",
             "model_version": model_version,
             "loaded_pytorch_checkpoint": self.loaded_from_checkpoint,
             "match_score": pred["match_score"],
