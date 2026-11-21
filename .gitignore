@@ -48,3 +48,15 @@ web/storage/cvs/*
 !web/storage/cvs/Nguyen_Minh_Anh_Python_Backend_CV.pdf
 !web/storage/cvs/Pham_Thao_Vy_ReactJS_Frontend_CV.pdf
 !web/storage/cvs/Tran_Quoc_Bao_Civil_Engineer_CV.pdf
+
+# ── Tài liệu chuẩn, file báo cáo, rubric (chỉ lưu local, không đẩy lên Git) ──
+tailieuchuan/
+filebaocao/
+file-diem/
+docs/
+ketqua/
+kqtrain/
+BAO_CAO_*.md
+KE_HOACH_*.md
+Bao_cao_*.docx
+*.drawio
