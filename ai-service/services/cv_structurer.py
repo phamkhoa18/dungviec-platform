@@ -658,6 +658,7 @@ def extract_personal(seg: Segmented, all_lines: List[Line], file_name: str) -> T
 
     # --- Họ tên ---
     name: Optional[str] = None
+    name_end_idx: Optional[int] = None
     inline_headline: Optional[str] = None
     if "full_name" in labels and _valid_name(labels["full_name"][0]):
         name = _format_name(labels["full_name"][0])
@@ -691,6 +692,29 @@ def extract_personal(seg: Segmented, all_lines: List[Line], file_name: str) -> T
                 if _ROLE_KW.search(fold(parts_nr[1])) and not match_heading_phrase(parts_nr[1]):
                     inline_headline = smart_title(parts_nr[1])
                 break
+
+    # Hỗ trợ Họ tên dài bị ngắt xuống dòng thứ 2 ở cột hẹp (cùng cỡ chữ lớn, cùng cột, ví dụ "LE NGO" + "HOANG DINH")
+    if name:
+        folded_name_words = fold(name).split()
+        for i, ln in enumerate(all_lines[:30]):
+            if fold(re.sub(r"[^A-Za-zÀ-ỹĐđ\s]", " ", ln.text)).split() == folded_name_words:
+                name_end_idx = i
+                if i + 1 < len(all_lines):
+                    nxt_ln = all_lines[i + 1]
+                    nxt_txt = nxt_ln.text.strip()
+                    nxt_words = nxt_txt.split()
+                    if (
+                        1 <= len(nxt_words) <= 2
+                        and nxt_ln.column == ln.column
+                        and abs(nxt_ln.size - ln.size) <= 1.5
+                        and not _ROLE_KW.search(fold(nxt_txt))
+                        and not match_heading_phrase(nxt_txt)
+                        and _valid_name(f"{name} {nxt_txt}")
+                    ):
+                        name = _format_name(f"{name} {nxt_txt}")
+                        name_end_idx = i + 1
+                break
+
     if name:
         restored = _restore_accents_from_filename(name, file_name)
         if restored != name:
@@ -701,33 +725,35 @@ def extract_personal(seg: Segmented, all_lines: List[Line], file_name: str) -> T
         personal["headline"] = inline_headline
         conf["headline"] = 0.88
 
-    # --- Chức danh (dòng ngay dưới tên) ---
-    if name and not personal["headline"]:
-        folded_name = fold(name)
-        for i, ln in enumerate(all_lines[:30]):
-            if fold(re.sub(r"[^A-Za-zÀ-ỹĐđ\s]", " ", ln.text)).split() == folded_name.split():
-                for nxt in all_lines[i + 1 : i + 4]:
-                    t = nxt.text.strip()
-                    if _LABEL_RE.search(fold(t)):
-                        break
-                    if match_heading_phrase(t):
-                        continue
-                    if (
-                        1 <= len(t.split()) <= 8
-                        and not re.search(r"[@:\d]", t)
-                        and t[:1].isalpha()
-                        and t[:1].isupper()
-                        and t.count("(") == t.count(")")
-                        and (nxt.bold or is_upper_text(t) or nxt.size > seg.median_size or bool(_ROLE_KW.search(fold(t))))
-                    ):
-                        personal["headline"] = smart_title(t)
-                        conf["headline"] = 0.85
-                        break
+    # --- Chức danh (dòng ngay dưới tên, bắt buộc phải chứa từ khoá nghề nghiệp/vị trí thực sự) ---
+    if name and not personal["headline"] and name_end_idx is not None:
+        for nxt in all_lines[name_end_idx + 1 : name_end_idx + 5]:
+            t = nxt.text.strip()
+            if _LABEL_RE.search(fold(t)) or _STANDALONE_LABEL_RE.match(fold(t)):
+                break
+            if match_heading_phrase(t):
+                continue
+            if (
+                1 <= len(t.split()) <= 9
+                and not re.search(r"[@:\d]", t)
+                and t[:1].isalpha()
+                and t.count("(") == t.count(")")
+                and bool(_ROLE_KW.search(fold(t)))
+            ):
+                personal["headline"] = smart_title(t)
+                conf["headline"] = 0.85
                 break
     for fld in ("position", "role"):
         if fld in labels and not personal["headline"]:
-            personal["headline"] = smart_title(labels[fld][0])
-            conf["headline"] = 0.8
+            cand_role = labels[fld][0].strip()
+            if (
+                len(cand_role) >= 3
+                and not match_heading_phrase(cand_role)
+                and not _STANDALONE_LABEL_RE.match(fold(cand_role))
+                and bool(_ROLE_KW.search(fold(cand_role)))
+            ):
+                personal["headline"] = smart_title(cand_role)
+                conf["headline"] = 0.8
 
     # --- Email / SĐT ---
     full_text = "\n".join(l.text for l in all_lines)
@@ -846,14 +872,16 @@ _COMPANY_KW = re.compile(
     r"academy|foundation|consulting|services|media|digital|logistics|holdings|joint stock)\b"
 )
 _ROLE_KW = re.compile(
-    r"\b(developer|engineer|programmer|intern|internship|thuc tap|thuc tap sinh|fresher|junior|senior|lead|leader|"
+    r"\b(developer|engineer|programmer|intern|internship|interns|thuc tap|thuc tap sinh|fresher|junior|senior|lead|leader|"
     r"manager|director|head|specialist|executive|officer|staff|assistant|analyst|consultant|designer|tester|qa|qc|"
     r"architect|administrator|admin|accountant|ke toan|nhan vien|chuyen vien|truong phong|truong nhom|pho phong|"
     r"giam doc|quan ly|ky su|lap trinh vien|giao vien|giang vien|tro giang|sales|cong tac vien|ctv|freelancer|"
     r"representative|supervisor|giam sat|coordinator|scientist|researcher|bien dich|phien dich|thu ky|le tan|"
     r"receptionist|cashier|thu ngan|phuc vu|barista|tutor|gia su|fullstack|full-stack|frontend|front-end|backend|"
     r"back-end|devops|tts|member|thanh vien|tro ly|phu ta|chuyen gia|ky thuat vien|technician|operator|"
-    r"nhan vien van hanh|trainee|apprentice)\b"
+    r"nhan vien van hanh|trainee|apprentice|marketer|marketing|product owner|scrum master|kien truc su|"
+    r"trinh duoc vien|chef|dau bep|auditor|kiem toan|purchasing|buyer|mua hang|thu mua|merchandiser|"
+    r"translator|interpreter|lawyer|luat su|phap che|recruiter|tuyen dung|copywriter|editor|teller|giao dich vien)\b"
 )
 _POSITION_LABEL = re.compile(r"^\s*(?:position|role|title|job title|vi tri|chuc vu|chuc danh|vai tro)\s*[:：]\s*", re.I)
 _COMPANY_LABEL = re.compile(r"^\s*(?:company|cong ty|noi lam viec|employer|don vi)\s*[:：]\s*", re.I)
@@ -1512,16 +1540,31 @@ def structure_cv(lines: List[Line], file_name: str = "") -> Dict[str, Any]:
     # Mục tiêu / tóm tắt
     summary_lines = [l.text for l in seg.get("summary")]
     if not summary_lines:
-        header = seg.get("header") + seg.get("contact")
+        header = seg.get("header")
         name_key = fold(personal["full_name"] or "~")
+        headline_key = fold(personal["headline"] or "~")
+        cand_hdr: List[str] = []
         for l in header:
             t = l.text.strip()
-            if l.extra.get("inline_section") or re.search(r"curriculum vitae|\bresume\b|^cv\b", fold(t)) or is_upper_text(t):
+            ft = fold(t)
+            if (
+                l.extra.get("inline_section")
+                or re.search(r"curriculum vitae|\bresume\b|^cv\b", ft)
+                or is_upper_text(t)
+                or _LABEL_RE.search(ft)
+                or _STANDALONE_LABEL_RE.match(ft)
+                or _EMAIL_RE.search(t)
+                or _PHONE_RE.search(t)
+                or _URL_RE.search(t)
+                or ft == name_key
+                or ft == headline_key
+                or (name_key != "~" and ft and ft in name_key.split())
+            ):
                 continue
-            if len(t.split()) >= 8 and not _LABEL_RE.search(fold(t)) and fold(t) != name_key and not _EMAIL_RE.search(t):
-                summary_lines.append(t)
-            elif summary_lines and t and t[:1].islower():
-                summary_lines.append(t)
+            cand_hdr.append(t)
+        for para in _join_wrapped(cand_hdr):
+            if len(para.split()) >= 7 and not detect_city(para):
+                summary_lines.append(para)
     summary = " ".join(_join_wrapped(summary_lines)).strip() or None
     if summary:
         conf["summary"] = 0.9 if seg.get("summary") else 0.7

@@ -65,9 +65,11 @@ class Line:
 # Tiện ích văn bản
 # ---------------------------------------------------------------------------
 def normalize_text(text: str) -> str:
-    """Chuẩn hoá Unicode NFC (sửa dấu tiếng Việt tổ hợp), bỏ lỗi font CID, icon PUA và chuẩn hoá dấu gạch ngang."""
+    """Chuẩn hoá Unicode NFC (sửa dấu tiếng Việt tổ hợp), bỏ lỗi font CID, icon PUA, ligature và dấu gạch ngang."""
     if not text:
         return ""
+    for lig, repl in (("\ufb00", "ff"), ("\ufb01", "fi"), ("\ufb02", "fl"), ("\ufb03", "ffi"), ("\ufb04", "ffl")):
+        text = text.replace(lig, repl)
     text = unicodedata.normalize("NFC", text)
     text = re.sub(r"\(cid:\d+\)", " ", text)
     # Loại bỏ ký tự icon Private Use Area (FontAwesome/TopCV/Canva)
