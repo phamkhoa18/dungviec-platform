@@ -16,7 +16,6 @@ import {
   FolderKanban,
   GraduationCap,
   History,
-  IdCard,
   Languages,
   Loader2,
   Mail,
@@ -349,7 +348,7 @@ function AiTab({ app }: { app: EnrichedApplication }) {
   );
 }
 
-/* ---------------------------------------------------------------- TAB 2: HỒ SƠ CẤU TRÚC (PARSER V2) */
+/* ---------------------------------------------------------------- TAB 2: NỘI DUNG HỒ SƠ */
 function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
   const parsed =
     app.cv_snapshot?.parsed_data ?? app.cv_profile?.parsed_data ?? null;
@@ -381,7 +380,7 @@ function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
   ) {
     return (
       <Panel className="p-6 text-center text-[13.5px] text-[#64748B]">
-        Chưa có dữ liệu cấu trúc cho hồ sơ này. Hãy xem tab CV gốc.
+        Chưa có nội dung hồ sơ cho ứng viên này. Hãy xem tab CV gốc.
       </Panel>
     );
   }
@@ -395,26 +394,21 @@ function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F0F2F6] pb-3">
           <div>
             <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
-              <IdCard className="size-4 text-[#306BD9]" />
-              Hồ sơ năng lực cấu trúc (Bóc tách từ CV &amp; Hồ sơ ứng viên)
+              <FileText className="size-4 text-[#306BD9]" />
+              Nội dung hồ sơ
             </h3>
             <p className="mt-0.5 text-[12px] text-[#64748B]">
               {app.cv_snapshot
-                ? `Bản chụp CV tại thời điểm ứng tuyển (${app.cv_snapshot.file_name})`
-                : "Dữ liệu trích xuất tự động từ CV"}
+                ? `Trích xuất tự động từ CV tại thời điểm ứng tuyển (${app.cv_snapshot.file_name})`
+                : "Nội dung được trích xuất tự động từ CV ứng viên"}
             </p>
           </div>
-          {(cp?.headline || parsed?.desired_position) && (
-            <div className="rounded-xl bg-[#F0FDF4] px-3 py-1.5 text-[12px] font-semibold text-[#15803D]">
-              Vị trí mục tiêu: {cp?.headline || parsed?.desired_position}
-            </div>
-          )}
         </div>
 
         {summary && (
           <div className="mt-4 rounded-xl bg-[#F8FAFC] p-3.5 text-[13px] leading-relaxed text-[#334155]">
             <p className="mb-1 text-[11.5px] font-bold uppercase text-[#64748B]">
-              Mục tiêu &amp; Giới thiệu bản thân
+              Giới thiệu bản thân
             </p>
             {summary}
           </div>
@@ -472,7 +466,7 @@ function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
           </div>
         </div>
 
-        {/* Kinh nghiệm làm việc */}
+        {/* Kinh nghiệm làm việc — hiển thị dạng nội dung */}
         {experiences.length > 0 && (
           <div className="mt-5">
             <h4 className="flex items-center gap-1.5 text-[14px] font-extrabold text-[#222222]">
@@ -480,44 +474,50 @@ function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
               Kinh nghiệm làm việc ({experiences.length})
             </h4>
             <div className="mt-2.5 space-y-3 border-l-2 border-[#DCE7F9] pl-4">
-              {experiences.map((exp, idx) => (
-                <div key={idx} className="relative">
-                  <span className="absolute -left-[21px] top-1.5 size-2.5 rounded-full bg-[#306BD9]" />
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="text-[13.5px] font-extrabold text-[#111111]">
-                      {exp.position || "Vị trí chuyên môn"}{" "}
-                      {exp.company && (
-                        <span className="font-semibold text-[#306BD9]">
-                          @ {exp.company}
-                        </span>
-                      )}
-                    </p>
-                    <span className="text-[11.5px] font-semibold text-[#64748B]">
-                      {formatPeriod(
-                        exp.start ??
-                          (exp as { start_date?: string | null }).start_date ??
-                          null,
-                        exp.end ??
-                          (exp as { end_date?: string | null }).end_date ??
-                          null,
-                        exp.is_current
-                      )}
-                    </span>
+              {experiences.map((exp, idx) => {
+                const period = formatPeriod(
+                  exp.start ??
+                    (exp as { start_date?: string | null }).start_date ??
+                    null,
+                  exp.end ??
+                    (exp as { end_date?: string | null }).end_date ??
+                    null,
+                  exp.is_current
+                );
+                return (
+                  <div key={idx} className="relative">
+                    <span className="absolute -left-[21px] top-1.5 size-2.5 rounded-full bg-[#306BD9]" />
+                    {(exp.position || exp.company) && (
+                      <p className="text-[13.5px] font-extrabold text-[#111111]">
+                        {exp.position}
+                        {exp.position && exp.company && " — "}
+                        {exp.company && (
+                          <span className="font-semibold text-[#306BD9]">
+                            {exp.company}
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    {period && (
+                      <p className="text-[11.5px] font-semibold text-[#64748B]">
+                        {period}
+                      </p>
+                    )}
+                    {exp.description && exp.description.length > 0 && (
+                      <ul className="mt-1 space-y-0.5 text-[12.5px] text-[#475569]">
+                        {exp.description.map((line, li) => (
+                          <li key={li}>• {line}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  {exp.description && exp.description.length > 0 && (
-                    <ul className="mt-1 space-y-0.5 text-[12.5px] text-[#475569]">
-                      {exp.description.map((line, li) => (
-                        <li key={li}>• {line}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Học vấn */}
+        {/* Học vấn — hiển thị dạng nội dung */}
         {educations.length > 0 && (
           <div className="mt-5">
             <h4 className="flex items-center gap-1.5 text-[14px] font-extrabold text-[#222222]">
@@ -525,26 +525,34 @@ function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
               Học vấn ({educations.length})
             </h4>
             <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
-              {educations.map((ed, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl bg-[#F8FAFC] p-3 text-[12.5px]"
-                >
-                  <p className="font-bold text-[#111111]">{ed.school}</p>
-                  <p className="text-[#475569]">
-                    {[ed.degree, ed.major].filter(Boolean).join(" — ")}
-                  </p>
-                  <p className="mt-0.5 text-[11.5px] text-[#64748B]">
-                    {[
-                      formatPeriod(ed.start, ed.end, false),
-                      ed.gpa ? `GPA: ${ed.gpa}` : "",
-                      ed.status || "",
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                </div>
-              ))}
+              {educations.map((ed, idx) => {
+                const details = [ed.degree, ed.major]
+                  .filter(Boolean)
+                  .join(" — ");
+                const meta = [
+                  formatPeriod(ed.start, ed.end, false),
+                  ed.gpa ? `GPA: ${ed.gpa}` : "",
+                  ed.status || "",
+                ]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <div
+                    key={idx}
+                    className="rounded-xl bg-[#F8FAFC] p-3 text-[12.5px]"
+                  >
+                    {ed.school && (
+                      <p className="font-bold text-[#111111]">{ed.school}</p>
+                    )}
+                    {details && <p className="text-[#475569]">{details}</p>}
+                    {meta && (
+                      <p className="mt-0.5 text-[11.5px] text-[#64748B]">
+                        {meta}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -1398,8 +1406,8 @@ export function ApplicantDetail({
             },
             {
               id: "structured",
-              label: "Hồ sơ cấu trúc",
-              icon: IdCard,
+              label: "Nội dung hồ sơ",
+              icon: FileText,
             },
             {
               id: "cv",

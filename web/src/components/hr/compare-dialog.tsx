@@ -205,20 +205,34 @@ export function CompareDialog({
                       </div>
                     </div>
 
-                    {/* Vị trí gần nhất từ Parser V2 */}
-                    {parsed && parsed.experiences.length > 0 && (
-                      <div className="rounded-xl bg-white p-3 text-[12px]">
-                        <p className="font-bold text-[#334155]">
-                          Kinh nghiệm gần nhất
-                        </p>
-                        <p className="mt-1 font-semibold text-[#1E3A8A]">
-                          {parsed.experiences[0].position || "Chuyên viên"}
-                        </p>
-                        <p className="text-[11.5px] text-[#64748B]">
-                          {parsed.experiences[0].company}
-                        </p>
-                      </div>
-                    )}
+                    {/* Nội dung kinh nghiệm gần nhất */}
+                    {parsed && parsed.experiences.length > 0 && (() => {
+                      const exp = parsed.experiences[0];
+                      const hasDetail = exp.position || exp.company || (exp.description?.length > 0);
+                      if (!hasDetail) return null;
+                      return (
+                        <div className="rounded-xl bg-white p-3 text-[12px]">
+                          <p className="font-bold text-[#334155]">
+                            Kinh nghiệm gần nhất
+                          </p>
+                          {exp.position && (
+                            <p className="mt-1 font-semibold text-[#1E3A8A]">
+                              {exp.position}
+                            </p>
+                          )}
+                          {exp.company && (
+                            <p className="text-[11.5px] text-[#64748B]">
+                              {exp.company}
+                            </p>
+                          )}
+                          {!exp.position && !exp.company && exp.description?.length > 0 && (
+                            <p className="mt-1 text-[11.5px] text-[#475569] line-clamp-2">
+                              {exp.description.slice(0, 2).join(" · ")}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {onSelectCandidate && (

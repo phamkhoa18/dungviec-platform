@@ -1226,6 +1226,8 @@ def extract_educations(lines: List[Line], inline_values: List[str]) -> List[Dict
             start, end = rngs[0]["start"], rngs[0]["end"]
         else:
             ym = re.search(r"(?:tot nghiep|graduat\w*|nam tot nghiep|class of)\D{0,10}((?:19|20)\d{2})", fold(blob))
+            if not ym:
+                ym = re.search(r"(?:,\s*|\b)((?:19|20)\d{2})\b", fold(" ".join([school_raw] + details[:2])))
             if ym:
                 end = (int(ym.group(1)), 6, "year")
         school = school_raw
@@ -1259,6 +1261,7 @@ def extract_educations(lines: List[Line], inline_values: List[str]) -> List[Dict
                     cand = _remove_span(cand, r["span"])
                     break
                 cand = re.sub(r"\(.*?\)|\(.*$", "", cand).strip(" -–,|:")
+                cand = re.sub(r"[,\s\-–|]*\b(?:19|20)\d{2}\b\s*$", "", cand).strip(" -–,|:")
                 cand = re.sub(r"(?i)^(bachelor|master|engineer|b\.?sc|m\.?sc|cử nhân|kỹ sư|thạc sĩ)(?:'s)?\s*(of|in|degree in|ngành|chuyên ngành)?\s*", "", cand).strip(" -–,:")
                 if cand and 1 <= len(cand.split()) <= 10 and not _SCHOOL_KW.search(fold(cand)):
                     major = cand
@@ -1531,6 +1534,7 @@ _EDU_LEGACY = {
 
 def structure_cv(lines: List[Line], file_name: str = "") -> Dict[str, Any]:
     tax = get_taxonomy()
+
     seg = segment(lines)
     full_text = "\n".join(l.text for l in lines)
     warnings: List[str] = []
