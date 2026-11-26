@@ -158,12 +158,11 @@ export function buildCvSnapshot(cv: CvProfileRecord): CvSnapshot {
   };
 }
 
-/** Văn bản CV dùng chấm điểm: ưu tiên bản chụp lúc nộp đơn, sau đó CV hiện tại. */
+/** Văn bản CV dùng chấm điểm: dùng raw_text (toàn bộ nội dung, không mất dữ liệu). */
 export function cvTextForApplication(db: DatabaseDocument, app: ApplicationRecord): { text: string; ocrRequired: boolean } | null {
   const snap = app.cv_snapshot;
   if (snap) {
-    const structured = snap.parsed_data?.structured_text;
-    const text = structured && structured.length > 80 ? structured : snap.raw_text || "";
+    const text = snap.raw_text || "";
     if (text.trim()) return { text, ocrRequired: false };
   }
   const cv = db.cv_profiles.find((c) => c.id === app.cv_profile_id);

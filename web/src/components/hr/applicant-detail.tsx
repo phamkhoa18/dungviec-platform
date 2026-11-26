@@ -4,8 +4,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import {
   AlertTriangle,
-  Award,
-  Briefcase,
   CalendarClock,
   CheckCircle2,
   Clock,
@@ -13,10 +11,7 @@ import {
   ExternalLink,
   Eye,
   FileText,
-  FolderKanban,
-  GraduationCap,
   History,
-  Languages,
   Loader2,
   Mail,
   MapPin,
@@ -350,34 +345,12 @@ function AiTab({ app }: { app: EnrichedApplication }) {
 
 /* ---------------------------------------------------------------- TAB 2: NỘI DUNG HỒ SƠ */
 function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
-  const parsed =
-    app.cv_snapshot?.parsed_data ?? app.cv_profile?.parsed_data ?? null;
-  const cp = app.candidate_profile;
+  const rawText =
+    app.cv_snapshot?.raw_text?.trim() ??
+    app.cv_profile?.raw_text?.trim() ??
+    "";
 
-  const summary = cp?.summary || parsed?.summary || "";
-  const experiences = cp?.experiences?.length
-    ? cp.experiences
-    : parsed?.experiences ?? [];
-  const educations = cp?.educations?.length
-    ? cp.educations
-    : parsed?.educations ?? [];
-  const projects = cp?.projects?.length
-    ? cp.projects
-    : parsed?.projects ?? [];
-  const skills = cp?.skills?.length ? cp.skills : parsed?.skills ?? [];
-  const certifications = cp?.certifications?.length
-    ? cp.certifications
-    : parsed?.certifications ?? [];
-  const languages = cp?.languages?.length
-    ? cp.languages
-    : parsed?.languages ?? [];
-
-  if (
-    !parsed &&
-    !cp &&
-    (!app.cv_profile?.extracted_skills ||
-      app.cv_profile.extracted_skills.length === 0)
-  ) {
+  if (!rawText) {
     return (
       <Panel className="p-6 text-center text-[13.5px] text-[#64748B]">
         Chưa có nội dung hồ sơ cho ứng viên này. Hãy xem tab CV gốc.
@@ -385,258 +358,25 @@ function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
     );
   }
 
-  const hardSkills = skills.filter((s) => s.type !== "soft");
-  const softSkills = skills.filter((s) => s.type === "soft");
+  const fileName =
+    app.cv_snapshot?.file_name ?? app.cv_profile?.file_name ?? "CV";
 
   return (
     <div className="space-y-4">
       <Panel className="p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F0F2F6] pb-3">
-          <div>
-            <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
-              <FileText className="size-4 text-[#306BD9]" />
-              Nội dung hồ sơ
-            </h3>
-            <p className="mt-0.5 text-[12px] text-[#64748B]">
-              {app.cv_snapshot
-                ? `Trích xuất tự động từ CV tại thời điểm ứng tuyển (${app.cv_snapshot.file_name})`
-                : "Nội dung được trích xuất tự động từ CV ứng viên"}
-            </p>
-          </div>
+        <div className="border-b border-[#F0F2F6] pb-3">
+          <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
+            <FileText className="size-4 text-[#306BD9]" />
+            Nội dung hồ sơ
+          </h3>
+          <p className="mt-0.5 text-[12px] text-[#64748B]">
+            Nội dung trích xuất tự động từ {fileName}
+          </p>
         </div>
 
-        {summary && (
-          <div className="mt-4 rounded-xl bg-[#F8FAFC] p-3.5 text-[13px] leading-relaxed text-[#334155]">
-            <p className="mb-1 text-[11.5px] font-bold uppercase text-[#64748B]">
-              Giới thiệu bản thân
-            </p>
-            {summary}
-          </div>
-        )}
-
-        {/* Kỹ năng chuyên môn & Kỹ năng mềm */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-[#E2E8F0] p-3.5">
-            <p className="text-[12.5px] font-bold text-[#1E3A8A]">
-              Kỹ năng chuyên môn ({hardSkills.length})
-            </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {hardSkills.length > 0 ? (
-                hardSkills.map((s) => (
-                  <span
-                    key={s.name}
-                    className="rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[11.5px] font-semibold text-[#1D4ED8]"
-                  >
-                    {s.name}
-                  </span>
-                ))
-              ) : (
-                (app.cv_profile?.extracted_skills ?? []).map((s) => (
-                  <span
-                    key={s}
-                    className="rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[11.5px] font-semibold text-[#1D4ED8]"
-                  >
-                    {s}
-                  </span>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-[#E2E8F0] p-3.5">
-            <p className="text-[12.5px] font-bold text-[#9D174D]">
-              Kỹ năng mềm &amp; Phương pháp ({softSkills.length})
-            </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {softSkills.length > 0 ? (
-                softSkills.map((s) => (
-                  <span
-                    key={s.name}
-                    className="rounded-full bg-[#FDF2F8] px-2.5 py-0.5 text-[11.5px] font-semibold text-[#BE185D]"
-                  >
-                    {s.name}
-                  </span>
-                ))
-              ) : (
-                <span className="text-[12px] text-[#94A3B8]">
-                  Chưa ghi nhận kỹ năng mềm riêng biệt
-                </span>
-              )}
-            </div>
-          </div>
+        <div className="mt-4 whitespace-pre-line text-[13px] leading-relaxed text-[#334155]">
+          {rawText}
         </div>
-
-        {/* Kinh nghiệm làm việc — hiển thị dạng nội dung */}
-        {experiences.length > 0 && (
-          <div className="mt-5">
-            <h4 className="flex items-center gap-1.5 text-[14px] font-extrabold text-[#222222]">
-              <Briefcase className="size-4 text-[#306BD9]" />
-              Kinh nghiệm làm việc ({experiences.length})
-            </h4>
-            <div className="mt-2.5 space-y-3 border-l-2 border-[#DCE7F9] pl-4">
-              {experiences.map((exp, idx) => {
-                const period = formatPeriod(
-                  exp.start ??
-                    (exp as { start_date?: string | null }).start_date ??
-                    null,
-                  exp.end ??
-                    (exp as { end_date?: string | null }).end_date ??
-                    null,
-                  exp.is_current
-                );
-                return (
-                  <div key={idx} className="relative">
-                    <span className="absolute -left-[21px] top-1.5 size-2.5 rounded-full bg-[#306BD9]" />
-                    {(exp.position || exp.company) && (
-                      <p className="text-[13.5px] font-extrabold text-[#111111]">
-                        {exp.position}
-                        {exp.position && exp.company && " — "}
-                        {exp.company && (
-                          <span className="font-semibold text-[#306BD9]">
-                            {exp.company}
-                          </span>
-                        )}
-                      </p>
-                    )}
-                    {period && (
-                      <p className="text-[11.5px] font-semibold text-[#64748B]">
-                        {period}
-                      </p>
-                    )}
-                    {exp.description && exp.description.length > 0 && (
-                      <ul className="mt-1 space-y-0.5 text-[12.5px] text-[#475569]">
-                        {exp.description.map((line, li) => (
-                          <li key={li}>• {line}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Học vấn — hiển thị dạng nội dung */}
-        {educations.length > 0 && (
-          <div className="mt-5">
-            <h4 className="flex items-center gap-1.5 text-[14px] font-extrabold text-[#222222]">
-              <GraduationCap className="size-4 text-[#16A34A]" />
-              Học vấn ({educations.length})
-            </h4>
-            <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
-              {educations.map((ed, idx) => {
-                const details = [ed.degree, ed.major]
-                  .filter(Boolean)
-                  .join(" — ");
-                const meta = [
-                  formatPeriod(ed.start, ed.end, false),
-                  ed.gpa ? `GPA: ${ed.gpa}` : "",
-                  ed.status || "",
-                ]
-                  .filter(Boolean)
-                  .join(" · ");
-                return (
-                  <div
-                    key={idx}
-                    className="rounded-xl bg-[#F8FAFC] p-3 text-[12.5px]"
-                  >
-                    {ed.school && (
-                      <p className="font-bold text-[#111111]">{ed.school}</p>
-                    )}
-                    {details && <p className="text-[#475569]">{details}</p>}
-                    {meta && (
-                      <p className="mt-0.5 text-[11.5px] text-[#64748B]">
-                        {meta}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Dự án nổi bật */}
-        {projects.length > 0 && (
-          <div className="mt-5">
-            <h4 className="flex items-center gap-1.5 text-[14px] font-extrabold text-[#222222]">
-              <FolderKanban className="size-4 text-[#D97706]" />
-              Dự án tiêu biểu ({projects.length})
-            </h4>
-            <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
-              {projects.map((pr, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-[#E2E8F0] p-3 text-[12.5px]"
-                >
-                  <p className="font-bold text-[#111111]">
-                    {pr.name}{" "}
-                    {pr.role && (
-                      <span className="font-normal text-[#64748B]">
-                        ({pr.role})
-                      </span>
-                    )}
-                  </p>
-                  {pr.technologies && pr.technologies.length > 0 && (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {pr.technologies.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded bg-[#F1F5F9] px-1.5 py-0.2 text-[10.5px] font-semibold text-[#334155]"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {pr.description && (
-                    <p className="mt-1 text-[12px] text-[#475569]">
-                      {pr.description}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Chứng chỉ & Ngoại ngữ */}
-        {(certifications.length > 0 || languages.length > 0) && (
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {certifications.length > 0 && (
-              <div className="rounded-xl bg-[#F8FAFC] p-3.5 text-[12.5px]">
-                <p className="flex items-center gap-1.5 font-bold text-[#222222]">
-                  <Award className="size-4 text-[#D97706]" />
-                  Chứng chỉ ({certifications.length})
-                </p>
-                <ul className="mt-1.5 space-y-1 text-[#334155]">
-                  {certifications.map((c, idx) => (
-                    <li key={idx}>
-                      • {typeof c === "string" ? c : c.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {languages.length > 0 && (
-              <div className="rounded-xl bg-[#F8FAFC] p-3.5 text-[12.5px]">
-                <p className="flex items-center gap-1.5 font-bold text-[#222222]">
-                  <Languages className="size-4 text-[#306BD9]" />
-                  Ngoại ngữ ({languages.length})
-                </p>
-                <ul className="mt-1.5 space-y-1 text-[#334155]">
-                  {languages.map((l, idx) => (
-                    <li key={idx}>
-                      • {l.language}
-                      {l.level ? ` — ${l.level}` : ""}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
       </Panel>
     </div>
   );

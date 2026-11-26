@@ -41,9 +41,7 @@ export function cvFieldsFromParsed(
   };
 }
 
-/** Văn bản đưa vào BAAI/bge-m3: ưu tiên văn bản có cấu trúc (sạch, đúng thứ tự mục). */
+/** Văn bản đưa vào AI scorer: dùng raw_text (toàn bộ nội dung CV, không mất dữ liệu). */
 export function cvTextForScoring(cv: CvProfileRecord): string {
-  const structured = cv.parsed_data?.structured_text;
-  if (structured && structured.length > 80) return structured;
   return cv.raw_text || "";
 }
