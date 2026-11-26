@@ -83,7 +83,7 @@ const SUGGESTED_TAGS = [
   "Kỹ thuật tốt",
   "Tiếng Anh tốt",
   "Cần thương lượng lương",
-  "Lưu nguồn (Talent Pool)",
+  "Lưu ứng viên tiềm năng",
 ];
 
 /* ---------------------------------------------------------------- TAB 1: ĐÁNH GIÁ AI */
@@ -180,7 +180,7 @@ function AiTab({ app }: { app: EnrichedApplication }) {
           </h3>
           {ev && !pending && (
             <p className="mt-0.5 text-[11.5px] text-[#777777]">
-              Mô hình: <strong>AI Đúng Việc</strong> · Đánh giá lúc{" "}
+              Đánh giá lúc{" "}
               {formatDateTime(ev.created_at)}
             </p>
           )}
@@ -208,9 +208,9 @@ function AiTab({ app }: { app: EnrichedApplication }) {
           <div className="flex items-start gap-2">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-[#D97706]" />
             <span>
-              <strong>Mô tả công việc (JD) đã được chỉnh sửa</strong> sau lần
+              <strong>Tin tuyển dụng đã được chỉnh sửa</strong> sau lần
               chấm điểm này. Hãy bấm &ldquo;Chấm điểm lại&rdquo; để cập nhật độ
-              phù hợp theo JD mới nhất.
+              phù hợp theo yêu cầu mới nhất.
             </span>
           </div>
           <button
@@ -291,7 +291,7 @@ function AiTab({ app }: { app: EnrichedApplication }) {
 
             <div className="grid gap-4 border-t border-[#F0F2F6] pt-4 sm:grid-cols-2">
               <SkillChips
-                title="Kỹ năng khớp với yêu cầu JD"
+                title="Kỹ năng khớp với yêu cầu tuyển dụng"
                 skills={ev.matched_skills}
                 tone="match"
                 empty="Chưa khớp kỹ năng bắt buộc nào."
@@ -385,9 +385,6 @@ function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
 /* ---------------------------------------------------------------- TAB 3: CV GỐC */
 function CvViewerTab({ app }: { app: EnrichedApplication }) {
   const cv = app.cv_profile;
-  const [subTab, setSubTab] = useState<"file" | "text">(
-    cv?.file_type === "pdf" ? "file" : "text"
-  );
 
   if (!cv) {
     return (
@@ -435,53 +432,18 @@ function CvViewerTab({ app }: { app: EnrichedApplication }) {
         </div>
       </div>
 
-      <div className="flex gap-1.5 px-5 pt-3" role="tablist">
-        {(
-          [
-            {
-              id: "file",
-              label: "Xem bản PDF gốc",
-              disabled: cv.file_type !== "pdf",
-            },
-            {
-              id: "text",
-              label: "Văn bản trích xuất (Raw Text)",
-              disabled: false,
-            },
-          ] as const
-        ).map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={subTab === t.id}
-            disabled={t.disabled}
-            onClick={() => setSubTab(t.id)}
-            className={cn(
-              "rounded-full px-3.5 py-1.5 text-[12px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40",
-              subTab === t.id
-                ? "bg-[#EBF2FF] text-[#306BD9]"
-                : "text-[#666666] hover:bg-[#F5F7FB]"
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
       <div className="p-5">
-        {subTab === "file" && cv.file_type === "pdf" ? (
+        {cv.file_type === "pdf" ? (
           <iframe
             title={`CV ${cv.file_name}`}
             src={`${cv.file_url}#toolbar=0&navpanes=0`}
             className="h-[580px] w-full rounded-xl border border-[#E5E7EB] bg-[#F4F6FA]"
           />
         ) : (
-          <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl bg-[#F7F9FC] p-4 font-sans text-[12.5px] leading-relaxed text-[#333333]">
-            {app.cv_snapshot?.raw_text?.trim() ||
-              cv.raw_text?.trim() ||
-              "Chưa có văn bản được trích xuất từ CV này."}
-          </pre>
+          <p className="text-[13px] text-[#666666]">
+            Tệp CV không phải định dạng PDF. Vui lòng xem nội dung tại tab{" "}
+            <strong>Nội dung hồ sơ</strong>.
+          </p>
         )}
       </div>
     </Panel>
@@ -554,8 +516,7 @@ function InterviewsTab({
             Lịch phỏng vấn &amp; Phiếu đánh giá ({interviews.length})
           </h3>
           <p className="text-[12px] text-[#64748B]">
-            Đặt lịch phỏng vấn trực tuyến/trực tiếp, tải tệp lịch .ics và ghi
-            phiếu điểm hội đồng
+            Đặt lịch phỏng vấn và đánh giá ứng viên sau phỏng vấn
           </p>
         </div>
         <button
@@ -692,7 +653,7 @@ function InterviewsTab({
                         )}
                       >
                         {iv.feedback.result === "pass"
-                          ? "Đạt (Pass)"
+                          ? "Đạt yêu cầu"
                           : iv.feedback.result === "consider"
                             ? "Cân nhắc"
                             : "Không đạt"}
@@ -805,7 +766,7 @@ function ActivityNotesTab({ app }: { app: EnrichedApplication }) {
       <Panel className="p-5">
         <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
           <History className="size-4 text-[#306BD9]" />
-          Nhật ký chuyển trạng thái (Audit Log)
+          Lịch sử xử lý hồ sơ
         </h3>
         <p className="mb-3 text-[12px] text-[#64748B]">
           Theo dõi toàn bộ quá trình xử lý hồ sơ theo thời gian thực
@@ -1142,7 +1103,7 @@ export function ApplicantDetail({
               id: "ai",
               label: "Đánh giá AI",
               icon: Sparkles,
-              badge: app.ai_is_stale ? "JD mới" : undefined,
+              badge: app.ai_is_stale ? "Tin mới" : undefined,
             },
             {
               id: "structured",
@@ -1152,7 +1113,7 @@ export function ApplicantDetail({
             {
               id: "cv",
               label: "CV gốc",
-              icon: FileText,
+              icon: Eye,
             },
             {
               id: "interviews",
