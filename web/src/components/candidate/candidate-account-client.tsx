@@ -47,7 +47,6 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { CandidateProfileTab } from "@/components/candidate/profile/candidate-profile-tab";
 import { CvReviewDialog, extractionLabel } from "@/components/candidate/profile/cv-review-dialog";
-import { formatPeriod } from "@/lib/profile/profile-utils";
 import {
   CANDIDATE_CAN_WITHDRAW,
   normalizeStatus,
@@ -1319,13 +1318,9 @@ export function CandidateAccountClient({
                   </strong>
                 </div>
                 <div>
-                  <span className="text-[#64748B]">Công nghệ đọc CV: </span>
+                  <span className="text-[#64748B]">Phương thức đọc CV: </span>
                   <strong className="text-[#1D4ED8]">
-                    {previewCv.ocr_applied
-                      ? "Tesseract 5.5 LSTM OCR (Việt-Anh) + OpenCV"
-                      : previewCv.two_column_detected
-                        ? "PyMuPDF 2-Column Layout Reconstruction"
-                        : previewCv.extraction_method || "PyMuPDF Digital Parser"}
+                    {extractionLabel(previewCv)}
                   </strong>
                 </div>
               </div>
@@ -1351,53 +1346,14 @@ export function CandidateAccountClient({
                 </div>
               )}
 
-              {previewCv.parsed_data && (
-                <div className="space-y-3 rounded-[12px] border border-[#E2E8F0] p-4 text-[12.5px]">
-                  <p className="text-[12px] font-bold uppercase tracking-wider text-[#64748B]">
-                    Dữ liệu cấu trúc bóc tách ({previewCv.parsed_data.sections_detected.length} mục nhận diện)
-                  </p>
-                  {previewCv.parsed_data.summary && (
-                    <p className="text-[#334155]"><strong>Giới thiệu: </strong>{previewCv.parsed_data.summary}</p>
-                  )}
-                  {previewCv.parsed_data.experiences.length > 0 && (
-                    <div>
-                      <p className="font-bold text-[#222222]">Kinh nghiệm ({(previewCv.parsed_data.total_experience_months / 12).toFixed(1)} năm)</p>
-                      <ul className="mt-1 space-y-1">
-                        {previewCv.parsed_data.experiences.map((e, i) => (
-                          <li key={i} className="text-[#334155]">
-                            • <strong>{e.position || "?"}</strong> — {e.company || "?"}{" "}
-                            <span className="text-[#64748B]">({formatPeriod(e.start, e.end, e.is_current)})</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {previewCv.parsed_data.educations.length > 0 && (
-                    <div>
-                      <p className="font-bold text-[#222222]">Học vấn</p>
-                      {previewCv.parsed_data.educations.map((e, i) => (
-                        <p key={i} className="text-[#334155]">• {e.school} {e.major && `— ${e.major}`} {e.status && <span className="text-[#64748B]">({e.status})</span>}</p>
-                      ))}
-                    </div>
-                  )}
-                  {previewCv.parsed_data.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {previewCv.parsed_data.skills.map((s) => (
-                        <span key={s.name} className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${s.type === "soft" ? "bg-[#FDF2F8] text-[#BE185D]" : "bg-[#EFF6FF] text-[#1D4ED8]"}`}>{s.name}</span>
-                      ))}
-                    </div>
-                  )}
+              <div className="rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+                <p className="text-[12px] font-bold uppercase tracking-wider text-[#64748B]">
+                  Nội dung hồ sơ
+                </p>
+                <div className="mt-2 max-h-72 overflow-y-auto whitespace-pre-line font-sans text-[13px] leading-relaxed text-[#334155]">
+                  {previewCv.raw_text?.trim() || "Chưa có nội dung văn bản cho CV này."}
                 </div>
-              )}
-
-              <details className="rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-                <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-wider text-[#64748B]">
-                  Văn bản gốc theo thứ tự đọc
-                </summary>
-                <pre className="mt-2 max-h-60 overflow-y-auto whitespace-pre-wrap font-sans text-[12.5px] leading-relaxed text-[#222222]">
-                  {previewCv.raw_text || "(Không có văn bản)"}
-                </pre>
-              </details>
+              </div>
             </div>
           )}
         </DialogContent>

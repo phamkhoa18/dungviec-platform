@@ -87,12 +87,52 @@ _COMPILED_SKILL_PATTERNS: Dict[str, List[re.Pattern]] = {
 REQUIRED_SKILL_SYNONYMS: Dict[str, List[str]] = {
     "python": ["python", "python3", "fastapi", "django", "flask", "pytorch", "pandas", "scikit-learn"],
     "fastapi": ["fastapi", "fast api", "starlette", "pydantic", "uvicorn"],
+    "javascript": ["javascript", "js", "es6", "ecmascript"],
+    "typescript": ["typescript", "ts"],
+    "reactjs": ["reactjs", "react", "react.js"],
+    "react": ["react", "reactjs", "react.js"],
+    "next.js": ["next.js", "nextjs"],
+    "nodejs": ["nodejs", "node.js", "expressjs", "express.js", "nestjs"],
+    "node.js": ["node.js", "nodejs", "expressjs", "express.js", "nestjs"],
+    "sql": ["sql", "mysql", "postgresql", "postgres", "t-sql", "pl/sql", "sqlite", "sql server"],
     "postgresql": ["postgresql", "postgres", "psql", "postgis", "pl/pgsql"],
     "mongodb": ["mongodb", "mongo", "mongoose", "nosql"],
     "docker": ["docker", "dockerfile", "docker-compose", "container", "containerization", "kubernetes", "k8s"],
     "rest api": ["rest api", "restful api", "restful", "rest", "web api", "api design", "graphql", "grpc", "openapi", "swagger"],
     "git": ["git", "github", "gitlab", "bitbucket", "version control", "gitflow"],
+    "html / css": ["html", "css", "html5", "css3", "tailwind", "tailwindcss", "scss", "sass"],
+    "ui/ux / figma": ["figma", "ui/ux", "ux/ui", "wireframe", "prototype", "sketch"],
+    "data analysis": ["data analysis", "data analyst", "phân tích dữ liệu", "pandas", "numpy", "power bi", "tableau"],
+    "excel / văn phòng": ["excel", "google sheets", "microsoft office", "tin học văn phòng", "word", "powerpoint"],
+    "machine learning": ["machine learning", "ml", "scikit-learn", "sklearn", "xgboost", "pytorch", "tensorflow"],
+    "agile/scrum": ["agile", "scrum", "kanban", "jira"],
+    "tiếng anh": ["tiếng anh", "english", "ielts", "toeic", "b1", "b2", "c1"],
 }
+
+
+def _match_single_skill_token(token: str, cv_skills_lower: Dict[str, str], cv_lower_raw: str) -> bool:
+    t_l = token.strip().lower()
+    if not t_l:
+        return False
+    if canonicalize_skill(token).lower() in cv_skills_lower:
+        return True
+    synonyms = REQUIRED_SKILL_SYNONYMS.get(t_l, [t_l])
+    for syn in synonyms:
+        if re.search(r"(?<![a-z0-9À-ỹ])" + re.escape(syn) + r"(?![a-z0-9À-ỹ])", cv_lower_raw):
+            return True
+    return False
+
+
+def _skill_matches_cv(req: str, cv_skills_lower: Dict[str, str], cv_lower_raw: str) -> bool:
+    if _match_single_skill_token(req, cv_skills_lower, cv_lower_raw):
+        return True
+    if "/" in req:
+        # Hỗ trợ các nhãn kỹ năng ghép như "HTML / CSS", "UI/UX / Figma", "Agile/Scrum"
+        parts = [p.strip() for p in re.split(r"\s+/\s+", req) if p.strip()]
+        if len(parts) == 1:
+            parts = [p.strip() for p in req.split("/") if len(p.strip()) >= 2]
+        return any(_match_single_skill_token(p, cv_skills_lower, cv_lower_raw) for p in parts)
+    return False
 
 
 def extract_canonical_skills(text: str) -> Set[str]:
@@ -434,6 +474,7 @@ class BGEM3CVJDScorer:
         jd_text: str,
         matched_skills: List[str],
         missing_skills: List[str],
+        core_skills: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         import torch  # type: ignore
         import torch.nn.functional as F  # type: ignore
@@ -532,44 +573,24 @@ class BGEM3CVJDScorer:
         # Tín hiệu cấu trúc - ngữ nghĩa liên tục kết hợp đầu ra mạng nơ-ron Hybrid Head
         eff_req = req_cov if req_cov is not None else cov_jd
         exp_factor = 0.65 * exp_suff + 0.35 * min(1.0, exp_ratio)
-        has_zero_skill = (len(matched_skills) == 0 and inter_sk == 0)
+        has_defined_skills = (total_req > 0 or len(j_sk) > 0)
+        has_zero_skill = has_defined_skills and (len(matched_skills) == 0 and inter_sk == 0)
 
-        if has_zero_skill:
+        if not has_defined_skills:
+            # Công việc phổ thông / phi kỹ thuật không có kỹ năng chuẩn trong taxonomy: chấm theo tương đồng văn bản + kinh nghiệm liên quan
+            text_sim = min(1.0, 0.55 * min(1.0, lex_cos * 2.5) + 0.45 * min(1.0, w_cov * 2.2))
+            struct_s = 0.78 * text_sim + 0.22 * (exp_factor if text_sim >= 0.25 else 0.0)
+            target_s = max(0.06, min(0.92, 0.22 * nn_score + 0.78 * struct_s))
+        elif has_zero_skill:
             target_s = max(0.035, min(0.21, 0.04 + 0.42 * lex_cos + 0.04 * min(1.0, exp_ratio)))
         else:
-            # Kiểm tra khớp ngôn ngữ/nền tảng cốt lõi của JD (kỹ năng đầu tiên trong required_skills hoặc python)
-            core_matched = bool(matched_skills) and any(
-                k in [m.lower() for m in matched_skills] for k in ["python", "fastapi", "django", "flask"]
-            )
-            backend_depth = len(
-                r_sk
-                & {
-                    "python",
-                    "fastapi",
-                    "django",
-                    "flask",
-                    "java",
-                    "nodejs",
-                    "dotnet",
-                    "golang",
-                    "sql",
-                    "postgresql",
-                    "mongodb",
-                    "redis",
-                    "docker",
-                    "kubernetes",
-                    "aws",
-                    "cloud_infra",
-                    "cicd",
-                    "rest_api",
-                    "microservices",
-                    "machine_learning",
-                    "deep_learning",
-                    "nlp",
-                }
-            )
+            # Kiểm tra khớp kỹ năng trọng tâm của JD (2 kỹ năng đầu tiên hoặc kỹ năng nền tảng được yêu cầu)
+            matched_lower = {m.lower() for m in matched_skills}
+            core_targets = {c.lower() for c in (core_skills or []) if c}
+            core_matched = bool(matched_lower & core_targets) if core_targets else bool(matched_skills)
+            relevant_depth = max(len(r_sk & j_sk), len(matched_skills), round(0.75 * len(r_sk), 1))
             core_bonus = 0.08 if core_matched and len(matched_skills) >= 3 else (0.04 if core_matched else 0.0)
-            depth_factor = min(1.0, backend_depth / 5.0)
+            depth_factor = min(1.0, relevant_depth / 5.0)
             struct_s = (
                 0.56 * eff_req
                 + 0.16 * depth_factor
@@ -685,8 +706,12 @@ class BGEM3CVJDScorer:
         p_good = round(1.0 - p_no_fit - p_potential, 4)
 
         score_s = round(100.0 * (p_good + 0.5 * p_potential), 2)
-        pred_idx = int(max(range(3), key=lambda i: [p_no_fit, p_potential, p_good][i]))
-        predicted_label = ID2LABEL[pred_idx]
+        if score_s >= 70.0:
+            predicted_label = "Good Fit"
+        elif score_s >= 50.0:
+            predicted_label = "Potential Fit"
+        else:
+            predicted_label = "No Fit"
 
         return {
             "predicted_label": predicted_label,
@@ -726,21 +751,19 @@ class BGEM3CVJDScorer:
         missing_skills: List[str] = []
 
         for req in jd_skill_list:
-            req_l = req.lower()
-            synonyms = REQUIRED_SKILL_SYNONYMS.get(req_l, [req_l])
-            is_matched = canonicalize_skill(req).lower() in cv_skills_lower
-            if not is_matched:
-                for syn in synonyms:
-                    if re.search(r"(?<![a-z0-9À-ỹ])" + re.escape(syn) + r"(?![a-z0-9À-ỹ])", cv_lower_raw):
-                        is_matched = True
-                        break
-            if is_matched:
+            if _skill_matches_cv(req, cv_skills_lower, cv_lower_raw):
                 matched_skills.append(req)
             else:
                 missing_skills.append(req)
 
         if self.loaded_from_checkpoint and self.hybrid_head is not None:
-            pred = self._predict_with_bge_hybrid(cv_text, jd_text, matched_skills, missing_skills)
+            pred = self._predict_with_bge_hybrid(
+                cv_text,
+                jd_text,
+                matched_skills,
+                missing_skills,
+                core_skills=jd_skill_list[:2],
+            )
             model_version = "bge-m3-hybrid-bilingual-v2 (epoch-14-val-f1-0.7804)"
         else:
             pred = self._predict_from_real_text(cv_text, jd_text, matched_skills, missing_skills)

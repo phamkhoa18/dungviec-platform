@@ -209,11 +209,14 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Dung lượng tệp CV vượt quá giới hạn 5.0 MB." }, { status: 400 });
       }
       const fileBuffer = Buffer.from(await uploadedFile.arrayBuffer());
-      const { file_path } = saveCvFile(fileBuffer, fileName);
+      // Phân tích CV trước khi ghi ra đĩa để tránh lưu tệp rác nếu tệp lỗi
       const parsed = await callPythonParseCv({ fileName, fileBuffer });
+      const { file_path } = saveCvFile(fileBuffer, fileName);
       const now = new Date().toISOString();
       const nextCvId = (db.counters.cv_profiles || db.cv_profiles.length) + 1;
-      const hasDefault = db.cv_profiles.some((c) => c.user_id === sessionCtx.user.id && c.is_default);
+      const hasDefault = db.cv_profiles.some(
+        (c) => c.user_id === sessionCtx.user.id && !c.archived && c.is_default
+      );
       selectedCv = {
         _id: generateObjectId(),
         id: nextCvId,
@@ -231,11 +234,13 @@ export async function POST(req: Request) {
       db.counters.cv_profiles = nextCvId;
       db.cv_profiles.push(selectedCv);
     } else if (cvProfileId) {
-      selectedCv = db.cv_profiles.find((c) => c.id === cvProfileId && c.user_id === sessionCtx.user.id);
+      selectedCv = db.cv_profiles.find(
+        (c) => c.id === cvProfileId && c.user_id === sessionCtx.user.id && !c.archived
+      );
     } else {
       selectedCv =
-        db.cv_profiles.find((c) => c.user_id === sessionCtx.user.id && c.is_default) ||
-        db.cv_profiles.find((c) => c.user_id === sessionCtx.user.id);
+        db.cv_profiles.find((c) => c.user_id === sessionCtx.user.id && !c.archived && c.is_default) ||
+        db.cv_profiles.find((c) => c.user_id === sessionCtx.user.id && !c.archived);
     }
     if (!selectedCv) {
       return NextResponse.json(

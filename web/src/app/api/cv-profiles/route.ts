@@ -92,23 +92,23 @@ export async function POST(req: Request) {
       }
     }
 
-    // Lưu tệp vật lý NGOÀI thư mục public; xem/tải qua /api/files/cv/[id] có kiểm tra quyền
-    const storedPath = fileBuffer ? saveCvFile(fileBuffer, fileName).file_path : "";
-
-    // Gọi sang Python AI Service (ai-service/) để đọc văn bản & bóc tách thực thể NER
+    // Gọi sang Python AI Service (ai-service/) trước để xác thực & đọc văn bản rồi mới lưu đĩa
     const parsed = await callPythonParseCv({
       fileName,
       fileBuffer,
       rawText: rawTextInput,
     });
 
+    // Lưu tệp vật lý NGOÀI thư mục public; xem/tải qua /api/files/cv/[id] có kiểm tra quyền
+    const storedPath = fileBuffer ? saveCvFile(fileBuffer, fileName).file_path : "";
+
     const db = readDb();
     const now = new Date().toISOString();
     const nextId = (db.counters.cv_profiles || db.cv_profiles.length) + 1;
 
-    // Đặt làm CV mặc định nếu đây là CV đầu tiên
+    // Đặt làm CV mặc định nếu đây là CV đang hoạt động đầu tiên (bỏ qua CV đã lưu trữ/xoá)
     const existingUserCvs = db.cv_profiles.filter(
-      (c) => c.user_id === sessionCtx.user.id
+      (c) => c.user_id === sessionCtx.user.id && !c.archived
     );
 
     const autoTitle = parsed.extracted_job_title
@@ -181,6 +181,7 @@ export async function DELETE(req: Request) {
   }
 
   const target = db.cv_profiles[idx];
+  const wasDefault = target.is_default;
   const usedBy = db.applications.filter((a) => a.cv_profile_id === target.id).length;
   if (usedBy > 0) {
     // CV đã dùng để ứng tuyển: ẩn khỏi danh sách của ứng viên nhưng giữ cho nhà tuyển dụng xem đơn
@@ -197,7 +198,7 @@ export async function DELETE(req: Request) {
     }
     db.cv_profiles.splice(idx, 1);
   }
-  if (target.is_default || usedBy > 0) {
+  if (wasDefault || usedBy > 0) {
     const remaining = db.cv_profiles
       .filter((c) => c.user_id === sessionCtx.user.id && !c.archived)
       .sort((a, b) => b.id - a.id);

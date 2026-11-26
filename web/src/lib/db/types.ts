@@ -390,7 +390,6 @@ export interface ParsedCvData {
   sections_detected: string[];
   confidence: Record<string, number>;
   warnings: string[];
-  structured_text: string;
   layout?: {
     extraction_method: string;
     two_column_detected: boolean;

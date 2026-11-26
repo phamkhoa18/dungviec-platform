@@ -1329,6 +1329,13 @@ def _split_items(text: str) -> Tuple[Optional[str], List[str]]:
     return category, items
 
 
+_NON_SKILL_ITEM_RE = re.compile(
+    r"^(?:khach hang|mo ta du an|so luong thanh vien|vi tri cong viec|vai tro trong du an|cong nghe su dung|"
+    r"thoi gian|mo ta|vai tro|nhiem vu|client|customer|description|project description|team size|"
+    r"role|responsibilities|technologies|period|duration)$"
+)
+
+
 def extract_skills(seg: Segmented, tax: SkillTaxonomy, infer_text: str) -> List[Dict[str, Any]]:
     skills: List[Dict[str, Any]] = []
     seen: Dict[str, int] = {}
@@ -1354,6 +1361,12 @@ def extract_skills(seg: Segmented, tax: SkillTaxonomy, infer_text: str) -> List[
                 if entry:
                     add(entry.name, entry.category, entry.type if sec_name != "soft_skills" else "soft", "skills_section", it, 0.95)
                 else:
+                    it_key = key(it)
+                    if not it_key or _NON_SKILL_ITEM_RE.match(it_key) or re.fullmatch(r"[\d/.\-\s–—()]+", it.strip()):
+                        continue
+                    rng_it = find_ranges(it)
+                    if rng_it and len(it.strip()) - (rng_it[0]["span"][1] - rng_it[0]["span"][0]) <= 3:
+                        continue
                     typ = default_type
                     add(it if not is_upper_text(it) or len(it) <= 5 else smart_title(it), category or ("Kỹ năng mềm" if typ == "soft" else "Khác"), typ, "skills_section", it, 0.75)
 
@@ -1631,25 +1644,6 @@ def structure_cv(lines: List[Line], file_name: str = "") -> Dict[str, Any]:
     conf["educations"] = round(sum(e["confidence"] for e in educations) / len(educations), 2) if educations else 0.0
     conf["skills"] = 0.9 if any(s["source"] == "skills_section" for s in skills) else (0.6 if skills else 0.0)
 
-    # Văn bản có cấu trúc dùng cho mô hình BGE-M3
-    struct_parts = [
-        personal.get("full_name") or "",
-        personal.get("headline") or "",
-        f"Summary: {summary}" if summary else "",
-        "Skills: " + ", ".join(s["name"] for s in skills if s["type"] == "hard") if skills else "",
-        f"Total experience: {round(total_months / 12, 1)} years" if total_months else "",
-    ]
-    for e in experiences:
-        period = f"{e['start'] or ''} - {e['end'] or 'Present'}"
-        struct_parts.append(f"Experience: {e['position'] or ''} at {e['company'] or ''} ({period}). " + " ".join(e["description"]))
-    for ed in educations:
-        struct_parts.append(f"Education: {ed['degree'] or ''} {ed['major'] or ''} - {ed['school'] or ''} ({ed['status'] or ''})")
-    for p in projects:
-        struct_parts.append(f"Project: {p['name']}. {p['description']} Technologies: {', '.join(p['technologies'])}")
-    if certifications:
-        struct_parts.append("Certifications: " + ", ".join(f"{c['name']} {c['score'] or ''}".strip() for c in certifications))
-    structured_text = "\n".join(p for p in struct_parts if p.strip())
-
     return {
         "parser_version": PARSER_VERSION,
         "personal": personal,
@@ -1667,6 +1661,5 @@ def structure_cv(lines: List[Line], file_name: str = "") -> Dict[str, Any]:
         "sections_detected": seg.names(),
         "confidence": {k5: round(v5, 2) for k5, v5 in conf.items()},
         "warnings": warnings,
-        "structured_text": structured_text,
         "_heading_flags": seg.heading_flags,
     }

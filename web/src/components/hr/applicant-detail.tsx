@@ -58,7 +58,6 @@ import {
   type EnrichedApplication,
   type HrStatus,
 } from "@/lib/hr-types";
-import { formatPeriod } from "@/lib/profile/profile-utils";
 import {
   HR_TRANSITIONS,
   REJECTION_REASONS,

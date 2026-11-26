@@ -1,6 +1,6 @@
 """
 CLI Bridge cho Python AI Service — cho phép gọi trực tiếp các hàm xử lý AI bằng Python
-qua chuẩn JSON stdin/stdout ngay cả khi cổng HTTP 8000 chưa được bật thủ công.
+qua chuẩn JSON stdin/stdout ngay cả khi cổng HTTP 8008 chưa được bật thủ công.
 """
 from __future__ import annotations
 

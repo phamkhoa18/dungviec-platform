@@ -1,5 +1,5 @@
 """
-Python AI Microservice tách riêng (Port 8000) — Phục vụ Tiểu luận Tốt nghiệp:
+Python AI Microservice tách riêng (Port 8008) — Phục vụ Tiểu luận Tốt nghiệp:
 - Endpoint 1: GET  /api/v1/health       -> Kiểm tra trạng thái AI Engine & thư mục best_cvjd_model (bge_m3_hybrid_head.pt)
 - Endpoint 2: GET  /api/v1/model-info   -> Thông số thực nghiệm BAAI/bge-m3 Song ngữ từ Báo cáo Tuần 3
 - Endpoint 3: POST /api/v1/parse-cv     -> Đọc file CV thật (.pdf / .docx) & bóc tách thực thể kỹ năng/kinh nghiệm

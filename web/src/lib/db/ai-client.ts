@@ -1,7 +1,7 @@
 /**
  * Client kết nối từ Next.js Backend sang Python AI Microservice tách riêng (ai-service/):
- * 1. Ưu tiên gọi HTTP REST API tới http://127.0.0.1:8000/api/v1/...
- * 2. Nếu cổng 8000 tạm thời chưa bật, tự động gọi trực tiếp tiến trình Python 3.11 (ai-service/cli.py)
+ * 1. Ưu tiên gọi HTTP REST API tới http://127.0.0.1:8008/api/v1/...
+ * 2. Nếu cổng 8008 tạm thời chưa bật, tự động gọi trực tiếp tiến trình Python 3.11 (ai-service/cli.py)
  *    để luôn thực thi đúng code đọc PDF/DOCX và mô hình chấm điểm trong thư mục ai-service/.
  */
 import { spawnSync } from "child_process";
@@ -12,12 +12,15 @@ import type { ParsedCvData } from "./types";
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://127.0.0.1:8008";
 
 function getPythonBinary(): string {
+  const localVenv = path.resolve(process.cwd(), "..", "ai-service", ".venv", "bin", "python");
   const candidates = [
+    process.env.AI_PYTHON_BIN || "",
+    localVenv,
     "/usr/bin/python3",
     "/opt/homebrew/bin/python3.11",
     "/opt/homebrew/bin/python3",
     "python3",
-  ];
+  ].filter(Boolean);
   for (const bin of candidates) {
     if (bin === "python3" || fs.existsSync(bin)) {
       return bin;
@@ -39,7 +42,7 @@ function callPythonCli(action: string, payload: Record<string, unknown>) {
     input: inputJson,
     encoding: "utf-8",
     maxBuffer: 20 * 1024 * 1024,
-    timeout: 20000,
+    timeout: 30000,
   });
 
   if (proc.error) {
@@ -128,7 +131,7 @@ export async function callPythonParseCv(params: {
 
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000);
+    const timer = setTimeout(() => controller.abort(), 30000);
     const res = await fetch(`${AI_SERVICE_URL}/api/v1/parse-cv`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -163,7 +166,7 @@ export async function callPythonEvaluateFit(params: {
 
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    const timer = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(`${AI_SERVICE_URL}/api/v1/evaluate-fit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

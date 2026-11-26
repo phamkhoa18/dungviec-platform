@@ -12,14 +12,14 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   const body = (await req.json().catch(() => ({}))) as { is_default?: boolean; cv_title?: string };
   const db = readDb();
   const cv = db.cv_profiles.find(
-    (c) => (String(c.id) === id || c._id === id) && c.user_id === sessionCtx.user.id
+    (c) => (String(c.id) === id || c._id === id) && c.user_id === sessionCtx.user.id && !c.archived
   );
   if (!cv) {
     return NextResponse.json({ error: "Không tìm thấy hồ sơ CV." }, { status: 404 });
   }
   if (body.is_default) {
     for (const c of db.cv_profiles) {
-      if (c.user_id === sessionCtx.user.id) c.is_default = c.id === cv.id;
+      if (c.user_id === sessionCtx.user.id && !c.archived) c.is_default = c.id === cv.id;
     }
   }
   if (typeof body.cv_title === "string" && body.cv_title.trim().length >= 2) {

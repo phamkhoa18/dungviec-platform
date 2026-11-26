@@ -46,8 +46,9 @@ export function ApplyDialog({
   const { user, cvProfiles, refreshAuth } = useAuth();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const defaultCv = cvProfiles.find((c) => c.is_default) ?? cvProfiles[0];
   const [selectedCvId, setSelectedCvId] = useState<number | "upload">(
-    cvProfiles.length > 0 ? cvProfiles[0].id : "upload"
+    defaultCv ? defaultCv.id : "upload"
   );
   const [coverLetter, setCoverLetter] = useState("");
   const [step, setStep] = useState<Step>("form");
@@ -129,6 +130,13 @@ export function ApplyDialog({
   };
 
   const close = (v: boolean) => {
+    if (v && !file && cvProfiles.length > 0) {
+      const hasSelected =
+        selectedCvId !== "upload" && cvProfiles.some((c) => c.id === Number(selectedCvId));
+      if (!hasSelected) {
+        setSelectedCvId((cvProfiles.find((c) => c.is_default) ?? cvProfiles[0]).id);
+      }
+    }
     setOpen(v);
     if (!v) {
       setTimeout(() => {

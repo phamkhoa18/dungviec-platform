@@ -24,7 +24,7 @@ type Ctx = { params: Promise<{ id: string }> };
 
 /**
  * GET /api/applications/[id] — Chi tiết 1 đơn.
- * HR mở hồ sơ lần đầu: ghi nhận "đã xem", chuyển Mới nộp -> Đang xem xét và báo cho ứng viên.
+ * HR mở hồ sơ lần đầu: ghi nhận "đã xem" (`viewed_by_hr_at`) và báo cho ứng viên.
  */
 export async function GET(_req: Request, context: Ctx) {
   const session = await getSessionUser();
