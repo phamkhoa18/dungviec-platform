@@ -12,8 +12,6 @@ import {
   UtensilsCrossed,
   Headset,
   Cpu,
-  LayoutTemplate,
-  ShieldCheck,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -48,103 +46,92 @@ export type OccupationItem = {
   name: string;
   query: string;
   category: string;
-  icon: LucideIcon;
-  accent: string;
-  bg: string;
-  image?: string;
+  image: string;
 };
 
-/** 10 nhóm việc làm phổ biến hiển thị ở trang chủ, liên kết tới tìm kiếm thật trên /viec-lam. */
+/**
+ * 10 ngành nghề phổ biến hiển thị ở hàng chính Trang chủ (giữ bộ hình ảnh gốc)
+ */
 export const popularOccupations: OccupationItem[] = [
   {
-    slug: "lap-trinh-backend",
-    name: "Lập trình Backend",
-    query: "Backend",
-    category: "cong-nghe",
-    icon: Code2,
-    accent: "#2563EB",
-    bg: "#EFF6FF",
-  },
-  {
-    slug: "frontend-web",
-    name: "Frontend / Web",
-    query: "Frontend",
-    category: "cong-nghe",
-    icon: LayoutTemplate,
-    accent: "#4F46E5",
-    bg: "#EEF2FF",
-  },
-  {
-    slug: "du-lieu-ai",
-    name: "Dữ liệu & AI",
-    query: "Data",
-    category: "du-lieu-ai",
-    icon: Cpu,
-    accent: "#0284C7",
-    bg: "#F0F9FF",
-  },
-  {
-    slug: "kiem-thu-devops",
-    name: "QA / DevOps",
-    query: "DevOps",
-    category: "cong-nghe",
-    icon: ShieldCheck,
-    accent: "#0F766E",
-    bg: "#F0FDFA",
-  },
-  {
-    slug: "thiet-ke-uiux",
-    name: "Thiết kế UI/UX",
-    query: "UI/UX",
-    category: "thiet-ke",
-    icon: Palette,
-    accent: "#E11D48",
-    bg: "#FFF1F2",
-  },
-  {
-    slug: "digital-marketing",
-    name: "Digital Marketing",
-    query: "Marketing",
-    category: "marketing",
-    icon: Megaphone,
-    accent: "#DB2777",
-    bg: "#FDF2F8",
-  },
-  {
-    slug: "kinh-doanh-sales",
-    name: "Kinh doanh / Sales",
+    slug: "nhan-vien-kinh-doanh",
+    name: "Nhân viên kinh doanh",
     query: "Kinh doanh",
     category: "kinh-doanh",
-    icon: Briefcase,
-    accent: "#1D4ED8",
-    bg: "#EFF6FF",
+    image:
+      "https://cdn.chotot.com/admincentre/jTF10MjaWXISJINXocYEdL4e-RrF0k1-fbO1jLvciOo/preset:raw/plain/1e1e555f1f859292aa120351c2485338-2941243697612473959.jpg",
   },
   {
-    slug: "ke-toan-tai-chinh",
-    name: "Kế toán / Tài chính",
-    query: "Kế toán",
-    category: "ke-toan",
-    icon: Calculator,
-    accent: "#7C3AED",
-    bg: "#F5F3FF",
+    slug: "nhan-vien-phuc-vu",
+    name: "Nhân viên phục vụ",
+    query: "Phục vụ",
+    category: "nha-hang",
+    image:
+      "https://cdn.chotot.com/admincentre/LWzqpNHtVPDJiP20L__P7VX-pe231Qmuq6ovayQMMyQ/preset:raw/plain/3dc450725991682ac72f15005a5a3e00-2941243318875204991.jpg",
   },
   {
-    slug: "kho-van-logistics",
-    name: "Kho vận / Logistics",
-    query: "Vận hành",
+    slug: "ban-hang",
+    name: "Bán hàng",
+    query: "Bán hàng",
+    category: "ban-hang",
+    image:
+      "https://cdn.chotot.com/admincentre/ZBYxZLhEQI4WEm5Et3AYJrmTUjet10D3LhyMGRpgeRc/preset:raw/plain/91a231f149cb0857251c3260013e479a-2941243236839868007.jpg",
+  },
+  {
+    slug: "bao-ve",
+    name: "Bảo vệ",
+    query: "Bảo vệ",
+    category: "ky-thuat",
+    image:
+      "https://cdn.chotot.com/admincentre/ebBEtTu0bTYUBkB98EdorpxMMOYGHksy4jPi8r3lwww/preset:raw/plain/e535776facebad217a887071736b0e9a-2941243885328149887.jpg",
+  },
+  {
+    slug: "tai-xe-o-to",
+    name: "Tài xế ô tô",
+    query: "Tài xế",
     category: "van-tai",
-    icon: Truck,
-    accent: "#059669",
-    bg: "#ECFDF5",
+    image:
+      "https://cdn.chotot.com/admincentre/TEs_6B586LRrNYbV6tABlqZy52IW4Gl76883oUZKRhE/preset:raw/plain/34030d8c3844cb78d901918eda08fe06-2956820183949140861.jpg",
   },
   {
-    slug: "cham-soc-khach-hang",
-    name: "Chăm sóc KH",
-    query: "Khách hàng",
-    category: "cskh",
-    icon: Headset,
-    accent: "#D97706",
-    bg: "#FFFBEB",
+    slug: "cong-nhan",
+    name: "Công nhân",
+    query: "Công nhân",
+    category: "ky-thuat",
+    image:
+      "https://cdn.chotot.com/admincentre/DV_Ft_adBjy1qkuaDllAY1BXQ5Q8i1rxGegtfRCJ7yo/preset:raw/plain/4088c3fae49c790f1f4516c33953c022-2941243793830266471.jpg",
+  },
+  {
+    slug: "nhan-vien-kho-van",
+    name: "Nhân viên kho vận",
+    query: "Kho vận",
+    category: "van-tai",
+    image:
+      "https://cdn.chotot.com/admincentre/5ival2T9R3BJPZcCyNDO3G4pjcaDXdDPkt8PWmPGpGg/preset:raw/plain/8b8679c6622d75256b0b5d018ec3dd3a-2941243837680201087.jpg",
+  },
+  {
+    slug: "nhan-vien-giao-hang",
+    name: "Nhân viên giao hàng",
+    query: "Giao hàng",
+    category: "van-tai",
+    image:
+      "https://cdn.chotot.com/admincentre/nyS1dKZrXhUfaims698xVXlT9kQMkcm57Yzfk4ZCSOE/preset:raw/plain/7d84488558e54149a9aec1424553cbdb-2941243377260375423.jpg",
+  },
+  {
+    slug: "phu-bep",
+    name: "Phụ bếp",
+    query: "Phụ bếp",
+    category: "nha-hang",
+    image:
+      "https://cdn.chotot.com/admincentre/lqo8elXXvH--bNHwbZiIAy6i9zxMGSjQfIMbLJN8Wtc/preset:raw/plain/928fb590e8984c0ce125dfbf34d04ac4-2941243638198185343.jpg",
+  },
+  {
+    slug: "pha-che",
+    name: "Pha chế",
+    query: "Pha chế",
+    category: "nha-hang",
+    image:
+      "https://cdn.chotot.com/admincentre/MHP0r3F9SlWI9AxwvJxZjJrTrTKfKJi4xHujEk9zcV8/preset:raw/plain/7df64fba4efca4a034fbc01478478840-2941243581098608215.jpg",
   },
 ];
 

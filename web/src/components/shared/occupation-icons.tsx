@@ -2,9 +2,13 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { allOccupations, popularOccupations } from "@/lib/data";
 
-/** Biểu tượng nhóm ngành nghề hiển thị ở trang chủ (dùng vector icon cục bộ, không phụ thuộc ảnh ngoài). */
+/**
+ * Hiển thị hình ảnh chân dung của từng ngành nghề (1:1) ở trang chủ.
+ */
 export function OccupationIcon({
   slug,
+  image,
+  alt,
   className,
 }: {
   slug: string;
@@ -14,18 +18,24 @@ export function OccupationIcon({
 }) {
   const found =
     allOccupations.find((o) => o.slug === slug) ?? popularOccupations[0];
-  const Icon = found.icon;
+  const imgUrl = image || found.image;
 
   return (
     <div
       className={cn(
-        "relative flex size-13 shrink-0 items-center justify-center rounded-2xl border border-black/[0.04] transition-transform duration-200 group-hover:scale-105 sm:size-16",
+        "relative flex size-14 shrink-0 items-center justify-center transition-transform duration-200 group-hover:scale-105 sm:size-[76px] lg:size-[88px]",
         className
       )}
-      style={{ backgroundColor: found.bg, color: found.accent }}
-      aria-hidden
     >
-      <Icon className="size-6 sm:size-7" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={imgUrl}
+        alt={alt || found.name}
+        width={88}
+        height={88}
+        className="size-full object-cover select-none"
+        loading="eager"
+      />
     </div>
   );
 }

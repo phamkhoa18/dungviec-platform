@@ -7,7 +7,7 @@
  */
 import type { CompanyRecord, DatabaseDocument, JobRecord, UserRecord } from "@/lib/db/types";
 
-export const CATALOG_VERSION = 4;
+export const CATALOG_VERSION = 6;
 
 type Helpers = {
   generateObjectId: () => string;
@@ -265,6 +265,70 @@ const REAL_COMPANIES: RealCompanySeed[] = [
     hrFullName: "Đỗ Thành Long",
     hrPhone: "0914001122",
     benefits: ["Thưởng năng suất & lương tháng 13–14", "Xe đưa đón & hỗ trợ suất ăn tại nhà máy", "Bảo hiểm tai nạn & sức khỏe 24/7"],
+  },
+  {
+    key: "highlands",
+    taxCode: "0309965814",
+    legalName: "CÔNG TY CỔ PHẦN DỊCH VỤ CÀ PHÊ CAO NGUYÊN",
+    address: "Tầng 72, Tòa nhà Landmark 81, số 720A Điện Biên Phủ, Phường Thạnh Mỹ Tây, TP Hồ Chí Minh",
+    logoUrl: "/logos/highlands.svg",
+    website: "https://highlandscoffee.com.vn",
+    industry: "Chuỗi Cà phê & F&B",
+    companySize: "1000+ nhân sự",
+    description:
+      "Thương hiệu chuỗi cà phê hàng đầu Việt Nam Highlands Coffee với hàng trăm cửa hàng trên toàn quốc và môi trường làm việc năng động.",
+    hrEmail: "hr@highlandscoffee.com.vn",
+    hrFullName: "Trần Bảo Ngọc",
+    hrPhone: "0915112233",
+    benefits: ["Ca làm việc linh hoạt theo lịch", "Thưởng doanh số cửa hàng hàng tháng", "Đào tạo pha chế chuẩn hệ thống"],
+  },
+  {
+    key: "goldengate",
+    taxCode: "0102721191",
+    legalName: "CÔNG TY CỔ PHẦN TẬP ĐOÀN GOLDEN GATE",
+    address: "Số 60, phố Giang Văn Minh, Phường Ba Đình, TP Hà Nội",
+    logoUrl: "/logos/goldengate.svg",
+    website: "https://ggg.com.vn",
+    industry: "Chuỗi Nhà hàng & Ẩm thực (F&B)",
+    companySize: "1000+ nhân sự",
+    description:
+      "Tập đoàn sở hữu các chuỗi nhà hàng hàng đầu Việt Nam (Gogi House, Kichi-Kichi, Manwah, Sumo Yakiniku...) với quy trình đào tạo nghề bếp & dịch vụ bài bản.",
+    hrEmail: "hr@ggg.com.vn",
+    hrFullName: "Nguyễn Hải Yến",
+    hrPhone: "0916223344",
+    benefits: ["Hỗ trợ cơm ca tại nhà hàng", "Thưởng tip & doanh thu hàng tháng", "Lộ trình thăng tiến Bếp trưởng / Quản lý nhà hàng"],
+  },
+  {
+    key: "ghtk",
+    taxCode: "0106181807",
+    legalName: "CÔNG TY CỔ PHẦN GIAO HÀNG TIẾT KIỆM",
+    address: "Tòa nhà VTV, số 8 Phạm Hùng, Phường Từ Liêm, TP Hà Nội",
+    logoUrl: "/logos/ghtk.svg",
+    website: "https://giaohangtietkiem.vn",
+    industry: "Vận tải & Giao nhận Thương mại Điện tử",
+    companySize: "1000+ nhân sự",
+    description:
+      "Đơn vị vận tải công nghệ hàng đầu phục vụ thương mại điện tử với mạng lưới bưu cục và đội xe giao nhận phủ sóng toàn quốc.",
+    hrEmail: "hr@ghtk.vn",
+    hrFullName: "Phạm Quốc Dũng",
+    hrPhone: "0917334455",
+    benefits: ["Thu nhập ổn định theo chuyến & sản lượng", "Đầy đủ BHXH, BHYT & bảo hiểm tai nạn", "Thưởng chuyên cần & lễ Tết"],
+  },
+  {
+    key: "longhai",
+    taxCode: "0301339533",
+    legalName: "CÔNG TY CỔ PHẦN DỊCH VỤ BẢO VỆ LONG HẢI",
+    address: "108-110 Nguyễn Văn Trỗi, Phường Phú Nhuận, TP Hồ Chí Minh",
+    logoUrl: "/logos/longhai.svg",
+    website: "https://baovelonghai.com",
+    industry: "Dịch vụ An ninh & Bảo vệ Chuyên nghiệp",
+    companySize: "1000+ nhân sự",
+    description:
+      "Công ty dịch vụ bảo vệ chuyên nghiệp uy tín lâu năm tại TP.HCM, cung cấp nhân sự an ninh cho tòa nhà văn phòng, trung tâm thương mại và khu công nghiệp.",
+    hrEmail: "hr@baovelonghai.com",
+    hrFullName: "Lê Văn Đức",
+    hrPhone: "0918445566",
+    benefits: ["Hỗ trợ đồng phục & chỗ ở gần mục tiêu", "Lương đúng hạn 100%, đóng BHXH đầy đủ", "Phụ cấp ca đêm & lễ Tết theo luật lao động"],
   },
 ];
 
@@ -636,6 +700,136 @@ const REAL_JOBS: RealJobSeed[] = [
       "Tốt nghiệp Đại học chuyên ngành Cơ điện tử, Tự động hóa hoặc Kỹ thuật Điện.\nTối thiểu 2 năm kinh nghiệm bảo trì dây chuyền sản xuất công nghiệp, biết PLC và AutoCAD.\nTuân thủ nghiêm ngặt quy định an toàn lao động.",
     benefits:
       "Thu nhập 16 - 26 triệu/tháng + thưởng năng suất và lương tháng 13–14.\nCó xe đưa đón, suất ăn ca và bảo hiểm sức khỏe 24/7.",
+    deadline: "2027-02-28",
+  },
+  {
+    companyKey: "highlands",
+    slug: "nhan-vien-pha-che-barista-highlands",
+    title: "Nhân viên Pha chế (Barista) & Phục vụ Quầy Cà phê",
+    categorySlug: "nha-hang",
+    jobCategory: "Nhà hàng / F&B",
+    location: "TP. Hồ Chí Minh",
+    workAddress: "Hệ thống cửa hàng Highlands Coffee tại TP Hồ Chí Minh",
+    salaryMin: 7,
+    salaryMax: 11,
+    salaryRange: "7 - 11 triệu",
+    experienceRequired: "Không yêu cầu",
+    level: "Nhân viên (Junior)",
+    employmentType: "Toàn thời gian",
+    educationRequired: "THPT trở lên",
+    vacancies: 10,
+    tags: ["Pha chế", "Barista", "Phục vụ", "F&B"],
+    requiredSkills: ["Giao tiếp"],
+    description:
+      "Pha chế các thức uống cà phê, trà và đồ đá xay theo đúng công thức chuẩn của hệ thống Highlands Coffee.\nTiếp nhận order, phục vụ khách hàng tại quầy và giữ gìn vệ sinh khu vực làm việc sạch sẽ.\nKiểm tra nguyên vật liệu đầu/cuối ca cùng cửa hàng trưởng.",
+    requirements:
+      "Nhanh nhẹn, thân thiện, có tinh thần phục vụ khách hàng tốt.\nChấp nhận đào tạo từ đầu (ưu tiên ứng viên có kinh nghiệm pha chế hoặc phục vụ F&B).\nLàm việc theo ca linh hoạt 8 tiếng/ngày.",
+    benefits:
+      "Thu nhập 7 - 11 triệu/tháng gồm lương cơ bản + phụ cấp + thưởng doanh số cửa hàng.\nĐược đào tạo kỹ năng Barista chuyên nghiệp và cơ hội lên Ca trưởng.",
+    deadline: "2027-02-28",
+  },
+  {
+    companyKey: "goldengate",
+    slug: "nhan-vien-phu-bep-phuc-vu-golden-gate",
+    title: "Nhân viên Phụ bếp & Phục vụ Nhà hàng (Gogi / Manwah)",
+    categorySlug: "nha-hang",
+    jobCategory: "Nhà hàng / F&B",
+    location: "Hà Nội",
+    workAddress: "Số 60, phố Giang Văn Minh, Phường Ba Đình, TP Hà Nội",
+    salaryMin: 8,
+    salaryMax: 13,
+    salaryRange: "8 - 13 triệu",
+    experienceRequired: "Không yêu cầu",
+    level: "Nhân viên (Junior)",
+    employmentType: "Toàn thời gian",
+    educationRequired: "THPT trở lên",
+    vacancies: 12,
+    tags: ["Phụ bếp", "Phục vụ", "Nhà hàng", "Bao cơm ca"],
+    requiredSkills: ["Giao tiếp"],
+    description:
+      "Chuẩn bị nguyên liệu, sơ chế thực phẩm và hỗ trợ đầu bếp chính chế biến món ăn theo tiêu chuẩn vệ sinh an toàn thực phẩm.\nHỗ trợ phục vụ bàn, sắp xếp dụng cụ và tiếp đón thực khách tại hệ thống nhà hàng Golden Gate.",
+    requirements:
+      "Sức khỏe tốt, sạch sẽ, trung thực và sẵn sàng học hỏi quy trình bếp & phục vụ nhà hàng.\nKhông yêu cầu kinh nghiệm (được bếp trưởng hướng dẫn trực tiếp).",
+    benefits:
+      "Thu nhập 8 - 13 triệu/tháng + thưởng doanh thu + tip.\nBao ăn theo ca, đóng BHXH và xét tăng bậc định kỳ.",
+    deadline: "2027-02-28",
+  },
+  {
+    companyKey: "ghtk",
+    slug: "tai-xe-o-to-giao-hang-ghtk",
+    title: "Tài xế Ô tô Tải & Nhân viên Giao hàng Khu vực",
+    categorySlug: "van-tai",
+    jobCategory: "Giao nhận / Kho vận",
+    location: "Hà Nội",
+    workAddress: "Tòa nhà VTV, số 8 Phạm Hùng, Phường Từ Liêm, TP Hà Nội",
+    salaryMin: 14,
+    salaryMax: 22,
+    salaryRange: "14 - 22 triệu",
+    experienceRequired: "1 năm",
+    level: "Nhân viên (Junior)",
+    employmentType: "Toàn thời gian",
+    educationRequired: "THPT trở lên",
+    vacancies: 10,
+    tags: ["Tài xế", "Giao hàng", "Bằng B2/C", "Logistics"],
+    requiredSkills: ["Vận tải"],
+    description:
+      "Vận chuyển, giao nhận hàng hóa thương mại điện tử giữa các kho trung chuyển và bưu cục đúng thời gian quy định.\nKiểm đếm hàng hóa, đối soát chứng từ vận đơn qua ứng dụng điều phối GHTK.\nBảo quản phương tiện và đảm bảo an toàn giao thông trong quá trình làm việc.",
+    requirements:
+      "Có giấy phép lái xe hạng B2 hoặc C còn hiệu lực, thông thạo tuyến đường nội thành hoặc liên tỉnh.\nTrung thực, đúng giờ, chịu khó và sử dụng smartphone thành thạo.",
+    benefits:
+      "Thu nhập 14 - 22 triệu/tháng theo chuyến và sản lượng hàng hóa.\nBHXH, BHYT, bảo hiểm tai nạn đầy đủ và thưởng chuyên cần hàng tháng.",
+    deadline: "2027-02-28",
+  },
+  {
+    companyKey: "longhai",
+    slug: "nhan-vien-bao-ve-an-ninh-toa-nha-long-hai",
+    title: "Nhân viên Bảo vệ An ninh Tòa nhà Văn phòng & Trung tâm Thương mại",
+    categorySlug: "ky-thuat",
+    jobCategory: "Kỹ thuật / Sản xuất",
+    location: "TP. Hồ Chí Minh",
+    workAddress: "108-110 Nguyễn Văn Trỗi, Phường Phú Nhuận, TP Hồ Chí Minh",
+    salaryMin: 8,
+    salaryMax: 12,
+    salaryRange: "8 - 12 triệu",
+    experienceRequired: "Không yêu cầu",
+    level: "Nhân viên (Junior)",
+    employmentType: "Toàn thời gian",
+    educationRequired: "THCS trở lên",
+    vacancies: 15,
+    tags: ["Bảo vệ", "An ninh", "Tòa nhà", "Bao ở"],
+    requiredSkills: ["An ninh"],
+    description:
+      "Trực bảo vệ an ninh, kiểm soát người và phương tiện ra vào tại các tòa nhà văn phòng, ngân hàng và trung tâm thương mại.\nTuần tra khu vực được phân công, giám sát camera an ninh và hỗ trợ khách hàng khi cần thiết.",
+    requirements:
+      "Nam/Nữ tuổi từ 18 - 50, sức khỏe tốt, lý lịch rõ ràng, trung thực và tác phong nghiêm túc.\nKhông yêu cầu kinh nghiệm (được đào tạo nghiệp vụ bảo vệ miễn phí trước khi nhận mục tiêu).",
+    benefits:
+      "Thu nhập 8 - 12 triệu/tháng, nhận lương đúng hạn.\nCấp phát đồng phục miễn phí, hỗ trợ chỗ ở gần nơi làm việc và đóng BHXH đầy đủ.",
+    deadline: "2027-02-28",
+  },
+  {
+    companyKey: "vinamilk",
+    slug: "cong-nhan-van-hanh-day-chuyen-dong-goi-vinamilk",
+    title: "Công nhân Vận hành Dây chuyền Sản xuất & Đóng gói Tự động",
+    categorySlug: "ky-thuat",
+    jobCategory: "Kỹ thuật / Sản xuất",
+    location: "TP. Hồ Chí Minh",
+    workAddress: "10 Tân Trào, Phường Tân Mỹ, TP Hồ Chí Minh",
+    salaryMin: 10,
+    salaryMax: 16,
+    salaryRange: "10 - 16 triệu",
+    experienceRequired: "Không yêu cầu",
+    level: "Nhân viên (Junior)",
+    employmentType: "Toàn thời gian",
+    educationRequired: "THPT trở lên",
+    vacancies: 15,
+    tags: ["Công nhân", "Vận hành máy", "Sản xuất", "Bao cơm"],
+    requiredSkills: ["Vận hành máy"],
+    description:
+      "Vận hành thiết bị trên dây chuyền sản xuất, chiết rót và đóng gói sản phẩm tự động tại nhà máy.\nTheo dõi thông số vận hành, kiểm tra chất lượng thành phẩm và thực hiện vệ sinh thiết bị đúng tiêu chuẩn an toàn thực phẩm.",
+    requirements:
+      "Sức khỏe tốt, chăm chỉ, tuân thủ kỷ luật sản xuất và an toàn lao động.\nTốt nghiệp THPT/Trung cấp trở lên, ưu tiên ứng viên có kinh nghiệm làm việc tại nhà máy.",
+    benefits:
+      "Thu nhập 10 - 16 triệu/tháng kèm phụ cấp ca, cơm ca và xe đưa đón nhân viên.\nLương tháng 13–14, thưởng hiệu suất và bảo hiểm 24/7.",
     deadline: "2027-02-28",
   },
 ];
