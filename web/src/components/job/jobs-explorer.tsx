@@ -30,8 +30,21 @@ import { removeVietnameseTones } from "@/lib/utils";
 import { provinceKey } from "@/lib/services/location-types";
 import { categories, type Job } from "@/lib/data";
 
-const types = ["Toàn thời gian", "Bán thời gian"];
-const levels = ["Không yêu cầu", "Junior", "Middle", "Senior"];
+const types = ["Toàn thời gian", "Bán thời gian", "Làm việc từ xa (Remote)"];
+const levels = ["Không yêu cầu", "1 - 2 năm", "Từ 3 năm trở lên"];
+
+function matchesExperienceLevel(expStr: string, selectedLevels: string[]): boolean {
+  if (!selectedLevels.length) return true;
+  const s = (expStr || "").toLowerCase();
+  const m = s.match(/(\d+(?:[.,]\d+)?)/);
+  const years = m ? Number(m[1].replace(",", ".")) : 0;
+  return selectedLevels.some((lv) => {
+    if (lv === "Không yêu cầu") return s.includes("không") || years === 0;
+    if (lv === "1 - 2 năm") return years > 0 && years < 3;
+    if (lv === "Từ 3 năm trở lên") return years >= 3 || s.includes("senior");
+    return false;
+  });
+}
 
 function toggle(list: string[], v: string) {
   return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
@@ -61,11 +74,13 @@ export function JobsExplorer({ jobs }: { jobs: Job[] }) {
     const cityKw = provinceKey(city);
 
     let r = jobs.filter((j) => {
+      const skillsText = (j.requiredSkills || []).map((s) => removeVietnameseTones(s)).join(" ");
       const matchKeyword =
         !kw ||
         removeVietnameseTones(j.title).includes(kw) ||
         removeVietnameseTones(j.companyName || "").includes(kw) ||
         removeVietnameseTones(j.location).includes(kw) ||
+        skillsText.includes(kw) ||
         j.tags.some((t) => removeVietnameseTones(t).includes(kw));
 
       const matchCity =
@@ -78,7 +93,7 @@ export function JobsExplorer({ jobs }: { jobs: Job[] }) {
         matchCity &&
         (!cats.length || cats.includes(j.category)) &&
         (!tps.length || tps.includes(j.type)) &&
-        (!lvs.length || lvs.includes(j.level))
+        matchesExperienceLevel(j.level, lvs)
       );
     });
     if (sort === "luong") r = [...r].sort((a, b) => b.salaryMax - a.salaryMax);
@@ -125,7 +140,7 @@ export function JobsExplorer({ jobs }: { jobs: Job[] }) {
             {g.title}
           </legend>
           <div className="space-y-2">
-            {g.items.slice(0, 10).map(([v, l]) => (
+            {g.items.map(([v, l]) => (
               <div key={v} className="flex items-center gap-2">
                 <Checkbox
                   id={`${g.title}-${v}`}

@@ -1,13 +1,10 @@
 /**
  * Ánh xạ tin tuyển dụng trong cơ sở dữ liệu -> kiểu `Job` mà các thẻ/trang công khai đang dùng.
- * Chỉ chạy phía server (đọc DB).
+ * Chỉ chạy phía server (đọc DB). Không dùng dữ liệu cứng bên ngoài DB.
  */
 import { categories, type Job } from "@/lib/data";
 import { enforceJobDeadlines, readDb, type CompanyRecord, type JobRecord } from "@/lib/db/store";
 import { isDeadlinePassed } from "@/lib/recruitment/status";
-
-const PLACEHOLDER_LOGO =
-  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=200&q=60";
 
 const CITY_HINTS: [RegExp, string][] = [
   [/hồ chí minh|tp\.?\s?hcm|sài gòn|thủ đức/i, "TP.HCM"],
@@ -47,15 +44,28 @@ export function categorySlugOf(job: JobRecord): string {
   if (job.category_slug) return job.category_slug;
   const byName = categories.find((c) => c.name === job.job_category);
   if (byName) return byName.slug;
-  if (/công nghệ|it|dữ liệu|ai/i.test(job.job_category)) return "cong-nghe";
-  if (/kế toán|tài chính/i.test(job.job_category)) return "ke-toan";
-  if (/marketing/i.test(job.job_category)) return "marketing";
-  if (/kinh doanh|bán hàng|sales/i.test(job.job_category)) return "kinh-doanh";
+  const cat = (job.job_category || "").toLowerCase();
+  if (/dữ liệu|data|ai\b|ml\b/.test(cat)) return "du-lieu-ai";
+  if (/công nghệ|it\b|phần mềm/.test(cat)) return "cong-nghe";
+  if (/thiết kế|ui\/ux/.test(cat)) return "thiet-ke";
+  if (/marketing|truyền thông/.test(cat)) return "marketing";
+  if (/bán hàng/.test(cat)) return "ban-hang";
+  if (/kế toán|tài chính|kiểm toán/.test(cat)) return "ke-toan";
+  if (/nhân sự|hành chính/.test(cat)) return "nhan-su";
+  if (/giao nhận|kho vận|tài xế|logistics/.test(cat)) return "van-tai";
+  if (/chăm sóc|cskh/.test(cat)) return "cskh";
+  if (/kỹ thuật|công nhân|sản xuất/.test(cat)) return "ky-thuat";
+  if (/y tế|dược/.test(cat)) return "y-te";
+  if (/giáo dục|đào tạo/.test(cat)) return "giao-duc";
+  if (/nhà hàng|f&b/.test(cat)) return "nha-hang";
   return "kinh-doanh";
 }
 
 export function toPublicJob(job: JobRecord, company: CompanyRecord | null | undefined): Job {
-  const city = CITY_HINTS.find(([re]) => re.test(job.location))?.[1] || job.location.split(",").pop()?.trim() || "Toàn quốc";
+  const city =
+    CITY_HINTS.find(([re]) => re.test(job.location))?.[1] ||
+    job.location.split(",").pop()?.trim() ||
+    "Toàn quốc";
   return {
     id: job.id,
     slug: job.slug,
@@ -67,7 +77,7 @@ export function toPublicJob(job: JobRecord, company: CompanyRecord | null | unde
     companyField: company?.industry || null,
     companySlug: company?.slug || null,
     companyVerified: !!company?.verified,
-    thumbnail: job.thumbnail_url || company?.logo_url || PLACEHOLDER_LOGO,
+    thumbnail: job.thumbnail_url || company?.logo_url || "",
     salary: job.salary_range || "Thỏa thuận",
     salaryMax: salaryMaxOf(job),
     location: job.location,

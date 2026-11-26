@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { MapPin } from "lucide-react";
-import { Job, findCompany } from "@/lib/data";
+import { BadgeCheck, MapPin } from "lucide-react";
+import type { Job } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 /**
- * Thẻ việc làm gọn dùng ở trang chủ (khối "Việc làm mới nhất").
- * Chỉ hiển thị dữ liệu thuộc bảng `jobs`.
+ * Thẻ việc làm gọn dùng ở trang chủ (khối "Việc làm mới nhất") và Việc làm tương tự.
+ * Đọc 100% dữ liệu thật từ cơ sở dữ liệu (`jobs` + `companies`).
  */
 export function JobCardCompact({ job, className }: { job: Job; className?: string }) {
-  const company = findCompany(job.company);
-  const companyDisplayName = job.companyName || company?.name || "Doanh nghiệp";
-  const logo = job.thumbnail || job.companyLogo || company?.logo || "";
+  const companyDisplayName = job.companyName || "Doanh nghiệp";
+  const logo = job.companyLogo || job.thumbnail || "";
+  const initial = companyDisplayName.trim()[0]?.toUpperCase() || "Đ";
 
   return (
     <article
@@ -21,17 +21,23 @@ export function JobCardCompact({ job, className }: { job: Job; className?: strin
     >
       <Link
         href={`/viec-lam/${job.slug}`}
-        className="shrink-0 overflow-hidden rounded-lg border border-[#F0F0F0] bg-[#FAFAFA]"
+        className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#F0F0F0] bg-[#FAFAFA]"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={logo}
-          alt={`${job.title} - ${companyDisplayName}`}
-          width={56}
-          height={56}
-          className="size-14 object-cover"
-          loading="lazy"
-        />
+        {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logo}
+            alt={`${job.title} - ${companyDisplayName}`}
+            width={56}
+            height={56}
+            className="size-full object-contain p-1"
+            loading="lazy"
+          />
+        ) : (
+          <span className="grid size-full place-items-center bg-[#EBF2FF] text-base font-extrabold text-[#306BD9]">
+            {initial}
+          </span>
+        )}
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -41,8 +47,11 @@ export function JobCardCompact({ job, className }: { job: Job; className?: strin
           </Link>
         </h3>
 
-        <p className="truncate text-[13px] font-normal leading-[18px] text-[#8C8C8C]">
-          {companyDisplayName}
+        <p className="flex items-center gap-1 truncate text-[13px] font-normal leading-[18px] text-[#64748B]">
+          <span className="truncate">{companyDisplayName}</span>
+          {job.companyVerified && (
+            <BadgeCheck className="size-3.5 shrink-0 text-[#16A34A]" aria-label="Đã xác thực MST" />
+          )}
         </p>
 
         <p className="text-[15px] font-bold leading-5 text-[#F0325E]">{job.salary}</p>

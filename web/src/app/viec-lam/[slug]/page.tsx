@@ -53,11 +53,9 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
   ];
 
   const defaultRequirements = [
-    "Nam/Nữ trong độ tuổi lao động, sức khỏe tốt, trung thực và có trách nhiệm với công việc.",
-    job.noCv
-      ? "Không yêu cầu kinh nghiệm hay CV phức tạp — có CMND/CCCD gốc nhận việc đi làm ngay, sẽ được hướng dẫn từ đầu."
-      : "Ưu tiên ứng viên có kinh nghiệm ở vị trí tương đương hoặc có tinh thần cầu tiến, gắn bó lâu dài.",
-    "Đúng giờ, tuân thủ nội quy làm việc và ca kíp đã đăng ký.",
+    "Đáp ứng các kỹ năng chuyên môn và kinh nghiệm theo mô tả vị trí tuyển dụng.",
+    "Có tinh thần trách nhiệm, chủ động phối hợp nhóm và giao tiếp rõ ràng trong công việc.",
+    "Sẵn sàng tiếp nhận phản hồi và cập nhật kiến thức chuyên môn phù hợp.",
   ];
 
   const defaultBenefits = [
@@ -140,13 +138,19 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
             {/* 1. Khối Header Tin Đăng */}
             <section className="rounded-xl bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                <div className="size-20 shrink-0 overflow-hidden rounded-xl border border-[#EBEBEB] bg-[#FAFAFA] sm:size-24">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={job.thumbnail || company.logo}
-                    alt={job.title}
-                    className="size-full object-cover"
-                  />
+                <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#EBEBEB] bg-[#FAFAFA] sm:size-24">
+                  {job.thumbnail || company.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={job.thumbnail || company.logo || ""}
+                      alt={job.title}
+                      className="size-full object-contain p-1.5"
+                    />
+                  ) : (
+                    <span className="grid size-full place-items-center bg-[#EBF2FF] text-2xl font-extrabold text-[#306BD9]">
+                      {companyDisplayName.trim()[0]?.toUpperCase() || "Đ"}
+                    </span>
+                  )}
                 </div>
 
                 <div className="min-w-0 flex-1">
@@ -279,13 +283,19 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
             <div className="rounded-xl bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
               {/* Khối Công ty */}
               <div className="flex items-start gap-3">
-                <div className="size-16 shrink-0 overflow-hidden rounded-lg border border-[#EBEBEB] bg-white p-1">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={company.logo || job.thumbnail}
-                    alt={companyDisplayName}
-                    className="size-full object-contain"
-                  />
+                <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#EBEBEB] bg-white p-1">
+                  {company.logo || job.thumbnail ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={company.logo || job.thumbnail}
+                      alt={companyDisplayName}
+                      className="size-full object-contain"
+                    />
+                  ) : (
+                    <span className="grid size-full place-items-center rounded bg-[#EBF2FF] text-lg font-extrabold text-[#306BD9]">
+                      {companyDisplayName.trim()[0]?.toUpperCase() || "Đ"}
+                    </span>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 className="line-clamp-2 text-[15px] font-bold leading-5 text-[#222222]">

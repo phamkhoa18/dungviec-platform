@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Zap, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { companies } from "@/lib/data";
 
 /**
  * Biểu tượng thương hiệu: Tờ CV + kính lúp có dấu tick + tia sáng AI.
@@ -101,7 +100,6 @@ export function Mascot({
  * Logo thương hiệu thực tế của các Công ty / Nhà tuyển dụng trên Đúng Việc
  */
 export function CompanyLogo({
-  slug,
   src,
   initials,
   color,
@@ -114,10 +112,7 @@ export function CompanyLogo({
   partner?: boolean;
   className?: string;
 }) {
-  const matched = slug
-    ? companies.find((c) => c.slug === slug)
-    : companies.find((c) => c.initials === initials);
-  const logoUrl = src || matched?.logo;
+  const logoUrl = src;
 
   return (
     <span
@@ -130,7 +125,7 @@ export function CompanyLogo({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={logoUrl}
-          alt={matched?.name || initials || "Logo công ty"}
+          alt={initials || "Logo công ty"}
           className="size-full object-contain p-1"
           loading="lazy"
         />

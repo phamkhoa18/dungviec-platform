@@ -201,11 +201,13 @@ function buildInitialDatabase(): DatabaseDocument {
       id: 1,
       hr_user_id: 1,
       hr_object_id: "671900010000000000000001",
-      company_name: "FPT Software",
-      name: "FPT Software",
+      company_name: "CÔNG TY TNHH PHẦN MỀM FPT",
+      name: "CÔNG TY TNHH PHẦN MỀM FPT",
+      tax_code: "0101601092",
+      verified: true,
       logo_url: "/logos/fpt.svg",
       website: "https://fptsoftware.com",
-      address: "Lô T2, Đường D1, Khu Công Nghệ Cao, TP. Thủ Đức, TP. Hồ Chí Minh",
+      address: "Tòa nhà FPT Cầu Giấy, phố Duy Tân, Phường Cầu Giấy, TP Hà Nội",
       description:
         "Công ty thành viên thuộc Tập đoàn FPT, chuyên phát triển phần mềm, chuyển đổi số và giải pháp Trí tuệ nhân tạo (AI/Cloud) với hơn 30.000 kỹ sư công nghệ.",
       created_at: now,
@@ -216,13 +218,15 @@ function buildInitialDatabase(): DatabaseDocument {
       id: 2,
       hr_user_id: 2,
       hr_object_id: "671900010000000000000002",
-      company_name: "M_Service (Ví Điện Tử MoMo)",
-      name: "M_Service (Ví Điện Tử MoMo)",
+      company_name: "CÔNG TY CỔ PHẦN DỊCH VỤ DI ĐỘNG TRỰC TUYẾN",
+      name: "CÔNG TY CỔ PHẦN DỊCH VỤ DI ĐỘNG TRỰC TUYẾN",
+      tax_code: "0305289153",
+      verified: true,
       logo_url: "/logos/momo.svg",
       website: "https://momo.vn",
-      address: "Tòa nhà Phú Mỹ Hưng, Quận 7, TP. Hồ Chí Minh",
+      address: "Tầng 6, Toà nhà Phú Mỹ Hưng, số 8 đường Hoàng Văn Thái, Phường Tân Mỹ, TP Hồ Chí Minh",
       description:
-        "Siêu ứng dụng tài chính số hàng đầu Việt Nam phục vụ hơn 31 triệu người dùng cá nhân và đối tác doanh nghiệp.",
+        "Đơn vị chủ quản siêu ứng dụng tài chính số MoMo phục vụ hơn 31 triệu người dùng cá nhân và đối tác doanh nghiệp tại Việt Nam.",
       created_at: now,
       updated_at: now,
     },
@@ -777,9 +781,14 @@ function migrateDb(db: DatabaseDocument): DatabaseDocument {
     changed = true;
   }
 
-  // Catalog v1: nhập tin/công ty mẫu từ lib/data.ts vào DB (một nguồn dữ liệu cho trang công khai)
+  // Catalog v4: đồng bộ doanh nghiệp xác thực MST thật + tin tuyển dụng thật gắn với HR
   if ((db.meta.catalog_version || 0) < CATALOG_VERSION) {
-    importStaticCatalog(db, { generateObjectId: () => generateObjectId(), computeJdHash });
+    importStaticCatalog(db, {
+      generateObjectId: () => generateObjectId(),
+      computeJdHash,
+      hashPassword,
+      slugifyVietnamese,
+    });
     db.meta.catalog_version = CATALOG_VERSION;
     changed = true;
   }

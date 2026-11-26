@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none">
+  <rect width="96" height="96" rx="20" fill="#FDF2F8"/>
+  <rect x="3" y="3" width="90" height="90" rx="17" stroke="#A50064" stroke-opacity="0.22" stroke-width="2"/>
+  <rect x="14" y="14" width="68" height="4" rx="2" fill="#A50064"/>
+  <text x="48" y="52" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="22" font-weight="800" fill="#A50064">MoMo</text>
+  <text x="48" y="70" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="700" letter-spacing="1.2" fill="#475569">FINTECH</text>
+</svg>
