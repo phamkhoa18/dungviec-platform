@@ -7,15 +7,20 @@ import { toast } from "sonner";
 import {
   ArrowLeft,
   Briefcase,
-  Eye,
-  EyeOff,
   Loader2,
   UserRound,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  AUTH_INPUT_CLS,
+  AUTH_LABEL_CLS,
+  AuthLayoutShell,
+  FieldError,
+  PasswordInput,
+} from "@/components/auth/auth-shell";
 import { TaxLookupField } from "@/components/auth/tax-lookup-field";
-import { Logo, LogoMark } from "@/components/shared/brand";
 import { useAuth } from "@/hooks/use-auth";
 import { useTaxLookup } from "@/hooks/use-tax-lookup";
 import { cn } from "@/lib/utils";
@@ -25,38 +30,8 @@ type Errors = Partial<
   Record<"fullName" | "email" | "password", string>
 >;
 
-const inputCls =
-  "h-12 rounded-xl border-[#D9D9D9] bg-white px-4 text-[15px] text-[#222222] shadow-none placeholder:text-[#9AA0A6] hover:border-[#B8C4DC] focus-visible:border-[#306BD9] focus-visible:ring-4 focus-visible:ring-[#306BD9]/12";
-const labelCls = "text-[13px] font-semibold text-[#222222]";
-
-/** Nền trang trí nhẹ lấy cảm hứng từ logo (tờ CV, kính lúp, tia sáng AI). */
-function AuthBackdrop() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#E6EFFF] via-[#F3F7FF] to-white" />
-      <div
-        className="absolute inset-0 opacity-60"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 50% 0%, rgba(48,107,217,0.16), transparent 55%)",
-        }}
-      />
-      <LogoMark className="absolute -bottom-10 -left-16 hidden size-[340px] -rotate-12 opacity-[0.07] blur-[1px] sm:block" />
-      <LogoMark className="absolute -top-8 -right-14 hidden size-[300px] rotate-12 opacity-[0.06] blur-[1px] sm:block" />
-      <div className="absolute bottom-24 left-[18%] hidden size-3 rounded-full bg-[#FFB300]/50 sm:block" />
-      <div className="absolute top-40 right-[20%] hidden size-2.5 rounded-full bg-[#306BD9]/40 sm:block" />
-    </div>
-  );
-}
-
-function FieldError({ id, message }: { id: string; message?: string }) {
-  if (!message) return null;
-  return (
-    <p id={id} role="alert" className="text-[12.5px] font-medium text-[#DC2626]">
-      {message}
-    </p>
-  );
-}
+const inputCls = AUTH_INPUT_CLS;
+const labelCls = AUTH_LABEL_CLS;
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
@@ -71,7 +46,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [taxCode, setTaxCode] = useState("");
   const taxQuery = useTaxLookup(taxCode);
   const taxCompany = taxQuery.data;
@@ -203,15 +177,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       : "Hoàn tất đăng ký";
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center px-4 py-8 text-[#222222]">
-      <AuthBackdrop />
-
-      <header className="relative z-10 mb-6 sm:mb-8">
-        <Logo />
-      </header>
-
-      <main className="relative z-10 w-full max-w-[420px] flex-1">
-        <div className="rounded-[20px] bg-white p-6 shadow-[0_10px_40px_rgba(30,92,230,0.12)] ring-1 ring-black/[0.04] sm:p-8">
+    <AuthLayoutShell>
           {/* Tiêu đề */}
           <div className="text-center">
             <h1 className="text-[22px] font-extrabold tracking-tight">{title}</h1>
@@ -231,10 +197,11 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
                   { id: "hr", label: "Nhà tuyển dụng", icon: Briefcase },
                 ] as const
               ).map((r) => (
-                <button
+                <Button
                   key={r.id}
                   id={`role-${r.id}`}
                   type="button"
+                  variant="ghost"
                   role="radio"
                   aria-checked={role === r.id}
                   onClick={() => {
@@ -243,15 +210,15 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
                     setServerError(null);
                   }}
                   className={cn(
-                    "flex items-center justify-center gap-1.5 rounded-full py-2 text-[13px] font-bold transition-colors",
+                    "h-auto gap-1.5 rounded-full py-2 text-[13px] font-bold transition-colors",
                     role === r.id
-                      ? "bg-[#306BD9] text-white shadow-xs"
-                      : "text-[#555555] hover:text-[#222222]"
+                      ? "bg-[#306BD9] text-white shadow-xs hover:bg-[#306BD9] hover:text-white"
+                      : "text-[#555555] hover:bg-transparent hover:text-[#222222]"
                   )}
                 >
                   <r.icon className="size-4" />
                   {r.label}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -326,33 +293,35 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="password" className={labelCls}>
-                    Mật khẩu
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete={isLogin ? "current-password" : "new-password"}
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        clearError("password");
-                      }}
-                      placeholder={isLogin ? "Nhập mật khẩu" : "Tối thiểu 6 ký tự"}
-                      aria-invalid={!!errors.password}
-                      aria-describedby={errors.password ? "err-password" : undefined}
-                      className={cn("pr-12", inputCls)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                      className="absolute top-1/2 right-2.5 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-[#8C8C8C] transition-colors hover:bg-[#F5F5F5] hover:text-[#222222]"
-                    >
-                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label htmlFor="password" className={labelCls}>
+                      Mật khẩu
+                    </Label>
+                    {isLogin && (
+                      <Link
+                        href={
+                          email.trim()
+                            ? `/quen-mat-khau?email=${encodeURIComponent(email.trim())}&role=${role}`
+                            : `/quen-mat-khau?role=${role}`
+                        }
+                        className="text-[12.5px] font-semibold text-[#306BD9] hover:underline"
+                      >
+                        Quên mật khẩu?
+                      </Link>
+                    )}
                   </div>
+                  <PasswordInput
+                    id="password"
+                    autoComplete={isLogin ? "current-password" : "new-password"}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      clearError("password");
+                    }}
+                    placeholder={isLogin ? "Nhập mật khẩu" : "Tối thiểu 6 ký tự"}
+                    aria-invalid={!!errors.password}
+                    aria-describedby={errors.password ? "err-password" : undefined}
+                  />
                   <FieldError id="err-password" message={errors.password} />
                 </div>
               </>
@@ -383,24 +352,25 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
 
             <div className={cn(onCompanyStep && "flex gap-2.5")}>
               {onCompanyStep && (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => {
                     setStep(1);
                     setErrors({});
                     setServerError(null);
                   }}
-                  className="flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-full border border-[#D9D9D9] px-5 text-[14px] font-bold text-[#444444] transition-colors hover:bg-[#F5F7FB]"
+                  className="h-12 shrink-0 gap-1.5 rounded-full border-[#D9D9D9] px-5 text-[14px] font-bold text-[#444444] hover:bg-[#F5F7FB]"
                 >
                   <ArrowLeft className="size-4" />
                   Quay lại
-                </button>
+                </Button>
               )}
-              <button
+              <Button
                 id="auth-submit"
                 type="submit"
                 disabled={submitting || (onCompanyStep && !taxCompany?.isActive)}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#306BD9] text-[15px] font-bold text-white transition-colors hover:bg-[#2458BD] disabled:cursor-not-allowed disabled:opacity-70"
+                className="h-12 w-full gap-2 rounded-full bg-[#306BD9] text-[15px] font-bold text-white hover:bg-[#2458BD] disabled:opacity-70"
               >
                 {submitting ? (
                   <>
@@ -410,7 +380,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
                 ) : (
                   submitLabel
                 )}
-              </button>
+              </Button>
             </div>
           </form>
 
@@ -425,15 +395,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               </Link>
             </p>
           )}
-        </div>
-      </main>
-
-      <footer className="relative z-10 mt-8 flex flex-col items-center gap-1.5 text-[12.5px] text-[#777777]">
-        <Link href="/" className="font-semibold text-[#306BD9] hover:underline">
-          ← Về trang chủ
-        </Link>
-        <p>Kết quả AI chỉ mang tính tham khảo hỗ trợ sàng lọc.</p>
-      </footer>
-    </div>
+    </AuthLayoutShell>
   );
 }

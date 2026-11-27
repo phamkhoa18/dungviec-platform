@@ -274,7 +274,8 @@ export type NotificationType =
   | "interview_invite"
   | "interview_updated"
   | "interview_cancelled"
-  | "interview_response";
+  | "interview_response"
+  | "password_reset";
 
 export interface NotificationRecord {
   _id: string;
@@ -446,6 +447,22 @@ export interface CandidateProfileRecord {
   updated_at: string;
 }
 
+/** Collection 11: password_resets — Mã OTP & token xác minh đặt lại mật khẩu */
+export interface PasswordResetRecord {
+  _id: string;
+  id: number;
+  user_id: number;
+  email: string;
+  otp_hash: string;
+  attempts: number;
+  max_attempts: number;
+  expires_at: string;
+  reset_token_hash: string | null;
+  reset_token_expires_at: string | null;
+  used_at: string | null;
+  created_at: string;
+}
+
 export interface DatabaseDocument {
   counters: {
     users: number;
@@ -458,6 +475,7 @@ export interface DatabaseDocument {
     interviews?: number;
     notifications?: number;
     application_notes?: number;
+    password_resets?: number;
   };
   meta?: { catalog_version?: number; schema_version?: number };
   users: UserRecord[];
@@ -470,4 +488,5 @@ export interface DatabaseDocument {
   interviews: InterviewRecord[];
   notifications: NotificationRecord[];
   application_notes: ApplicationNoteRecord[];
+  password_resets: PasswordResetRecord[];
 }

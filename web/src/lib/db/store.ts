@@ -26,6 +26,7 @@ import type {
   DatabaseDocument,
   JobRecord,
   JobStatus,
+  PasswordResetRecord,
   UserRecord,
   UserRole,
 } from "./types";
@@ -53,6 +54,27 @@ export function hashPassword(plainPassword: string): string {
 export function verifyPassword(plainPassword: string, storedHash: string): boolean {
   const computed = hashPassword(plainPassword);
   return computed === storedHash;
+}
+
+/** Băm một chiều bằng HMAC-SHA256 cho OTP/token xác minh (dùng timingSafeEqual khi đối chiếu). */
+export function hashVerificationSecret(value: string, scope = ""): string {
+  return crypto
+    .createHmac("sha256", SESSION_SECRET)
+    .update(`${scope}:${value}`)
+    .digest("hex");
+}
+
+export function verifyVerificationSecret(
+  plainValue: string,
+  expectedHashHex: string | null | undefined,
+  scope = ""
+): boolean {
+  if (!plainValue || !expectedHashHex) return false;
+  const computedHex = hashVerificationSecret(plainValue, scope);
+  const a = Buffer.from(computedHex, "hex");
+  const b = Buffer.from(expectedHashHex, "hex");
+  if (a.length === 0 || a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }
 
 export interface SessionPayload {
@@ -672,6 +694,7 @@ function buildInitialDatabase(): DatabaseDocument {
       cv_profiles: cv_profiles.length,
       applications: applications.length,
       ai_evaluations: ai_evaluations.length,
+      password_resets: 0,
     },
     users,
     companies,
@@ -683,6 +706,7 @@ function buildInitialDatabase(): DatabaseDocument {
     interviews: [],
     notifications: [],
     application_notes: [],
+    password_resets: [],
   };
 }
 
@@ -695,7 +719,7 @@ export function computeJdHash(job: Pick<JobRecord, "title" | "jd_text" | "requir
 /** Bổ sung các collection mới cho file DB cũ (migration nhẹ, không mất dữ liệu). */
 function migrateDb(db: DatabaseDocument): DatabaseDocument {
   let changed = false;
-  for (const key of ["candidate_profiles", "interviews", "notifications", "application_notes"] as const) {
+  for (const key of ["candidate_profiles", "interviews", "notifications", "application_notes", "password_resets"] as const) {
     if (!Array.isArray(db[key])) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (db as any)[key] = [];
@@ -908,6 +932,7 @@ export type {
   DatabaseDocument,
   JobRecord,
   JobStatus,
+  PasswordResetRecord,
   UserRecord,
   UserRole,
 };

@@ -2,6 +2,7 @@
 
 import type { UseQueryResult } from "@tanstack/react-query";
 import { BadgeCheck, Building2, Loader2, MapPin, RotateCw, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { normalizeTaxCode, type TaxCompany } from "@/lib/services/tax-types";
@@ -81,14 +82,16 @@ export function TaxLookupField({
           className="flex items-start justify-between gap-3 rounded-xl bg-[#FEF2F2] px-3.5 py-3 text-[13px] font-medium text-[#DC2626]"
         >
           <span>{query.error.message}</span>
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="xs"
             onClick={() => query.refetch()}
-            className="flex shrink-0 items-center gap-1 font-bold underline-offset-2 hover:underline"
+            className="h-auto shrink-0 p-0 text-[13px] font-bold text-[#DC2626]"
           >
             <RotateCw className="size-3.5" />
             Thử lại
-          </button>
+          </Button>
         </div>
       )}
 
