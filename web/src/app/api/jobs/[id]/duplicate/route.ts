@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
-import { computeJdHash, generateObjectId, slugifyVietnamese, writeDb, type JobRecord } from "@/lib/db/store";
-import { jsonError, ownsJob, requireHr } from "@/lib/hr/hr-server";
+import {
+  computeJdHash,
+  generateObjectId,
+  slugifyVietnamese,
+  writeDb,
+  type JobRecord,
+} from "@/lib/db/store";
+import { jobStats, jsonError, ownsJob, publicCompany, requireHr } from "@/lib/hr/hr-server";
 
 /** POST /api/jobs/[id]/duplicate — Nhân bản tin thành bản nháp mới. */
 export async function POST(_req: Request, context: { params: Promise<{ id: string }> }) {
@@ -9,7 +15,9 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   const { db, session, company } = auth;
   const { id } = await context.params;
   const src = db.jobs.find((j) => String(j.id) === id);
-  if (!src || !ownsJob(src, session.user.id, company)) return jsonError("Không tìm thấy tin của bạn.", 404);
+  if (!src || !ownsJob(src, session.user.id, company)) {
+    return jsonError("Không tìm thấy tin của bạn.", 404);
+  }
   const now = new Date().toISOString();
   const nextId = (db.counters.jobs || db.jobs.length) + 1;
   const title = `${src.title} (Bản sao)`;
@@ -32,5 +40,9 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   db.counters.jobs = nextId;
   db.jobs.push(copy);
   writeDb(db);
-  return NextResponse.json({ status: "ok", message: "Đã nhân bản tin thành bản nháp.", job: copy });
+  return NextResponse.json({
+    status: "ok",
+    message: "Đã nhân bản tin thành bản nháp.",
+    job: { ...copy, company: publicCompany(company), ...jobStats(db, copy) },
+  });
 }

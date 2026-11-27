@@ -51,8 +51,11 @@ def handle_parse_cv_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     file_b64 = payload.get("file_base64")
     raw_text_input = payload.get("raw_text")
 
-    if file_b64:
-        file_bytes = base64.b64decode(file_b64)
+    if file_b64 is not None:
+        try:
+            file_bytes = base64.b64decode(file_b64)
+        except Exception as exc:
+            raise ValueError("QT-01: Dữ liệu tệp base64 không hợp lệ.") from exc
         parsed = parse_cv_file(file_name, file_bytes)
         raw_text = parsed["raw_text"]
         lines = parsed["lines"]
@@ -166,6 +169,8 @@ try:
             return handle_parse_cv_payload(body.model_dump())
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc))
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"Lỗi xử lý tệp CV: {exc}")
 
     @app.post("/api/v1/evaluate-fit")
     def api_evaluate_fit(body: EvaluateFitRequest):
@@ -173,6 +178,8 @@ try:
             return handle_evaluate_fit_payload(body.model_dump())
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc))
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"Lỗi chấm điểm AI: {exc}")
 
     HAS_FASTAPI = True
 except Exception:

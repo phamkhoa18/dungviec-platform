@@ -22,6 +22,12 @@ export async function GET() {
       { status: 401 }
     );
   }
+  if (sessionCtx.user.role !== "candidate") {
+    return NextResponse.json(
+      { error: "Chức năng quản lý CV chỉ dành cho tài khoản Ứng viên." },
+      { status: 403 }
+    );
+  }
   const db = readDb();
   const list = db.cv_profiles
     .filter((cv) => cv.user_id === sessionCtx.user.id && !cv.archived)
@@ -38,6 +44,12 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: "Vui lòng đăng nhập tài khoản Ứng viên để tải CV lên." },
       { status: 401 }
+    );
+  }
+  if (sessionCtx.user.role !== "candidate") {
+    return NextResponse.json(
+      { error: "Chỉ tài khoản Ứng viên mới có thể tải lên hồ sơ CV." },
+      { status: 403 }
     );
   }
 
@@ -160,6 +172,12 @@ export async function DELETE(req: Request) {
     return NextResponse.json(
       { error: "Vui lòng đăng nhập." },
       { status: 401 }
+    );
+  }
+  if (sessionCtx.user.role !== "candidate") {
+    return NextResponse.json(
+      { error: "Chỉ tài khoản Ứng viên mới có quyền xóa CV." },
+      { status: 403 }
     );
   }
   const { searchParams } = new URL(req.url);

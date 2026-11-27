@@ -12,6 +12,9 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   if (!sessionCtx) {
     return NextResponse.json({ error: "Vui lòng đăng nhập." }, { status: 401 });
   }
+  if (sessionCtx.user.role !== "candidate") {
+    return NextResponse.json({ error: "Chức năng chỉ dành cho Ứng viên." }, { status: 403 });
+  }
   const { id } = await context.params;
   const db = readDb();
   const cv = db.cv_profiles.find(

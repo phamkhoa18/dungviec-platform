@@ -142,11 +142,20 @@ export async function callPythonParseCv(params: {
     clearTimeout(timer);
     const data = await res.json();
     if (!res.ok || data.status === "error") {
-      throw new Error(data.detail || "Lỗi đọc tệp CV.");
+      const msg = data.detail || "Lỗi đọc tệp CV.";
+      if (res.status >= 400 && res.status < 500) {
+        const clientErr = new Error(msg) as Error & { isClientError?: boolean };
+        clientErr.isClientError = true;
+        throw clientErr;
+      }
+      throw new Error(msg);
     }
     return data as ParsedCvResult;
   } catch (err) {
-    if (err instanceof Error && err.message.startsWith("QT-01:")) {
+    if (
+      err instanceof Error &&
+      (err.message.startsWith("QT-01:") || (err as Error & { isClientError?: boolean }).isClientError)
+    ) {
       throw err;
     }
     return callPythonCli("parse-cv", payload) as ParsedCvResult;

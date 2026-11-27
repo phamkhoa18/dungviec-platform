@@ -44,6 +44,7 @@ export async function GET(_req: Request, context: Ctx) {
         rating: null,
         tags: [],
         rejection_reason: null,
+        status_history: (app.status_history || []).map((h) => ({ ...h, note: null })),
         job,
         company: publicCompany(job ? db.companies.find((c) => c.id === job.company_id) : null),
         interviews: db.interviews.filter((iv) => iv.application_id === app.id).map((iv) => ({ ...iv, feedback: null })),
@@ -111,7 +112,8 @@ export async function PATCH(req: Request, context: Ctx) {
     const app = db.applications.find((a) => (String(a.id) === id || a._id === id) && a.candidate_id === session.user.id);
     if (!app) return jsonError("Không tìm thấy đơn ứng tuyển.", 404);
     const job = db.jobs.find((j) => j.id === app.job_id);
-    if (body.action !== "withdraw" || !job) return jsonError("Thao tác không hợp lệ.", 400);
+    const isWithdraw = body.action === "withdraw" || body.status === "withdrawn";
+    if (!isWithdraw || !job) return jsonError("Thao tác không hợp lệ.", 400);
     if (!CANDIDATE_CAN_WITHDRAW.includes(normalizeStatus(app.status))) {
       return jsonError("Hồ sơ đã kết thúc quy trình, không thể rút đơn.", 400);
     }

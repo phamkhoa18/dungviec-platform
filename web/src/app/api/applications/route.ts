@@ -81,15 +81,33 @@ export async function GET(req: Request) {
     const interviews = db.interviews
       .filter((iv) => iv.application_id === app.id)
       .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
+    const compactCv = cvProfile
+      ? {
+          ...cvProfile,
+          raw_text: null,
+          parsed_data: cvProfile.parsed_data
+            ? { ...cvProfile.parsed_data, experiences: cvProfile.parsed_data.experiences.slice(0, 1) }
+            : null,
+        }
+      : null;
+    const compactSnapshot = app.cv_snapshot
+      ? {
+          ...app.cv_snapshot,
+          raw_text: null,
+          parsed_data: app.cv_snapshot.parsed_data
+            ? { ...app.cv_snapshot.parsed_data, experiences: app.cv_snapshot.parsed_data.experiences.slice(0, 1) }
+            : null,
+        }
+      : null;
     return {
       ...app,
+      cv_snapshot: compactSnapshot,
       status: normalizeStatus(app.status),
       job,
       company: publicCompany(company),
       candidate: candidate ? sanitizeUser(candidate) : null,
-      cv_profile: cvProfile,
-      candidate_profile:
-        role === "hr" ? db.candidate_profiles.find((p) => p.user_id === app.candidate_id) || null : null,
+      cv_profile: compactCv,
+      candidate_profile: null,
       ai_evaluation: aiEvaluation,
       ai_is_stale: !!(aiEvaluation?.jd_hash && job?.jd_hash && aiEvaluation.jd_hash !== job.jd_hash),
       interviews,
@@ -326,9 +344,8 @@ export async function POST(req: Request) {
       cv_profile: selectedCv,
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Lỗi xử lý đơn ứng tuyển." },
-      { status: 500 }
-    );
+    const msg = err instanceof Error ? err.message : "Lỗi xử lý đơn ứng tuyển.";
+    const status = msg.startsWith("QT-01:") ? 400 : 500;
+    return NextResponse.json({ error: msg }, { status });
   }
 }

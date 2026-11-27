@@ -68,6 +68,7 @@ export type JobInput = {
   salary_max?: number | null;
   salary_negotiable?: boolean;
   salary_range?: string;
+  pay_type?: string;
   experience_required: string;
   education_required?: string;
   gender_required?: string;

@@ -544,7 +544,10 @@ def ocr_page_lines(page: Any, page_index: int) -> List[Line]:
 def extract_pdf_lines(file_bytes: bytes) -> Tuple[List[Line], Dict[str, Any]]:
     import fitz  # type: ignore
 
-    doc = fitz.open(stream=file_bytes, filetype="pdf")
+    try:
+        doc = fitz.open(stream=file_bytes, filetype="pdf")
+    except Exception as exc:
+        raise ValueError("QT-01: Tệp PDF bị hỏng hoặc không đúng định dạng PDF hợp lệ.") from exc
     all_lines: List[Line] = []
     two_col_any = False
     ocr_pages: List[int] = []
@@ -614,6 +617,7 @@ def _docx_paragraph_line(par: Any, default_size: float = 11.0) -> Optional[Line]
 def extract_docx_lines(file_bytes: bytes) -> Tuple[List[Line], Dict[str, Any]]:
     lines: List[Line] = []
     has_table = False
+    docx_failed = False
     try:
         import docx  # type: ignore
         from docx.table import Table  # type: ignore
@@ -650,6 +654,7 @@ def extract_docx_lines(file_bytes: bytes) -> Tuple[List[Line], Dict[str, Any]]:
                 has_table = True
                 walk_table(Table(child, document))
     except Exception:
+        docx_failed = True
         lines = []
 
     # Fallback: CV dùng TextBox (w:txbxContent) mà python-docx bỏ qua -> đọc mọi w:p theo thứ tự XML
@@ -671,8 +676,9 @@ def extract_docx_lines(file_bytes: bytes) -> Tuple[List[Line], Dict[str, Any]]:
                 xml_lines.append(Line(text=txt, bold=bold))
             if len("".join(l.text for l in xml_lines)) > len("".join(l.text for l in lines)):
                 lines = xml_lines
-        except Exception:
-            pass
+        except Exception as exc:
+            if docx_failed:
+                raise ValueError("QT-01: Tệp Word (.docx) bị hỏng hoặc không đúng định dạng.") from exc
 
     for i, l in enumerate(lines):
         l.y0 = float(i)

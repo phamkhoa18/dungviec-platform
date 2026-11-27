@@ -147,6 +147,8 @@ def extract_canonical_skills(text: str) -> Set[str]:
 
 
 def extract_experience_years_bilingual(text: str) -> float:
+    if not str(text or "").strip():
+        return 0.0
     lower = str(text or "").lower()
     patterns = [
         r"(\d+(?:[\.,]\d+)?)\s*\+?\s*(?:years?|yrs?)\s+(?:of\s+)?(?:hands-on\s+)?(?:professional\s+)?experience",

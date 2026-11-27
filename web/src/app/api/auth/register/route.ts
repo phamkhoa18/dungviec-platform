@@ -4,6 +4,7 @@ import {
   getUserWithContext,
   hashPassword,
   readDb,
+  slugifyVietnamese,
   writeDb,
   type CompanyRecord,
   type UserRecord,
@@ -114,9 +115,12 @@ export async function POST(req: Request) {
         name: taxCompany.name,
         tax_code: taxCompany.taxCode,
         verified: true,
+        slug: `${slugifyVietnamese(taxCompany.name)}-${nextCompanyId}`,
         logo_url: null,
         website: companyWebsite,
         address: taxCompany.address,
+        benefits: [],
+        social_links: {},
         description:
           companyDescription ||
           `Doanh nghiệp tuyển dụng trên hệ thống Đúng Việc (${taxCompany.name}).`,

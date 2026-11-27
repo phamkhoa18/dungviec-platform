@@ -24,9 +24,16 @@ export function normalizeProvinceName(raw: string): string {
   return raw.normalize("NFC").trim().replace(PREFIX_RE, "").trim();
 }
 
-/** Khóa so sánh không dấu, không phân biệt hoa thường và tiền tố. */
+/** Khóa so sánh không dấu, không phân biệt hoa thường và tiền tố (chuẩn hóa luôn TP.HCM / HN). */
 export function provinceKey(raw: string): string {
-  return removeVietnameseTones(normalizeProvinceName(raw));
+  const key = removeVietnameseTones(normalizeProvinceName(raw)).replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+  if (key === "hcm" || key === "tphcm" || key === "tp hcm" || key === "sai gon" || key === "saigon") {
+    return "ho chi minh";
+  }
+  if (key === "hn") {
+    return "ha noi";
+  }
+  return key;
 }
 
 export function toProvince(raw: RawProvince): Province {

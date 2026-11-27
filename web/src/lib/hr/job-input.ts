@@ -8,10 +8,11 @@ import { vnToday } from "@/lib/recruitment/status";
 export type JobInputResult = { ok: true; patch: Partial<JobRecord> } | { ok: false; error: string };
 
 const str = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : undefined);
-const num = (v: unknown) => {
-  if (v === null || v === "" || v === undefined) return null;
+const parseNullableNum = (v: unknown): { ok: true; value: number | null } | { ok: false } => {
+  if (v === null || v === "" || v === undefined) return { ok: true, value: null };
   const n = Number(v);
-  return Number.isFinite(n) && n >= 0 ? n : null;
+  if (!Number.isFinite(n) || n < 0) return { ok: false };
+  return { ok: true, value: n };
 };
 const list = (v: unknown, max = 20) => {
   if (Array.isArray(v)) return v.map((x) => String(x).trim().slice(0, 60)).filter(Boolean).slice(0, max);
@@ -47,7 +48,14 @@ export function parseJobInput(body: Record<string, unknown>, existing?: JobRecor
   if (has("experience_required")) patch.experience_required = str(body.experience_required, 60) || "Không yêu cầu";
   if (has("level")) patch.level = str(body.level, 60) || null;
   if (has("employment_type")) patch.employment_type = str(body.employment_type, 60) || "Toàn thời gian";
-  if (has("vacancies")) patch.vacancies = num(body.vacancies);
+  if (has("vacancies")) {
+    const parsedVac = parseNullableNum(body.vacancies);
+    if (!parsedVac.ok) return { ok: false, error: "Số lượng tuyển phải là số nguyên dương." };
+    if (parsedVac.value !== null && (parsedVac.value < 1 || parsedVac.value > 500)) {
+      return { ok: false, error: "Số lượng tuyển phải từ 1 đến 500 người." };
+    }
+    patch.vacancies = parsedVac.value !== null ? Math.round(parsedVac.value) : null;
+  }
   if (has("education_required")) patch.education_required = str(body.education_required, 80) || null;
   if (has("gender_required")) patch.gender_required = str(body.gender_required, 30) || null;
   if (has("age_range")) patch.age_range = str(body.age_range, 30) || null;
@@ -69,14 +77,30 @@ export function parseJobInput(body: Record<string, unknown>, existing?: JobRecor
   if (has("required_skills")) patch.required_skills = list(body.required_skills, 25) || [];
 
   if (has("salary_min") || has("salary_max") || has("salary_negotiable")) {
-    const min = has("salary_min") ? num(body.salary_min) : existing?.salary_min ?? null;
-    const max = has("salary_max") ? num(body.salary_max) : existing?.salary_max ?? null;
+    let min = existing?.salary_min ?? null;
+    if (has("salary_min")) {
+      const parsedMin = parseNullableNum(body.salary_min);
+      if (!parsedMin.ok) return { ok: false, error: "Mức lương tối thiểu không hợp lệ." };
+      min = parsedMin.value;
+    }
+    let max = existing?.salary_max ?? null;
+    if (has("salary_max")) {
+      const parsedMax = parseNullableNum(body.salary_max);
+      if (!parsedMax.ok) return { ok: false, error: "Mức lương tối đa không hợp lệ." };
+      max = parsedMax.value;
+    }
     const neg = has("salary_negotiable") ? Boolean(body.salary_negotiable) : !!existing?.salary_negotiable;
-    if (min && max && min > max) return { ok: false, error: "Lương tối thiểu không được lớn hơn lương tối đa." };
-    patch.salary_min = min;
-    patch.salary_max = max;
+    if (!neg && min !== null && max !== null && min > max) {
+      return { ok: false, error: "Lương tối thiểu không được lớn hơn lương tối đa." };
+    }
+    patch.salary_min = neg ? null : min;
+    patch.salary_max = neg ? null : max;
     patch.salary_negotiable = neg;
-    patch.salary_range = formatSalary(min, max, neg);
+    const customRange = has("salary_range") ? str(body.salary_range, 60) : undefined;
+    patch.salary_range =
+      !neg && !patch.salary_min && !patch.salary_max && customRange
+        ? customRange
+        : formatSalary(patch.salary_min, patch.salary_max, neg);
   } else if (has("salary_range")) {
     patch.salary_range = str(body.salary_range, 60) || "Thỏa thuận";
   }

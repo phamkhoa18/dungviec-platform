@@ -40,17 +40,38 @@ export async function PUT(req: Request) {
       );
     }
 
-    if (typeof body.full_name === "string" && body.full_name.trim().length >= 2) {
-      user.full_name = body.full_name.trim();
+    if (body.full_name !== undefined) {
+      const name = String(body.full_name || "").trim();
+      if (name.length < 2) {
+        return NextResponse.json(
+          { error: "Họ và tên phải có tối thiểu 2 ký tự." },
+          { status: 400 }
+        );
+      }
+      user.full_name = name.slice(0, 100);
     }
     if (body.phone !== undefined) {
-      user.phone = String(body.phone || "").trim() || null;
+      const phone = String(body.phone || "").replace(/[^\d+]/g, "");
+      if (phone && !/^(\+84|0)\d{9,10}$/.test(phone)) {
+        return NextResponse.json(
+          { error: "Số điện thoại không hợp lệ." },
+          { status: 400 }
+        );
+      }
+      user.phone = phone || null;
     }
     if (typeof body.avatar_url === "string") {
       user.avatar_url = body.avatar_url.trim() || null;
     }
-    if (typeof body.new_password === "string" && body.new_password.length >= 6) {
-      user.password_hash = hashPassword(body.new_password);
+    if (body.new_password !== undefined && String(body.new_password).trim() !== "") {
+      const newPwd = String(body.new_password).trim();
+      if (newPwd.length < 6) {
+        return NextResponse.json(
+          { error: "Mật khẩu mới phải có tối thiểu 6 ký tự." },
+          { status: 400 }
+        );
+      }
+      user.password_hash = hashPassword(newPwd);
     }
     user.updated_at = new Date().toISOString();
 

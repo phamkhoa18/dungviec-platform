@@ -8,6 +8,9 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   if (!sessionCtx) {
     return NextResponse.json({ error: "Vui lòng đăng nhập." }, { status: 401 });
   }
+  if (sessionCtx.user.role !== "candidate") {
+    return NextResponse.json({ error: "Chức năng chỉ dành cho Ứng viên." }, { status: 403 });
+  }
   const { id } = await context.params;
   const body = (await req.json().catch(() => ({}))) as { is_default?: boolean; cv_title?: string };
   const db = readDb();
