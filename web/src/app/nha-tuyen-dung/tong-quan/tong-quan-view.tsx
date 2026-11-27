@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { PageHeader, useJobDialog } from "@/components/hr/hr-shell";
 import { EmptyState, ErrorState, Panel } from "@/components/hr/ui-parts";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHrAnalytics } from "@/hooks/hr/use-hr-data";
 import { useAuth } from "@/hooks/use-auth";
@@ -101,29 +102,31 @@ export default function HrOverviewPage() {
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex rounded-full bg-white p-1 ring-1 ring-black/[0.06]">
               {PERIOD_OPTIONS.map((opt) => (
-                <button
+                <Button
                   key={opt.days}
                   type="button"
+                  variant={days === opt.days ? "default" : "ghost"}
+                  size="sm"
                   onClick={() => setDays(opt.days)}
                   className={cn(
-                    "rounded-full px-3 py-1 text-[12px] font-bold transition-colors",
+                    "h-7.5 rounded-full px-3 text-[12px] font-bold",
                     days === opt.days
-                      ? "bg-[#306BD9] text-white"
-                      : "text-[#555555] hover:text-[#222222]"
+                      ? "bg-[#306BD9] text-white hover:bg-[#2458BD]"
+                      : "text-[#555555] hover:bg-transparent hover:text-[#222222]"
                   )}
                 >
                   {opt.label}
-                </button>
+                </Button>
               ))}
             </div>
-            <button
+            <Button
               type="button"
               onClick={() => openJobForm(null)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#306BD9] px-4 text-[12.5px] font-bold text-white hover:bg-[#2458BD]"
+              className="h-9 rounded-full bg-[#306BD9] px-4 text-[12.5px] font-bold text-white hover:bg-[#2458BD]"
             >
               <PlusCircle className="size-4" />
               Đăng tin mới
-            </button>
+            </Button>
           </div>
         }
       />
@@ -156,7 +159,7 @@ export default function HrOverviewPage() {
                 <AlertTriangle className="size-5 shrink-0 text-[#D97706]" />
                 <span>
                   Có <strong>{data.expiring_jobs.length} tin tuyển dụng</strong>{" "}
-                  sắp hết hạn trong 5 ngày tới:{" "}
+                  sắp hết hạn trong 7 ngày tới:{" "}
                   {data.expiring_jobs.map((j) => j.title).join(", ")}.
                 </span>
               </div>
@@ -315,26 +318,26 @@ export default function HrOverviewPage() {
                     <div className="mt-2.5 grid grid-cols-3 gap-2 text-[12px]">
                       <div className="rounded-lg bg-[#F0FDF4] px-2.5 py-1.5">
                         <p className="font-bold text-[#15803D]">
-                          {data.fit_distribution.good} Rất phù hợp
+                          {data.fit_distribution.good} {FIT_META["Good Fit"].label}
                         </p>
                         <p className="text-[10.5px] text-[#16A34A]">
-                          Điểm &ge; 70
+                          {FIT_META["Good Fit"].range}
                         </p>
                       </div>
                       <div className="rounded-lg bg-[#FFFBEB] px-2.5 py-1.5">
                         <p className="font-bold text-[#B45309]">
-                          {data.fit_distribution.potential} Tiềm năng
+                          {data.fit_distribution.potential} {FIT_META["Potential Fit"].label}
                         </p>
                         <p className="text-[10.5px] text-[#D97706]">
-                          Điểm 45 – 69
+                          {FIT_META["Potential Fit"].range}
                         </p>
                       </div>
                       <div className="rounded-lg bg-[#FEF2F2] px-2.5 py-1.5">
                         <p className="font-bold text-[#B91C1C]">
-                          {data.fit_distribution.no_fit} Chưa phù hợp
+                          {data.fit_distribution.no_fit} {FIT_META["No Fit"].label}
                         </p>
                         <p className="text-[10.5px] text-[#DC2626]">
-                          Điểm &lt; 45
+                          {FIT_META["No Fit"].range}
                         </p>
                       </div>
                     </div>

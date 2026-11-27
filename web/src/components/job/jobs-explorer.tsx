@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -37,7 +38,8 @@ function matchesExperienceLevel(expStr: string, selectedLevels: string[]): boole
   if (!selectedLevels.length) return true;
   const s = (expStr || "").toLowerCase();
   const m = s.match(/(\d+(?:[.,]\d+)?)/);
-  const years = m ? Number(m[1].replace(",", ".")) : 0;
+  const rawNum = m ? Number(m[1].replace(",", ".")) : 0;
+  const years = s.includes("tháng") || s.includes("month") ? rawNum / 12 : rawNum;
   return selectedLevels.some((lv) => {
     if (lv === "Không yêu cầu") return s.includes("không") || years === 0;
     if (lv === "1 - 2 năm") return years > 0 && years < 3;
@@ -55,11 +57,31 @@ function toggle(list: string[], v: string) {
  */
 export function JobsExplorer({ jobs }: { jobs: Job[] }) {
   const sp = useSearchParams();
-  const [q, setQ] = useState(sp.get("q") ?? "");
-  const [cats, setCats] = useState<string[]>(
-    sp.get("nganh") ? [sp.get("nganh")!] : []
+  return (
+    <JobsExplorerInner
+      key={sp.toString()}
+      jobs={jobs}
+      initialQ={sp.get("q") ?? ""}
+      initialCats={sp.get("nganh") ? [sp.get("nganh")!] : []}
+      initialCity={sp.get("dia-diem") ?? ""}
+    />
   );
-  const [city, setCity] = useState<string>(sp.get("dia-diem") ?? "");
+}
+
+function JobsExplorerInner({
+  jobs,
+  initialQ,
+  initialCats,
+  initialCity,
+}: {
+  jobs: Job[];
+  initialQ: string;
+  initialCats: string[];
+  initialCity: string;
+}) {
+  const [q, setQ] = useState(initialQ);
+  const [cats, setCats] = useState<string[]>(initialCats);
+  const [city, setCity] = useState<string>(initialCity);
   const [tps, setTps] = useState<string[]>([]);
   const [lvs, setLvs] = useState<string[]>([]);
   const [sort, setSort] = useState("moi");
@@ -159,13 +181,14 @@ export function JobsExplorer({ jobs }: { jobs: Job[] }) {
         </fieldset>
       ))}
       {active > 0 && (
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={reset}
-          className="w-full rounded-lg border border-[#306BD9] py-2 text-[13px] font-bold text-[#306BD9] hover:bg-[#F2F6FC]"
+          className="h-9 w-full rounded-lg border-[#306BD9] text-[13px] font-bold text-[#306BD9] hover:bg-[#F2F6FC] hover:text-[#306BD9]"
         >
           Xoá toàn bộ bộ lọc
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -182,12 +205,12 @@ export function JobsExplorer({ jobs }: { jobs: Job[] }) {
           <div className="mb-3 flex flex-col gap-2 rounded-xl bg-white p-3 shadow-[0_1px_4px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center">
             <div className="relative min-w-0 flex-1">
               <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#8C8C8C]" />
-              <input
+              <Input
                 type="text"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Tìm theo vị trí, kỹ năng hoặc công ty..."
-                className="h-10 w-full rounded-lg border border-[#D9D9D9] bg-white pl-10 pr-4 text-[14px] text-[#222222] placeholder:text-[#8C8C8C] focus:border-[#306BD9] focus:outline-none"
+                className="h-10 rounded-lg border-[#D9D9D9] bg-white pl-10 pr-4 text-[14px] text-[#222222] shadow-none placeholder:text-[#8C8C8C] focus-visible:border-[#306BD9] focus-visible:ring-0"
               />
             </div>
 
@@ -234,26 +257,30 @@ export function JobsExplorer({ jobs }: { jobs: Job[] }) {
               Tìm thấy <strong className="text-[#222222]">{list.length}</strong> tin tuyển dụng
             </span>
             {city && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={() => setCity("")}
-                className="inline-flex items-center gap-1 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[12px] font-semibold text-[#306BD9]"
+                className="h-auto gap-1 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[12px] font-semibold text-[#306BD9] hover:bg-[#DBEAFE] hover:text-[#306BD9]"
               >
                 <MapPin className="size-3" />
                 {city}
                 <X className="size-3" />
-              </button>
+              </Button>
             )}
             {cats.map((c) => (
-              <button
+              <Button
                 key={c}
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={() => setCats(toggle(cats, c))}
-                className="inline-flex items-center gap-1 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[12px] font-semibold text-[#306BD9]"
+                className="h-auto gap-1 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[12px] font-semibold text-[#306BD9] hover:bg-[#DBEAFE] hover:text-[#306BD9]"
               >
                 {categories.find((x) => x.slug === c)?.name}
                 <X className="size-3" />
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -272,13 +299,13 @@ export function JobsExplorer({ jobs }: { jobs: Job[] }) {
               <p className="mt-1 text-[13.5px] text-[#8C8C8C]">
                 Bạn hãy thử xóa bớt bộ lọc hoặc nhập từ khóa ngắn gọn hơn nhé.
               </p>
-              <button
+              <Button
                 type="button"
                 onClick={reset}
                 className="mt-4 h-10 rounded-lg bg-[#306BD9] px-5 text-[14px] font-bold text-white hover:bg-[#2458BD]"
               >
                 Xoá bộ lọc
-              </button>
+              </Button>
             </div>
           )}
         </div>

@@ -19,6 +19,7 @@ import {
   InterviewFeedbackDialog,
 } from "@/components/hr/interview-dialog";
 import { EmptyState, ErrorState, Panel } from "@/components/hr/ui-parts";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   interviewIcsUrl,
@@ -161,21 +162,23 @@ export default function HrInterviewsPage() {
         {FILTER_TABS.map((t) => {
           const active = tab === t.key;
           return (
-            <button
+            <Button
               key={t.key}
               type="button"
               role="tab"
+              variant={active ? "default" : "outline"}
+              size="sm"
               aria-selected={active}
               onClick={() => setTab(t.key)}
               className={cn(
-                "rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition-colors",
+                "h-8 rounded-full px-3.5 text-[12.5px] font-bold",
                 active
-                  ? "bg-[#306BD9] text-white"
-                  : "bg-white text-[#555555] ring-1 ring-black/[0.06] hover:bg-[#F5F7FB]"
+                  ? "border-transparent bg-[#306BD9] text-white hover:bg-[#2458BD]"
+                  : "border-black/[0.06] bg-white text-[#555555] hover:bg-[#F5F7FB] hover:text-[#222222]"
               )}
             >
               {t.label}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -357,30 +360,35 @@ export default function HrInterviewsPage() {
                             </a>
                             {iv.status !== "cancelled" && (
                               <>
-                                <button
+                                <Button
                                   type="button"
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => setEditingInterview(iv)}
-                                  className="h-8 rounded-full border border-[#D9D9D9] bg-white px-3 text-[12px] font-bold text-[#334155] hover:bg-[#F8FAFC]"
+                                  className="h-8 rounded-full border-[#D9D9D9] bg-white px-3 text-[12px] font-bold text-[#334155] hover:bg-[#F8FAFC]"
                                 >
                                   Đổi lịch
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                   type="button"
+                                  size="sm"
                                   onClick={() => setScorecardInterview(iv)}
                                   className="h-8 rounded-full bg-[#16A34A] px-3.5 text-[12px] font-bold text-white hover:bg-[#15803D]"
                                 >
                                   {iv.feedback
                                     ? "Sửa phiếu điểm"
                                     : "Ghi phiếu đánh giá"}
-                                </button>
+                                </Button>
                                 {iv.status !== "completed" && (
-                                  <button
+                                  <Button
                                     type="button"
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => cancelInterview(iv)}
-                                    className="h-8 rounded-full border border-[#FECACA] bg-white px-3 text-[12px] font-bold text-[#DC2626] hover:bg-[#FEF2F2]"
+                                    className="h-8 rounded-full border-[#FECACA] bg-white px-3 text-[12px] font-bold text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
                                   >
                                     Hủy
-                                  </button>
+                                  </Button>
                                 )}
                               </>
                             )}

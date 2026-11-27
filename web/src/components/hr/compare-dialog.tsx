@@ -9,6 +9,7 @@ import {
   Star,
   XCircle,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -236,16 +237,16 @@ export function CompareDialog({
                   </div>
 
                   {onSelectCandidate && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => {
                         onSelectCandidate(app.id);
                         onOpenChange(false);
                       }}
-                      className="mt-4 w-full rounded-xl bg-[#306BD9] py-2 text-[12.5px] font-bold text-white hover:bg-[#2458BD]"
+                      className="mt-4 h-9 w-full rounded-xl bg-[#306BD9] text-[12.5px] font-bold text-white hover:bg-[#2458BD]"
                     >
                       Mở chi tiết 360°
-                    </button>
+                    </Button>
                   )}
                 </div>
               );

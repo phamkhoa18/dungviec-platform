@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,6 +106,7 @@ export function InterviewDialog({
           location: location.trim(),
           interviewer: interviewer.trim() || undefined,
           message: message.trim() || undefined,
+          force,
         });
         toast.success(res.message || "Đã cập nhật lịch phỏng vấn.");
         onOpenChange(false);
@@ -172,14 +174,15 @@ export function InterviewDialog({
                 </div>
               </div>
               <div className="mt-2.5 flex justify-end">
-                <button
+                <Button
                   type="button"
+                  size="sm"
                   disabled={busy}
                   onClick={() => void submit(true)}
-                  className="rounded-lg bg-[#D97706] px-3 py-1.5 text-[12px] font-bold text-white hover:bg-[#B45309]"
+                  className="h-8 rounded-lg bg-[#D97706] px-3 text-[12px] font-bold text-white hover:bg-[#B45309]"
                 >
                   Vẫn đặt lịch ở khung giờ này
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -217,8 +220,9 @@ export function InterviewDialog({
           <div className="space-y-1.5">
             <Label className="text-[12.5px] font-bold">Hình thức phỏng vấn</Label>
             <div className="grid grid-cols-2 gap-2.5">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => {
                   setMode("online");
                   if (!location.startsWith("http")) {
@@ -226,17 +230,18 @@ export function InterviewDialog({
                   }
                 }}
                 className={cn(
-                  "flex items-center justify-center gap-2 rounded-xl border py-2.5 text-[13px] font-bold transition-colors",
+                  "h-10 rounded-xl text-[13px] font-bold",
                   mode === "online"
-                    ? "border-[#306BD9] bg-[#EBF2FF] text-[#306BD9]"
+                    ? "border-[#306BD9] bg-[#EBF2FF] text-[#306BD9] hover:bg-[#EBF2FF] hover:text-[#306BD9]"
                     : "border-[#E2E8F0] bg-white text-[#555555]"
                 )}
               >
                 <Video className="size-4" />
                 Trực tuyến (Online)
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => {
                   setMode("offline");
                   if (location.startsWith("http")) {
@@ -244,15 +249,15 @@ export function InterviewDialog({
                   }
                 }}
                 className={cn(
-                  "flex items-center justify-center gap-2 rounded-xl border py-2.5 text-[13px] font-bold transition-colors",
+                  "h-10 rounded-xl text-[13px] font-bold",
                   mode === "offline"
-                    ? "border-[#306BD9] bg-[#EBF2FF] text-[#306BD9]"
+                    ? "border-[#306BD9] bg-[#EBF2FF] text-[#306BD9] hover:bg-[#EBF2FF] hover:text-[#306BD9]"
                     : "border-[#E2E8F0] bg-white text-[#555555]"
                 )}
               >
                 <MapPin className="size-4" />
                 Trực tiếp (Offline)
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -300,22 +305,23 @@ export function InterviewDialog({
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => onOpenChange(false)}
-              className="h-10 rounded-full border border-[#D9D9D9] px-5 text-[13px] font-bold text-[#444444]"
+              className="h-10 rounded-full border-[#D9D9D9] px-5 text-[13px] font-bold text-[#444444]"
             >
               Hủy
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               disabled={busy}
               onClick={() => void submit(false)}
-              className="flex h-10 items-center gap-2 rounded-full bg-[#306BD9] px-6 text-[13px] font-bold text-white hover:bg-[#2458BD] disabled:opacity-60"
+              className="h-10 rounded-full bg-[#306BD9] px-6 text-[13px] font-bold text-white hover:bg-[#2458BD]"
             >
               {busy && <Loader2 className="size-4 animate-spin" />}
               {existingInterview ? "Cập nhật lịch" : "Gửi lời mời phỏng vấn"}
-            </button>
+            </Button>
           </div>
         </div>
       </DialogContent>
@@ -337,11 +343,14 @@ function ScoreRow({
       <span className="text-[13px] font-semibold text-[#334155]">{label}</span>
       <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((n) => (
-          <button
+          <Button
             key={n}
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setVal(n)}
-            className="p-0.5"
+            aria-label={`Chấm ${n} sao`}
+            className="size-6 p-0.5 hover:bg-transparent"
           >
             <Star
               className={cn(
@@ -351,7 +360,7 @@ function ScoreRow({
                   : "text-[#CBD5E1] hover:text-[#F59E0B]"
               )}
             />
-          </button>
+          </Button>
         ))}
         <span className="ml-1.5 w-6 text-right text-[12.5px] font-bold text-[#1E3A8A]">
           {val}/5
@@ -456,33 +465,34 @@ export function InterviewFeedbackDialog({
                   {
                     id: "pass",
                     label: "Đạt (Pass)",
-                    cls: "border-[#BBF7D0] bg-[#F0FDF4] text-[#15803D]",
+                    cls: "border-[#BBF7D0] bg-[#F0FDF4] text-[#15803D] hover:bg-[#F0FDF4] hover:text-[#15803D]",
                   },
                   {
                     id: "consider",
                     label: "Cân nhắc",
-                    cls: "border-[#FDE68A] bg-[#FFFBEB] text-[#B45309]",
+                    cls: "border-[#FDE68A] bg-[#FFFBEB] text-[#B45309] hover:bg-[#FFFBEB] hover:text-[#B45309]",
                   },
                   {
                     id: "fail",
                     label: "Không đạt",
-                    cls: "border-[#FECACA] bg-[#FEF2F2] text-[#B91C1C]",
+                    cls: "border-[#FECACA] bg-[#FEF2F2] text-[#B91C1C] hover:bg-[#FEF2F2] hover:text-[#B91C1C]",
                   },
                 ] as const
               ).map((opt) => (
-                <button
+                <Button
                   key={opt.id}
                   type="button"
+                  variant="outline"
                   onClick={() => setResult(opt.id)}
                   className={cn(
-                    "rounded-xl border py-2 text-[12.5px] font-bold transition-all",
+                    "h-9 rounded-xl text-[12.5px] font-bold",
                     result === opt.id
                       ? `${opt.cls} ring-2 ring-[#306BD9]`
                       : "border-[#E2E8F0] bg-white text-[#64748B]"
                   )}
                 >
                   {opt.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -501,24 +511,25 @@ export function InterviewFeedbackDialog({
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => onOpenChange(false)}
-              className="h-9 rounded-full border border-[#D9D9D9] px-4 text-[12.5px] font-bold text-[#444444]"
+              className="h-9 rounded-full border-[#D9D9D9] px-4 text-[12.5px] font-bold text-[#444444]"
             >
               Đóng
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               disabled={updateMut.isPending}
               onClick={saveScorecard}
-              className="flex h-9 items-center gap-1.5 rounded-full bg-[#306BD9] px-5 text-[12.5px] font-bold text-white hover:bg-[#2458BD]"
+              className="h-9 rounded-full bg-[#306BD9] px-5 text-[12.5px] font-bold text-white hover:bg-[#2458BD]"
             >
               {updateMut.isPending && (
                 <Loader2 className="size-3.5 animate-spin" />
               )}
               Lưu phiếu đánh giá
-            </button>
+            </Button>
           </div>
         </div>
       </DialogContent>

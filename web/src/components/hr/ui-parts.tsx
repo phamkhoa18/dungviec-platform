@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { FIT_META } from "@/lib/ai-thresholds";
 import { STATUS_META, toHrStatus } from "@/lib/hr-types";
 import type { ApplicationStatus, FitLabel } from "@/lib/db/types";
@@ -68,13 +69,13 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry: () 
       title="Không tải được dữ liệu"
       hint={message}
       action={
-        <button
+        <Button
           type="button"
           onClick={onRetry}
           className="h-10 rounded-full bg-[#306BD9] px-6 text-[13.5px] font-bold text-white hover:bg-[#2458BD]"
         >
           Thử lại
-        </button>
+        </Button>
       }
     />
   );

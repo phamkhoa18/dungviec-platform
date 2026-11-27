@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   LocationPicker,
   type SingleLocationValue,
@@ -33,25 +35,27 @@ export function HeroSearchBar() {
       onSubmit={handleSearch}
       className="mx-auto flex w-full max-w-[780px] flex-col gap-2 rounded-2xl bg-white p-2 shadow-[0_6px_24px_rgba(0,0,0,0.12)] sm:flex-row sm:items-center"
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2.5 px-3 py-1.5">
+      <div className="flex h-10 min-w-0 flex-1 items-center gap-2.5 px-3">
         <Search className="size-5 shrink-0 text-[#222222]" />
-        <input
+        <Input
           id="hero-search-keyword"
           type="text"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           placeholder="Tìm theo vị trí hoặc kỹ năng (VD: Python, Marketing)..."
-          className="w-full bg-transparent text-[15px] text-[#222222] placeholder:text-[#8C8C8C] focus:outline-none"
+          className="h-10 border-0 bg-transparent px-0 text-[15px] text-[#222222] shadow-none placeholder:text-[#8C8C8C] focus-visible:ring-0"
         />
         {keyword && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setKeyword("")}
             aria-label="Xóa từ khóa"
             className="text-[#8C8C8C] hover:text-[#222222]"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -62,13 +66,13 @@ export function HeroSearchBar() {
         triggerClassName="border-0 bg-[#F2F6FC] font-bold hover:bg-[#E4ECFB]"
       />
 
-      <button
+      <Button
         id="hero-search-submit"
         type="submit"
-        className="h-10 w-full shrink-0 rounded-xl bg-[#306BD9] px-5 text-[14px] font-bold text-white transition-colors hover:bg-[#2458BD] sm:w-auto"
+        className="h-10 w-full shrink-0 rounded-xl bg-[#306BD9] px-5 text-[14px] font-bold text-white hover:bg-[#2458BD] sm:w-auto"
       >
         Tìm việc
-      </button>
+      </Button>
     </form>
   );
 }

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/brand";
 import { NotificationBell } from "@/components/shared/notification-bell";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,10 +114,11 @@ export function SiteHeader({ transparent }: { transparent?: boolean }) {
                 <NotificationBell light={t} />
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     aria-label="Menu tài khoản"
-                    className="flex h-9 items-center gap-2 rounded-full border border-[#D8E5FF] bg-[#F5F9FF] pl-1.5 pr-2.5 text-[#222222] shadow-2xs transition-colors hover:border-[#306BD9] hover:bg-[#EBF2FF]"
+                    className="h-9 gap-2 rounded-full border-[#D8E5FF] bg-[#F5F9FF] pr-2.5 pl-1.5 text-[#222222] shadow-2xs hover:border-[#306BD9] hover:bg-[#EBF2FF]"
                   >
                     <span className="grid size-6.5 place-items-center rounded-full bg-gradient-to-br from-[#306BD9] to-[#1D4ED8] text-[12px] font-extrabold text-white">
                       {userInitial}
@@ -132,7 +134,7 @@ export function SiteHeader({ transparent }: { transparent?: boolean }) {
                       </p>
                     </div>
                     <ChevronDown className="size-3.5 text-[#555555]" />
-                  </button>
+                  </Button>
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent align="end" className="w-72 rounded-[14px] p-2 shadow-xl">

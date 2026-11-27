@@ -7,9 +7,11 @@ import {
   CalendarClock,
   CheckCheck,
   FileCheck2,
+  KeyRound,
   Sparkles,
   UserPlus,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,6 +70,12 @@ function NotificationIcon({ type }: { type: NotificationRecord["type"] }) {
           <Briefcase className="size-4" />
         </span>
       );
+    case "password_reset":
+      return (
+        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#EBF2FF] text-[#306BD9]">
+          <KeyRound className="size-4" />
+        </span>
+      );
     default:
       return (
         <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#F1F5F9] text-[#475569]">
@@ -100,13 +108,15 @@ export function NotificationBell({ light }: { light?: boolean }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="icon"
           aria-label="Thông báo"
           className={cn(
-            "relative grid size-9 place-items-center rounded-full border transition-colors",
+            "relative size-9 rounded-full transition-colors",
             light
-              ? "border-white/25 bg-white/10 text-white hover:bg-white/20"
+              ? "border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
               : "border-[#E2E8F0] bg-white text-[#334155] hover:border-[#306BD9] hover:bg-[#F5F9FF] hover:text-[#306BD9]"
           )}
         >
@@ -116,7 +126,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
               {unread > 99 ? "99+" : unread}
             </span>
           )}
-        </button>
+        </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -135,15 +145,17 @@ export function NotificationBell({ light }: { light?: boolean }) {
             )}
           </div>
           {unread > 0 && (
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={() => markRead.mutate({ all: true })}
               disabled={markRead.isPending}
-              className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#306BD9] hover:underline disabled:opacity-50"
+              className="h-auto gap-1 p-0 text-[11.5px] font-bold text-[#306BD9]"
             >
               <CheckCheck className="size-3.5" />
               Đánh dấu đã đọc
-            </button>
+            </Button>
           )}
         </div>
 
@@ -161,12 +173,13 @@ export function NotificationBell({ light }: { light?: boolean }) {
             </div>
           ) : (
             notifications.map((n) => (
-              <button
+              <Button
                 key={n.id}
                 type="button"
+                variant="ghost"
                 onClick={() => handleSelect(n)}
                 className={cn(
-                  "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-[#F8FAFC]",
+                  "flex h-auto w-full items-start justify-start gap-3 rounded-none px-4 py-3 text-left font-normal whitespace-normal transition-colors hover:bg-[#F8FAFC]",
                   !n.read && "bg-[#F5F9FF]/70"
                 )}
               >
@@ -192,7 +205,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
                     {formatRelativeVi(n.created_at)}
                   </p>
                 </div>
-              </button>
+              </Button>
             ))
           )}
         </div>

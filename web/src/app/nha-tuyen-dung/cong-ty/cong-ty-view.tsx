@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/hr/hr-shell";
 import { EmptyState, Panel } from "@/components/hr/ui-parts";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -228,7 +229,7 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
                   <SelectValue placeholder="Chọn quy mô" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SIZES.map((s) => (
+                  {(size && !SIZES.includes(size) ? [size, ...SIZES] : SIZES).map((s) => (
                     <SelectItem key={s} value={s}>
                       {s}
                     </SelectItem>
@@ -315,15 +316,18 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
                     className="inline-flex items-center gap-1 rounded-full bg-[#EBF2FF] py-1 pr-1.5 pl-2.5 text-[12px] font-semibold text-[#1D4ED8]"
                   >
                     {b}
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="icon-xs"
                       onClick={() =>
                         setBenefits(benefits.filter((x) => x !== b))
                       }
-                      className="grid size-4 place-items-center rounded-full hover:bg-[#306BD9]/15"
+                      aria-label={`Xóa phúc lợi ${b}`}
+                      className="size-4 rounded-full p-0 text-[#1D4ED8] hover:bg-[#306BD9]/15"
                     >
                       <X className="size-3" />
-                    </button>
+                    </Button>
                   </span>
                 ))}
               </div>
@@ -341,28 +345,31 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
                 placeholder="Nhập phúc lợi rồi nhấn Enter..."
                 className={fieldCls}
               />
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => addBenefit(benefitDraft)}
-                className="shrink-0 rounded-[10px] border border-[#306BD9] bg-white px-3.5 text-[12.5px] font-bold text-[#306BD9] hover:bg-[#EBF2FF]"
+                className="h-10 shrink-0 rounded-[10px] border-[#306BD9] bg-white px-3.5 text-[12.5px] font-bold text-[#306BD9] hover:bg-[#EBF2FF] hover:text-[#306BD9]"
               >
                 Thêm
-              </button>
+              </Button>
             </div>
             <div className="flex flex-wrap gap-1.5 pt-1">
               {BENEFIT_SUGGESTIONS.filter(
                 (s) =>
                   !benefits.some((b) => b.toLowerCase() === s.toLowerCase())
               ).map((s) => (
-                <button
+                <Button
                   key={s}
                   type="button"
+                  variant="outline"
+                  size="xs"
                   onClick={() => addBenefit(s)}
-                  className="inline-flex items-center gap-0.5 rounded-full border border-[#E2E8F0] bg-white px-2 py-0.5 text-[11px] font-medium text-[#475569] hover:border-[#306BD9] hover:text-[#306BD9]"
+                  className="h-6.5 rounded-full border-[#E2E8F0] bg-white px-2 text-[11px] font-medium text-[#475569] hover:border-[#306BD9] hover:bg-white hover:text-[#306BD9]"
                 >
                   <Plus className="size-2.5" />
                   {s}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -400,14 +407,14 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
           </div>
 
           <div className="flex justify-end pt-2">
-            <button
+            <Button
               type="submit"
               disabled={save.isPending}
-              className="flex h-10 items-center gap-2 rounded-full bg-[#306BD9] px-7 text-[13.5px] font-bold text-white transition-colors hover:bg-[#2458BD] disabled:opacity-70"
+              className="h-10 rounded-full bg-[#306BD9] px-7 text-[13.5px] font-bold text-white hover:bg-[#2458BD]"
             >
               {save.isPending && <Loader2 className="size-4 animate-spin" />}
               Lưu thay đổi
-            </button>
+            </Button>
           </div>
         </form>
       </Panel>

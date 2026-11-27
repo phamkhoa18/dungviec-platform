@@ -24,7 +24,16 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   CandidateProfileRecord,
@@ -48,6 +57,8 @@ type UserLite = { full_name: string; phone: string | null; email: string };
 
 const inputCls = "h-9 rounded-[9px] text-[13px]";
 const labelCls = "mb-1 block text-[11.5px] font-bold text-[#475569]";
+const EMPTY_SELECT = "__none__";
+const EDU_STATUS_OPTIONS = ["Đang theo học", "Đã tốt nghiệp", "Dự kiến tốt nghiệp"];
 
 function SourceBadge({ source, cvProfiles }: { source?: string; cvProfiles: CvProfileRecord[] }) {
   if (!source) return null;
@@ -308,22 +319,30 @@ export function CandidateProfileTab({
         editor={
           draft && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <div><label className={labelCls}>Họ và tên *</label><Input className={inputCls} value={draft.full_name} onChange={(e) => upd({ full_name: e.target.value })} /></div>
-              <div><label className={labelCls}>Chức danh / Vị trí mong muốn</label><Input className={inputCls} value={draft.headline} onChange={(e) => upd({ headline: e.target.value })} placeholder="VD: Fullstack Developer" /></div>
-              <div><label className={labelCls}>Số điện thoại</label><Input className={inputCls} value={draft.phone} onChange={(e) => upd({ phone: e.target.value })} placeholder="0912 345 678" /></div>
-              <div><label className={labelCls}>Email (đăng nhập)</label><Input className={`${inputCls} bg-[#F1F5F9]`} value={user.email} disabled /></div>
-              <div><label className={labelCls}>Ngày sinh</label><Input className={inputCls} type="date" value={draft.date_of_birth && draft.date_of_birth.length === 10 ? draft.date_of_birth : ""} onChange={(e) => upd({ date_of_birth: e.target.value })} /></div>
+              <div><Label className={labelCls}>Họ và tên *</Label><Input className={inputCls} value={draft.full_name} onChange={(e) => upd({ full_name: e.target.value })} /></div>
+              <div><Label className={labelCls}>Chức danh / Vị trí mong muốn</Label><Input className={inputCls} value={draft.headline} onChange={(e) => upd({ headline: e.target.value })} placeholder="VD: Fullstack Developer" /></div>
+              <div><Label className={labelCls}>Số điện thoại</Label><Input className={inputCls} value={draft.phone} onChange={(e) => upd({ phone: e.target.value })} placeholder="0912 345 678" /></div>
+              <div><Label className={labelCls}>Email (đăng nhập)</Label><Input className={`${inputCls} bg-[#F1F5F9]`} value={user.email} disabled /></div>
+              <div><Label className={labelCls}>Ngày sinh</Label><Input className={inputCls} type="date" value={draft.date_of_birth && draft.date_of_birth.length === 10 ? draft.date_of_birth : ""} onChange={(e) => upd({ date_of_birth: e.target.value })} /></div>
               <div>
-                <label className={labelCls}>Giới tính</label>
-                <select value={draft.gender} onChange={(e) => upd({ gender: e.target.value })} className="h-9 w-full rounded-[9px] border border-input bg-white px-2 text-[13px]">
-                  <option value="">— Chọn —</option><option value="Nam">Nam</option><option value="Nữ">Nữ</option><option value="Khác">Khác</option>
-                </select>
+                <Label className={labelCls}>Giới tính</Label>
+                <Select value={draft.gender || EMPTY_SELECT} onValueChange={(v) => upd({ gender: v === EMPTY_SELECT ? "" : v })}>
+                  <SelectTrigger className="h-9 w-full rounded-[9px] bg-white text-[13px]">
+                    <SelectValue placeholder="— Chọn —" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={EMPTY_SELECT}>— Chọn —</SelectItem>
+                    <SelectItem value="Nam">Nam</SelectItem>
+                    <SelectItem value="Nữ">Nữ</SelectItem>
+                    <SelectItem value="Khác">Khác</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div><label className={labelCls}>Địa chỉ</label><Input className={inputCls} value={draft.address} onChange={(e) => upd({ address: e.target.value })} /></div>
-              <div><label className={labelCls}>Tỉnh / Thành phố</label><Input className={inputCls} value={draft.city} onChange={(e) => upd({ city: e.target.value })} placeholder="VD: TP. Hồ Chí Minh" /></div>
-              <div><label className={labelCls}>LinkedIn</label><Input className={inputCls} value={draft.links.linkedin || ""} onChange={(e) => upd({ links: { ...draft.links, linkedin: e.target.value } })} /></div>
-              <div><label className={labelCls}>GitHub</label><Input className={inputCls} value={draft.links.github || ""} onChange={(e) => upd({ links: { ...draft.links, github: e.target.value } })} /></div>
-              <div className="sm:col-span-2"><label className={labelCls}>Website / Portfolio</label><Input className={inputCls} value={draft.links.portfolio || ""} onChange={(e) => upd({ links: { ...draft.links, portfolio: e.target.value } })} /></div>
+              <div><Label className={labelCls}>Địa chỉ</Label><Input className={inputCls} value={draft.address} onChange={(e) => upd({ address: e.target.value })} /></div>
+              <div><Label className={labelCls}>Tỉnh / Thành phố</Label><Input className={inputCls} value={draft.city} onChange={(e) => upd({ city: e.target.value })} placeholder="VD: TP. Hồ Chí Minh" /></div>
+              <div><Label className={labelCls}>LinkedIn</Label><Input className={inputCls} value={draft.links.linkedin || ""} onChange={(e) => upd({ links: { ...draft.links, linkedin: e.target.value } })} /></div>
+              <div><Label className={labelCls}>GitHub</Label><Input className={inputCls} value={draft.links.github || ""} onChange={(e) => upd({ links: { ...draft.links, github: e.target.value } })} /></div>
+              <div className="sm:col-span-2"><Label className={labelCls}>Website / Portfolio</Label><Input className={inputCls} value={draft.links.portfolio || ""} onChange={(e) => upd({ links: { ...draft.links, portfolio: e.target.value } })} /></div>
             </div>
           )
         }
@@ -385,10 +404,10 @@ export function CandidateProfileTab({
                 {draft.skills.map((s: SkillItem, i: number) => (
                   <span key={s.name + i} className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] font-semibold ${s.type === "soft" ? "border-[#FBCFE8] bg-[#FDF2F8] text-[#BE185D]" : "border-[#BFDBFE] bg-[#EFF6FF] text-[#1D4ED8]"}`}>
                     {s.name}
-                    <button type="button" title="Đổi loại kỹ năng" onClick={() => updItem("skills", i, { type: s.type === "soft" ? "hard" : "soft" })} className="text-[10px] underline opacity-70">
+                    <Button type="button" variant="link" size="xs" title="Đổi loại kỹ năng" onClick={() => updItem("skills", i, { type: s.type === "soft" ? "hard" : "soft" })} className="h-auto p-0 text-[10px] underline opacity-75">
                       {s.type === "soft" ? "mềm" : "chuyên môn"}
-                    </button>
-                    <button type="button" onClick={() => removeItem("skills", i)} aria-label={`Xoá ${s.name}`}><X className="size-3" /></button>
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon-xs" onClick={() => removeItem("skills", i)} aria-label={`Xoá ${s.name}`} className="size-4 rounded-full p-0"><X className="size-3" /></Button>
                   </span>
                 ))}
               </div>
@@ -448,21 +467,22 @@ export function CandidateProfileTab({
               {draft.experiences.map((e: ExperienceItem & { _desc: string }, i: number) => (
                 <div key={i} className="rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] p-3">
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <div><label className={labelCls}>Vị trí</label><Input className={inputCls} value={e.position || ""} onChange={(ev) => updItem("experiences", i, { position: ev.target.value })} /></div>
-                    <div><label className={labelCls}>Công ty</label><Input className={inputCls} value={e.company || ""} onChange={(ev) => updItem("experiences", i, { company: ev.target.value })} /></div>
-                    <div><label className={labelCls}>Từ tháng</label><Input className={inputCls} type="month" value={(e.start || "").length === 7 ? e.start! : e.start ? `${e.start}-01` : ""} onChange={(ev) => updItem("experiences", i, { start: ev.target.value })} /></div>
+                    <div><Label className={labelCls}>Vị trí</Label><Input className={inputCls} value={e.position || ""} onChange={(ev) => updItem("experiences", i, { position: ev.target.value })} /></div>
+                    <div><Label className={labelCls}>Công ty</Label><Input className={inputCls} value={e.company || ""} onChange={(ev) => updItem("experiences", i, { company: ev.target.value })} /></div>
+                    <div><Label className={labelCls}>Từ tháng</Label><Input className={inputCls} type="month" value={(e.start || "").length === 7 ? e.start! : e.start ? `${e.start}-01` : ""} onChange={(ev) => updItem("experiences", i, { start: ev.target.value })} /></div>
                     <div>
-                      <label className={labelCls}>Đến tháng</label>
+                      <Label className={labelCls}>Đến tháng</Label>
                       <div className="flex items-center gap-2">
                         <Input className={inputCls} type="month" disabled={e.is_current} value={e.is_current ? "" : (e.end || "").length === 7 ? e.end! : e.end ? `${e.end}-12` : ""} onChange={(ev) => updItem("experiences", i, { end: ev.target.value })} />
-                        <label className="flex shrink-0 items-center gap-1 text-[12px] font-semibold text-[#334155]">
-                          <input type="checkbox" className="accent-[#306BD9]" checked={e.is_current} onChange={(ev) => updItem("experiences", i, { is_current: ev.target.checked })} /> Hiện tại
-                        </label>
+                        <Label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-[12px] font-semibold text-[#334155]">
+                          <Checkbox checked={!!e.is_current} onCheckedChange={(checked) => updItem("experiences", i, { is_current: checked === true })} />
+                          <span>Hiện tại</span>
+                        </Label>
                       </div>
                     </div>
-                    <div className="sm:col-span-2"><label className={labelCls}>Mô tả công việc (mỗi dòng 1 ý)</label><Textarea rows={3} className="text-[12.5px]" value={e._desc} onChange={(ev) => updItem("experiences", i, { _desc: ev.target.value })} /></div>
+                    <div className="sm:col-span-2"><Label className={labelCls}>Mô tả công việc (mỗi dòng 1 ý)</Label><Textarea rows={3} className="text-[12.5px]" value={e._desc} onChange={(ev) => updItem("experiences", i, { _desc: ev.target.value })} /></div>
                   </div>
-                  <button type="button" onClick={() => removeItem("experiences", i)} className="mt-2 inline-flex items-center gap-1 text-[12px] font-bold text-[#DC2626] hover:underline"><Trash2 className="size-3.5" /> Xoá mục này</button>
+                  <Button type="button" variant="link" size="xs" onClick={() => removeItem("experiences", i)} className="mt-2 h-auto p-0 text-[12px] font-bold text-[#DC2626]"><Trash2 className="size-3.5" /> Xoá mục này</Button>
                 </div>
               ))}
               <Button type="button" variant="outline" onClick={() => addItem("experiences", { company: "", position: "", start: null, end: null, is_current: false, description: [], _desc: "" })} className="h-9 rounded-lg text-[12px] font-bold"><Plus className="size-3.5" /> Thêm kinh nghiệm</Button>
@@ -500,19 +520,32 @@ export function CandidateProfileTab({
             <div className="space-y-3">
               {draft.educations.map((e: EducationItem, i: number) => (
                 <div key={i} className="grid gap-2 rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] p-3 sm:grid-cols-2">
-                  <div className="sm:col-span-2"><label className={labelCls}>Trường</label><Input className={inputCls} value={e.school || ""} onChange={(ev) => updItem("educations", i, { school: ev.target.value })} /></div>
-                  <div><label className={labelCls}>Chuyên ngành</label><Input className={inputCls} value={e.major || ""} onChange={(ev) => updItem("educations", i, { major: ev.target.value })} /></div>
-                  <div><label className={labelCls}>Bằng cấp</label><Input className={inputCls} value={e.degree || ""} onChange={(ev) => updItem("educations", i, { degree: ev.target.value })} placeholder="Cử nhân / Kỹ sư / Thạc sĩ" /></div>
-                  <div><label className={labelCls}>Năm bắt đầu</label><Input className={inputCls} value={e.start || ""} onChange={(ev) => updItem("educations", i, { start: ev.target.value })} placeholder="2021" /></div>
-                  <div><label className={labelCls}>Năm kết thúc</label><Input className={inputCls} value={e.end || ""} onChange={(ev) => updItem("educations", i, { end: ev.target.value })} placeholder="2025" /></div>
-                  <div><label className={labelCls}>GPA</label><Input className={inputCls} value={e.gpa || ""} onChange={(ev) => updItem("educations", i, { gpa: ev.target.value })} placeholder="3.5/4.0" /></div>
+                  <div className="sm:col-span-2"><Label className={labelCls}>Trường</Label><Input className={inputCls} value={e.school || ""} onChange={(ev) => updItem("educations", i, { school: ev.target.value })} /></div>
+                  <div><Label className={labelCls}>Chuyên ngành</Label><Input className={inputCls} value={e.major || ""} onChange={(ev) => updItem("educations", i, { major: ev.target.value })} /></div>
+                  <div><Label className={labelCls}>Bằng cấp</Label><Input className={inputCls} value={e.degree || ""} onChange={(ev) => updItem("educations", i, { degree: ev.target.value })} placeholder="Cử nhân / Kỹ sư / Thạc sĩ" /></div>
+                  <div><Label className={labelCls}>Năm bắt đầu</Label><Input className={inputCls} value={e.start || ""} onChange={(ev) => updItem("educations", i, { start: ev.target.value })} placeholder="2021" /></div>
+                  <div><Label className={labelCls}>Năm kết thúc</Label><Input className={inputCls} value={e.end || ""} onChange={(ev) => updItem("educations", i, { end: ev.target.value })} placeholder="2025" /></div>
+                  <div><Label className={labelCls}>GPA</Label><Input className={inputCls} value={e.gpa || ""} onChange={(ev) => updItem("educations", i, { gpa: ev.target.value })} placeholder="3.5/4.0" /></div>
                   <div>
-                    <label className={labelCls}>Trạng thái</label>
-                    <select value={e.status || ""} onChange={(ev) => updItem("educations", i, { status: ev.target.value })} className="h-9 w-full rounded-[9px] border border-input bg-white px-2 text-[13px]">
-                      <option value="">— Chọn —</option><option>Đang theo học</option><option>Đã tốt nghiệp</option><option>Dự kiến tốt nghiệp</option>
-                    </select>
+                    <Label className={labelCls}>Trạng thái</Label>
+                    <Select value={e.status || EMPTY_SELECT} onValueChange={(v) => updItem("educations", i, { status: v === EMPTY_SELECT ? "" : v })}>
+                      <SelectTrigger className="h-9 w-full rounded-[9px] bg-white text-[13px]">
+                        <SelectValue placeholder="— Chọn —" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={EMPTY_SELECT}>— Chọn —</SelectItem>
+                        {(e.status && !EDU_STATUS_OPTIONS.includes(e.status)
+                          ? [e.status, ...EDU_STATUS_OPTIONS]
+                          : EDU_STATUS_OPTIONS
+                        ).map((opt) => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <button type="button" onClick={() => removeItem("educations", i)} className="inline-flex items-center gap-1 text-[12px] font-bold text-[#DC2626] hover:underline sm:col-span-2"><Trash2 className="size-3.5" /> Xoá mục này</button>
+                  <div className="sm:col-span-2">
+                    <Button type="button" variant="link" size="xs" onClick={() => removeItem("educations", i)} className="h-auto p-0 text-[12px] font-bold text-[#DC2626]"><Trash2 className="size-3.5" /> Xoá mục này</Button>
+                  </div>
                 </div>
               ))}
               <Button type="button" variant="outline" onClick={() => addItem("educations", { school: "", major: "", degree: "", start: null, end: null, gpa: null, status: null })} className="h-9 rounded-lg text-[12px] font-bold"><Plus className="size-3.5" /> Thêm học vấn</Button>
@@ -548,11 +581,13 @@ export function CandidateProfileTab({
             <div className="space-y-3">
               {draft.projects.map((x: ProjectItem & { _tech: string }, i: number) => (
                 <div key={i} className="grid gap-2 rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] p-3 sm:grid-cols-2">
-                  <div><label className={labelCls}>Tên dự án</label><Input className={inputCls} value={x.name} onChange={(ev) => updItem("projects", i, { name: ev.target.value })} /></div>
-                  <div><label className={labelCls}>Vai trò</label><Input className={inputCls} value={x.role || ""} onChange={(ev) => updItem("projects", i, { role: ev.target.value })} /></div>
-                  <div className="sm:col-span-2"><label className={labelCls}>Mô tả</label><Textarea rows={2} className="text-[12.5px]" value={x.description} onChange={(ev) => updItem("projects", i, { description: ev.target.value })} /></div>
-                  <div className="sm:col-span-2"><label className={labelCls}>Công nghệ (cách nhau bằng dấu phẩy)</label><Input className={inputCls} value={x._tech} onChange={(ev) => updItem("projects", i, { _tech: ev.target.value })} /></div>
-                  <button type="button" onClick={() => removeItem("projects", i)} className="inline-flex items-center gap-1 text-[12px] font-bold text-[#DC2626] hover:underline sm:col-span-2"><Trash2 className="size-3.5" /> Xoá dự án</button>
+                  <div><Label className={labelCls}>Tên dự án</Label><Input className={inputCls} value={x.name} onChange={(ev) => updItem("projects", i, { name: ev.target.value })} /></div>
+                  <div><Label className={labelCls}>Vai trò</Label><Input className={inputCls} value={x.role || ""} onChange={(ev) => updItem("projects", i, { role: ev.target.value })} /></div>
+                  <div className="sm:col-span-2"><Label className={labelCls}>Mô tả</Label><Textarea rows={2} className="text-[12.5px]" value={x.description} onChange={(ev) => updItem("projects", i, { description: ev.target.value })} /></div>
+                  <div className="sm:col-span-2"><Label className={labelCls}>Công nghệ (cách nhau bằng dấu phẩy)</Label><Input className={inputCls} value={x._tech} onChange={(ev) => updItem("projects", i, { _tech: ev.target.value })} /></div>
+                  <div className="sm:col-span-2">
+                    <Button type="button" variant="link" size="xs" onClick={() => removeItem("projects", i)} className="h-auto p-0 text-[12px] font-bold text-[#DC2626]"><Trash2 className="size-3.5" /> Xoá dự án</Button>
+                  </div>
                 </div>
               ))}
               <Button type="button" variant="outline" onClick={() => addItem("projects", { name: "", role: null, period: null, description: "", technologies: [], _tech: "" })} className="h-9 rounded-lg text-[12px] font-bold"><Plus className="size-3.5" /> Thêm dự án</Button>
@@ -588,7 +623,7 @@ export function CandidateProfileTab({
                     <Input className={inputCls} value={c.name} onChange={(ev) => updItem("certifications", i, { name: ev.target.value })} placeholder="Tên chứng chỉ" />
                     <Input className={`${inputCls} w-20`} value={c.score || ""} onChange={(ev) => updItem("certifications", i, { score: ev.target.value })} placeholder="Điểm" />
                     <Input className={`${inputCls} w-20`} value={c.year || ""} onChange={(ev) => updItem("certifications", i, { year: ev.target.value })} placeholder="Năm" />
-                    <button type="button" onClick={() => removeItem("certifications", i)} className="text-[#DC2626]"><Trash2 className="size-4" /></button>
+                    <Button type="button" variant="ghost" size="icon-sm" onClick={() => removeItem("certifications", i)} aria-label="Xóa chứng chỉ" className="text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#DC2626]"><Trash2 className="size-4" /></Button>
                   </div>
                 ))}
                 <Button type="button" variant="outline" onClick={() => addItem("certifications", { name: "", score: null, year: null })} className="h-8 rounded-lg text-[12px] font-bold"><Plus className="size-3.5" /> Thêm</Button>
@@ -617,7 +652,7 @@ export function CandidateProfileTab({
                   <div key={i} className="flex gap-2">
                     <Input className={inputCls} value={l.language} onChange={(ev) => updItem("languages", i, { language: ev.target.value })} placeholder="Ngôn ngữ" />
                     <Input className={inputCls} value={l.level || ""} onChange={(ev) => updItem("languages", i, { level: ev.target.value })} placeholder="Trình độ" />
-                    <button type="button" onClick={() => removeItem("languages", i)} className="text-[#DC2626]"><Trash2 className="size-4" /></button>
+                    <Button type="button" variant="ghost" size="icon-sm" onClick={() => removeItem("languages", i)} aria-label="Xóa ngoại ngữ" className="text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#DC2626]"><Trash2 className="size-4" /></Button>
                   </div>
                 ))}
                 <Button type="button" variant="outline" onClick={() => addItem("languages", { language: "", level: null })} className="h-8 rounded-lg text-[12px] font-bold"><Plus className="size-3.5" /> Thêm</Button>

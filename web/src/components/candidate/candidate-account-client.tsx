@@ -121,7 +121,7 @@ export function CandidateAccountClient({
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (user && user.role === "candidate") {
       fetchCandidateApplications();
     } else if (!isLoading) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -167,7 +167,7 @@ export function CandidateAccountClient({
       const res = await fetch(`/api/applications/${appId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "withdrawn" }),
+        body: JSON.stringify({ action: "withdraw" }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -319,6 +319,16 @@ export function CandidateAccountClient({
       toast.error("Họ và tên phải có tối thiểu 2 ký tự.");
       return;
     }
+    const cleanPhone = phone.replace(/[^\d+]/g, "");
+    if (cleanPhone && !/^(\+84|0)\d{9,10}$/.test(cleanPhone)) {
+      toast.error("Số điện thoại không hợp lệ.");
+      return;
+    }
+    const trimmedPwd = newPassword.trim();
+    if (trimmedPwd && trimmedPwd.length < 6) {
+      toast.error("Mật khẩu mới phải có tối thiểu 6 ký tự.");
+      return;
+    }
     setSavingProfile(true);
     try {
       const res = await fetch("/api/auth/me", {
@@ -326,8 +336,8 @@ export function CandidateAccountClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           full_name: fullName.trim(),
-          phone: phone.trim(),
-          new_password: newPassword.trim() || undefined,
+          phone: cleanPhone,
+          new_password: trimmedPwd || undefined,
         }),
       });
       const data = await res.json();
@@ -343,6 +353,41 @@ export function CandidateAccountClient({
     }
   }
 
+
+  if (!isLoading && user && user.role !== "candidate") {
+    return (
+      <>
+        <SiteHeader />
+        <main className="min-h-[70vh] bg-[#F4F6FA] px-4 py-12">
+          <div className="mx-auto max-w-md rounded-[18px] border border-[#E2E8F0] bg-white p-8 text-center shadow-xs">
+            <div className="mx-auto grid size-14 place-items-center rounded-full bg-[#FEF2F2] text-[#DC2626]">
+              <AlertTriangle className="size-7" />
+            </div>
+            <h1 className="mt-4 text-[20px] font-extrabold text-[#222222]">
+              Khu vực dành cho Ứng viên
+            </h1>
+            <p className="mt-2 text-[13.5px] text-[#666666]">
+              Bạn đang đăng nhập bằng tài khoản Nhà tuyển dụng nên không sử dụng trang hồ sơ Ứng viên.
+            </p>
+            <div className="mt-6 flex justify-center gap-3">
+              <Button
+                asChild
+                className="rounded-full bg-[#306BD9] px-6 font-bold text-white hover:bg-[#2456B6]"
+              >
+                <Link href="/nha-tuyen-dung/tong-quan">
+                  Về cổng tuyển dụng
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full px-6">
+                <Link href="/">Về trang chủ</Link>
+              </Button>
+            </div>
+          </div>
+        </main>
+        <SiteFooter />
+      </>
+    );
+  }
 
   if (!isLoading && !user) {
     return (
@@ -461,19 +506,20 @@ export function CandidateAccountClient({
                   ].map((item) => {
                     const active = activeTab === item.id;
                     return (
-                      <button
+                      <Button
                         key={item.id}
                         type="button"
+                        variant="ghost"
                         onClick={() => {
                           setActiveTab(item.id);
                           router.replace(`/ung-vien/tai-khoan?tab=${item.id}`, {
                             scroll: false,
                           });
                         }}
-                        className={`mb-1 flex w-full items-center justify-between rounded-[12px] px-3.5 py-2.5 text-left transition-colors ${
+                        className={`mb-1 flex h-auto w-full items-center justify-between rounded-[12px] px-3.5 py-2.5 text-left font-normal whitespace-normal transition-colors ${
                           active
-                            ? "bg-[#EBF2FF] text-[#306BD9]"
-                            : "text-[#333333] hover:bg-[#F5F7FA]"
+                            ? "bg-[#EBF2FF] text-[#306BD9] hover:bg-[#EBF2FF] hover:text-[#306BD9]"
+                            : "text-[#333333] hover:bg-[#F5F7FA] hover:text-[#333333]"
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -500,20 +546,21 @@ export function CandidateAccountClient({
                             {item.badge}
                           </span>
                         )}
-                      </button>
+                      </Button>
                     );
                   })}
 
                   <div className="my-2 border-t border-[#EBEBEB]" />
 
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => logout()}
-                    className="flex w-full items-center gap-3 rounded-[12px] px-3.5 py-2.5 text-left text-[13px] font-bold text-[#DC2626] transition-colors hover:bg-[#FEF2F2]"
+                    className="flex h-auto w-full items-center justify-start gap-3 rounded-[12px] px-3.5 py-2.5 text-left text-[13px] font-bold text-[#DC2626] transition-colors hover:bg-[#FEF2F2] hover:text-[#DC2626]"
                   >
                     <LogOut className="size-4.5" />
                     <span>Đăng xuất tài khoản</span>
-                  </button>
+                  </Button>
                 </nav>
               </div>
             </aside>
@@ -573,14 +620,14 @@ export function CandidateAccountClient({
                           <Label className="text-[13px] font-bold text-[#222222]">
                             Tệp CV từ máy tính (.pdf hoặc .docx, tối đa 5 MB) *
                           </Label>
-                          <input
+                          <Input
                             ref={fileInputRef}
                             type="file"
                             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                             onChange={(e) =>
                               setSelectedFile(e.target.files?.[0] || null)
                             }
-                            className="block h-10 w-full cursor-pointer rounded-[10px] border border-[#D9D9D9] bg-[#F8FAFC] px-3 py-1.5 text-[12.5px] text-[#222222] file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-[#306BD9] file:px-3 file:py-1 file:text-[12px] file:font-bold file:text-white"
+                            className="block h-10 w-full cursor-pointer rounded-[10px] border-[#D9D9D9] bg-[#F8FAFC] px-3 py-1.5 text-[12.5px] text-[#222222] file:mr-3 file:h-auto file:cursor-pointer file:rounded-md file:border-0 file:bg-[#306BD9] file:px-3 file:py-1 file:text-[12px] file:font-bold file:text-white"
                           />
                         </div>
                       </div>
@@ -591,17 +638,19 @@ export function CandidateAccountClient({
                             Đã chọn: <strong>{selectedFile.name}</strong> (
                             {(selectedFile.size / 1024).toFixed(1)} KB)
                           </span>
-                          <button
+                          <Button
                             type="button"
+                            variant="link"
+                            size="xs"
                             onClick={() => {
                               setSelectedFile(null);
                               if (fileInputRef.current)
                                 fileInputRef.current.value = "";
                             }}
-                            className="font-bold text-[#DC2626] hover:underline"
+                            className="h-auto p-0 font-bold text-[#DC2626]"
                           >
                             Bỏ chọn
-                          </button>
+                          </Button>
                         </div>
                       )}
 

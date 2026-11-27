@@ -24,7 +24,11 @@ import {
   Panel,
   StatusBadge,
 } from "@/components/hr/ui-parts";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -121,18 +125,18 @@ function ListRow({
           : "border-l-transparent hover:bg-[#FAFBFE]"
       )}
     >
-      <input
-        type="checkbox"
+      <Checkbox
         checked={checked}
-        onChange={onToggleCheck}
+        onCheckedChange={() => onToggleCheck()}
         aria-label={`Chọn ${app.candidate?.full_name ?? "ứng viên"}`}
-        className="mt-1.5 size-3.5 shrink-0 cursor-pointer rounded accent-[#306BD9]"
+        className="mt-1.5 shrink-0"
       />
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={onSelect}
         aria-current={selected}
-        className="flex min-w-0 flex-1 items-start gap-2.5 text-left"
+        className="flex h-auto min-w-0 flex-1 items-start justify-start gap-2.5 p-0 text-left font-normal whitespace-normal hover:bg-transparent"
       >
         <span className="mt-0.5 w-4 shrink-0 text-center text-[12px] font-bold text-[#888888]">
           {rank}
@@ -183,18 +187,23 @@ function ListRow({
             điểm AI
           </p>
         </div>
-      </button>
+      </Button>
     </div>
   );
 }
 
-function CandidatesView() {
-  const params = useSearchParams();
+function CandidatesViewContent({
+  initialJobId,
+  initialAppId,
+}: {
+  initialJobId: string;
+  initialAppId: number | null;
+}) {
   const jobsQ = useHrJobs();
   const appsQ = useHrApplications();
   const bulkMut = useBulkUpdate();
 
-  const [jobId, setJobId] = useState(params.get("jobId") ?? "all");
+  const [jobId, setJobId] = useState(initialJobId);
   const [fit, setFit] = useState("all");
   const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
@@ -203,7 +212,6 @@ function CandidatesView() {
   );
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
 
-  const initialAppId = params.get("appId") ? Number(params.get("appId")) : null;
   const [selectedId, setSelectedId] = useState<number | null>(initialAppId);
   const [checkedIds, setCheckedIds] = useState<number[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
@@ -304,43 +312,52 @@ function CandidatesView() {
           <div className="flex flex-wrap items-center gap-2">
             {/* Chuyển chế độ Danh sách / Kanban */}
             <div className="inline-flex rounded-full bg-white p-1 ring-1 ring-black/[0.06]">
-              <button
+              <Button
                 type="button"
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
                 onClick={() => setViewMode("list")}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold transition-colors",
+                  "h-7.5 rounded-full px-3 text-[12px] font-bold",
                   viewMode === "list"
-                    ? "bg-[#306BD9] text-white"
-                    : "text-[#555555] hover:text-[#222222]"
+                    ? "bg-[#306BD9] text-white hover:bg-[#2458BD]"
+                    : "text-[#555555] hover:bg-transparent hover:text-[#222222]"
                 )}
               >
                 <LayoutList className="size-3.5" />
                 Chi tiết 360°
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant={viewMode === "kanban" ? "default" : "ghost"}
+                size="sm"
                 onClick={() => setViewMode("kanban")}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold transition-colors",
+                  "h-7.5 rounded-full px-3 text-[12px] font-bold",
                   viewMode === "kanban"
-                    ? "bg-[#306BD9] text-white"
-                    : "text-[#555555] hover:text-[#222222]"
+                    ? "bg-[#306BD9] text-white hover:bg-[#2458BD]"
+                    : "text-[#555555] hover:bg-transparent hover:text-[#222222]"
                 )}
               >
                 <Kanban className="size-3.5" />
                 Bảng Kanban
-              </button>
+              </Button>
             </div>
 
-            <a
-              href={exportApplicationsUrl(
-                jobId === "all" ? "all" : Number(jobId)
-              )}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#D9D9D9] bg-white px-4 text-[12.5px] font-bold text-[#334155] hover:bg-[#F8FAFC]"
+            <Button
+              asChild
+              variant="outline"
+              className="h-9 rounded-full border-[#D9D9D9] bg-white px-4 text-[12.5px] font-bold text-[#334155] hover:bg-[#F8FAFC]"
             >
-              <Download className="size-3.5 text-[#306BD9]" />
-              Xuất CSV
-            </a>
+              <a
+                href={exportApplicationsUrl(
+                  jobId === "all" ? "all" : Number(jobId)
+                )}
+              >
+                <Download className="size-3.5 text-[#306BD9]" />
+                Xuất CSV
+              </a>
+            </Button>
           </div>
         }
       />
@@ -414,51 +431,60 @@ function CandidatesView() {
                   Đã chọn {checkedIds.length}
                 </span>
                 {checkedIds.length >= 2 && checkedIds.length <= 3 && (
-                  <button
+                  <Button
                     type="button"
+                    size="xs"
                     onClick={() => setCompareOpen(true)}
-                    className="inline-flex items-center gap-1 rounded-full bg-[#306BD9] px-2.5 py-0.5 text-[11px] font-bold text-white hover:bg-[#2458BD]"
+                    className="h-6.5 rounded-full bg-[#306BD9] px-2.5 text-[11px] font-bold text-white hover:bg-[#2458BD]"
                   >
                     <Scale className="size-3" />
                     So sánh {checkedIds.length} ứng viên
-                  </button>
+                  </Button>
                 )}
                 {checkedIds.length > 3 && (
                   <span className="text-[11px] font-medium text-[#64748B]">
                     (Chọn 2–3 hồ sơ để so sánh)
                   </span>
                 )}
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="xs"
                   disabled={bulkMut.isPending}
                   onClick={() => void runBulkStatus("reviewing")}
-                  className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-[#0369A1] hover:bg-[#F0F9FF]"
+                  className="h-6.5 rounded-full border-0 bg-white px-2.5 text-[11px] font-bold text-[#0369A1] hover:bg-[#F0F9FF] hover:text-[#0369A1]"
                 >
                   &rarr; Đang xem xét
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="xs"
                   disabled={bulkMut.isPending}
                   onClick={() => void runBulkStatus("interviewing")}
-                  className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-[#6D28D9] hover:bg-[#F5F3FF]"
+                  className="h-6.5 rounded-full border-0 bg-white px-2.5 text-[11px] font-bold text-[#6D28D9] hover:bg-[#F5F3FF] hover:text-[#6D28D9]"
                 >
                   &rarr; Phỏng vấn
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="xs"
                   disabled={bulkMut.isPending}
                   onClick={() => void runBulkStatus("rejected")}
-                  className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-[#DC2626] hover:bg-[#FEF2F2]"
+                  className="h-6.5 rounded-full border-0 bg-white px-2.5 text-[11px] font-bold text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
                 >
                   &rarr; Từ chối
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={() => setCheckedIds([])}
-                  className="text-[11px] text-[#64748B] underline"
+                  className="h-auto p-0 text-[11px] text-[#64748B] underline"
                 >
                   Bỏ chọn
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -472,19 +498,21 @@ function CandidatesView() {
                 { id: "rating_desc", label: "Số sao đánh giá" },
               ] as const
             ).map((opt) => (
-              <button
+              <Button
                 key={opt.id}
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={() => setSortBy(opt.id)}
                 className={cn(
-                  "rounded-full px-2.5 py-0.5 font-bold transition-colors",
+                  "h-6.5 rounded-full px-2.5 text-[12px] font-bold",
                   sortBy === opt.id
-                    ? "bg-[#EBF2FF] text-[#306BD9]"
-                    : "text-[#64748B] hover:text-[#222222]"
+                    ? "bg-[#EBF2FF] text-[#306BD9] hover:bg-[#EBF2FF] hover:text-[#306BD9]"
+                    : "text-[#64748B] hover:bg-transparent hover:text-[#222222]"
                 )}
               >
                 {opt.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -666,10 +694,15 @@ function CandidatesView() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1.5">
-              {REJECTION_REASONS.map((r) => (
-                <label
+            <RadioGroup
+              value={bulkRejectReason}
+              onValueChange={setBulkRejectReason}
+              className="gap-1.5"
+            >
+              {REJECTION_REASONS.map((r, idx) => (
+                <Label
                   key={r}
+                  htmlFor={`bulk-reject-${idx}`}
                   className={cn(
                     "flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2 text-[12.5px] font-medium transition-colors",
                     bulkRejectReason === r
@@ -677,43 +710,53 @@ function CandidatesView() {
                       : "border-[#E2E8F0] bg-white text-[#334155]"
                   )}
                 >
-                  <input
-                    type="radio"
-                    name="bulkRejectReason"
-                    checked={bulkRejectReason === r}
-                    onChange={() => setBulkRejectReason(r)}
-                    className="accent-[#DC2626]"
-                  />
+                  <RadioGroupItem value={r} id={`bulk-reject-${idx}`} />
                   {r}
-                </label>
+                </Label>
               ))}
-            </div>
+            </RadioGroup>
             <div className="flex justify-end gap-2 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setBulkRejectOpen(false)}
-                className="h-9 rounded-full border border-[#D9D9D9] px-4 text-[12.5px] font-bold text-[#444444]"
+                className="h-9 rounded-full border-[#D9D9D9] px-4 text-[12.5px] font-bold text-[#444444]"
               >
                 Hủy
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="destructive"
                 disabled={bulkMut.isPending}
                 onClick={() =>
                   void runBulkStatus("rejected", bulkRejectReason)
                 }
-                className="flex h-9 items-center gap-1.5 rounded-full bg-[#DC2626] px-5 text-[12.5px] font-bold text-white hover:bg-[#B91C1C]"
+                className="h-9 rounded-full bg-[#DC2626] px-5 text-[12.5px] font-bold text-white hover:bg-[#B91C1C]"
               >
                 {bulkMut.isPending && (
                   <Loader2 className="size-3.5 animate-spin" />
                 )}
                 Xác nhận từ chối
-              </button>
+              </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function CandidatesView() {
+  const params = useSearchParams();
+  const initialJobId = params.get("jobId") ?? "all";
+  const appIdRaw = params.get("appId");
+  const initialAppId = appIdRaw ? Number(appIdRaw) : null;
+  return (
+    <CandidatesViewContent
+      key={`${initialJobId}-${initialAppId ?? ""}`}
+      initialJobId={initialJobId}
+      initialAppId={initialAppId}
+    />
   );
 }
 

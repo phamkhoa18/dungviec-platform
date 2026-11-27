@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { PageHeader, useJobDialog } from "@/components/hr/hr-shell";
 import { EmptyState, ErrorState, Panel } from "@/components/hr/ui-parts";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -80,6 +81,7 @@ export default function HrJobsPage() {
   const [query, setQuery] = useState("");
   const [reopenJob, setReopenJob] = useState<HrJob | null>(null);
   const [reopenDeadline, setReopenDeadline] = useState(defaultNewDeadline());
+  const [confirmDeleteJob, setConfirmDeleteJob] = useState<HrJob | null>(null);
 
   const jobs = useMemo(() => jobsQ.data ?? [], [jobsQ.data]);
 
@@ -165,17 +167,25 @@ export default function HrJobsPage() {
     }
   }
 
-  async function handleDeleteOrArchive(job: HrJob) {
-    const hasApps = job.applications_count > 0;
-    const msg = hasApps
-      ? `Tin "${job.title}" đã có ${job.applications_count} hồ sơ ứng tuyển. Hệ thống sẽ chuyển tin vào mục Lưu trữ để bảo toàn lịch sử ứng viên. Bạn đồng ý chứ?`
-      : `Bạn có chắc chắn muốn xóa vĩnh viễn bản tin "${job.title}"?`;
-    if (!window.confirm(msg)) return;
+  async function executeDeleteOrArchive() {
+    if (!confirmDeleteJob) return;
     try {
-      const res = await deleteJob.mutateAsync(job.id);
+      const res = await deleteJob.mutateAsync(confirmDeleteJob.id);
       toast.success(res.message);
+      setConfirmDeleteJob(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Không thể xóa tin.");
+    }
+  }
+
+  async function handleRestoreArchived(job: HrJob) {
+    try {
+      await setStatus.mutateAsync({ id: job.id, status: "draft" });
+      toast.success(`Đã khôi phục "${job.title}" về mục Bản nháp.`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Không thể khôi phục tin."
+      );
     }
   }
 
@@ -196,14 +206,14 @@ export default function HrJobsPage() {
         title="Tin tuyển dụng"
         subtitle="Đăng, nhân bản, gia hạn và theo dõi hiệu quả từng vị trí tuyển dụng."
         actions={
-          <button
+          <Button
             type="button"
             onClick={() => openJobForm(null)}
-            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[#306BD9] px-5 text-[13.5px] font-bold text-white hover:bg-[#2458BD]"
+            className="h-10 gap-1.5 rounded-full bg-[#306BD9] px-5 text-[13.5px] font-bold text-white hover:bg-[#2458BD]"
           >
             <PlusCircle className="size-4" />
             Đăng tin mới
-          </button>
+          </Button>
         }
       />
 
@@ -219,21 +229,22 @@ export default function HrJobsPage() {
                 ? jobs.filter((j) => j.status !== "archived").length
                 : jobs.filter((j) => j.status === t.key).length;
             return (
-              <button
+              <Button
                 key={t.key}
                 type="button"
+                variant={tab === t.key ? "default" : "outline"}
                 role="tab"
                 aria-selected={tab === t.key}
                 onClick={() => setTab(t.key)}
                 className={cn(
-                  "rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition-colors",
+                  "h-8 rounded-full px-3.5 text-[12.5px] font-bold",
                   tab === t.key
-                    ? "bg-[#306BD9] text-white"
-                    : "bg-white text-[#555555] ring-1 ring-black/[0.06] hover:bg-[#F5F7FB]"
+                    ? "bg-[#306BD9] text-white hover:bg-[#2458BD]"
+                    : "border-black/[0.06] bg-white text-[#555555] hover:bg-[#F5F7FB] hover:text-[#222222]"
                 )}
               >
                 {t.label} <span className="opacity-75">({n})</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -275,13 +286,13 @@ export default function HrJobsPage() {
             }
             action={
               jobs.length === 0 ? (
-                <button
+                <Button
                   type="button"
                   onClick={() => openJobForm(null)}
                   className="h-10 rounded-full bg-[#306BD9] px-6 text-[13.5px] font-bold text-white hover:bg-[#2458BD]"
                 >
                   Đăng tin mới
-                </button>
+                </Button>
               ) : undefined
             }
           />
@@ -290,13 +301,13 @@ export default function HrJobsPage() {
             <table className="w-full text-[13px]">
               <thead className="bg-[#F7F9FC] text-left text-[11.5px] font-bold uppercase tracking-wider text-[#64748B]">
                 <tr>
-                  <th className="px-5 py-3">Vị trí tuyển dụng</th>
+                  <th className="px-4 py-3">Vị trí tuyển dụng</th>
                   <th className="px-3 py-3">Địa điểm &amp; Hạn nộp</th>
                   <th className="px-3 py-3 text-center">Lượt xem</th>
                   <th className="px-3 py-3 text-center">Hồ sơ ứng tuyển</th>
                   <th className="px-3 py-3 text-center">Điểm AI TB</th>
                   <th className="px-3 py-3">Trạng thái</th>
-                  <th className="px-5 py-3 text-right">Thao tác</th>
+                  <th className="px-4 py-3 text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F0F2F6]">
@@ -310,7 +321,7 @@ export default function HrJobsPage() {
                       key={job.id}
                       className="transition-colors hover:bg-[#FAFBFE]"
                     >
-                      <td className="max-w-[320px] px-5 py-3.5">
+                      <td className="max-w-[260px] px-4 py-3.5">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <Link
                             href={`/nha-tuyen-dung/ung-vien?jobId=${job.id}`}
@@ -327,7 +338,8 @@ export default function HrJobsPage() {
                         </div>
                         <p className="mt-0.5 text-[12px] text-[#666666]">
                           {job.job_category}
-                          {job.level ? ` · ${job.level}` : ""} ·{" "}
+                          {job.level ? ` · ${job.level}` : ""}
+                          {job.vacancies ? ` · Tuyển ${job.vacancies}` : ""} ·{" "}
                           <span className="font-semibold text-[#1E3A8A]">
                             {job.salary_range || "Thỏa thuận"}
                           </span>
@@ -405,11 +417,11 @@ export default function HrJobsPage() {
                         )}
                       </td>
 
-                      <td className="px-3 py-3.5">
+                      <td className="px-3 py-3.5 whitespace-nowrap">
                         <div className="flex flex-col items-start gap-1">
                           <span
                             className={cn(
-                              "inline-flex rounded-full border px-2.5 py-0.5 text-[11.5px] font-bold",
+                              "inline-flex whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11.5px] font-bold",
                               stMeta.badge
                             )}
                           >
@@ -417,12 +429,14 @@ export default function HrJobsPage() {
                           </span>
 
                           {job.stale_count > 0 && (
-                            <button
+                            <Button
                               type="button"
+                              variant="outline"
+                              size="xs"
                               disabled={rescoreJob.isPending}
                               onClick={() => handleRescore(job)}
                               title="JD đã thay đổi, bấm để chấm lại điểm AI cho các hồ sơ của tin này"
-                              className="inline-flex items-center gap-1 rounded-full border border-[#FDE68A] bg-[#FFFBEB] px-2 py-0.5 text-[10.5px] font-bold text-[#B45309] hover:bg-[#FEF3C7]"
+                              className="h-auto gap-1 rounded-full border-[#FDE68A] bg-[#FFFBEB] px-2 py-0.5 text-[10.5px] font-bold text-[#B45309] hover:bg-[#FEF3C7] hover:text-[#B45309]"
                             >
                               <RefreshCw
                                 className={cn(
@@ -431,54 +445,63 @@ export default function HrJobsPage() {
                                 )}
                               />
                               Chấm lại {job.stale_count} CV
-                            </button>
+                            </Button>
                           )}
                         </div>
                       </td>
 
-                      <td className="px-5 py-3.5">
-                        <div className="flex flex-wrap items-center justify-end gap-1.5">
+                      <td className="px-4 py-3.5 whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                           {job.status === "active" && job.slug && (
-                            <Link
-                              href={`/viec-lam/${job.slug}`}
-                              target="_blank"
-                              title="Xem trang tin công khai"
-                              className="inline-flex size-8 items-center justify-center rounded-full border border-[#E2E8F0] text-[#475569] hover:border-[#306BD9] hover:text-[#306BD9]"
+                            <Button
+                              asChild
+                              variant="outline"
+                              size="icon"
+                              className="size-8 rounded-full border-[#E2E8F0] bg-white text-[#475569] hover:border-[#306BD9] hover:bg-white hover:text-[#306BD9]"
                             >
-                              <ExternalLink className="size-3.5" />
-                            </Link>
+                              <Link
+                                href={`/viec-lam/${job.slug}`}
+                                target="_blank"
+                                title="Xem trang tin công khai"
+                              >
+                                <ExternalLink className="size-3.5" />
+                              </Link>
+                            </Button>
                           )}
 
-                          <button
+                          <Button
                             type="button"
+                            variant="outline"
                             onClick={() => openJobForm(job)}
                             title="Chỉnh sửa tin"
-                            className="inline-flex h-8 items-center gap-1 rounded-full border border-[#D9D9D9] px-3 text-[12px] font-bold text-[#333333] hover:bg-[#F5F7FB]"
+                            className="h-8 gap-1 rounded-full border-[#D9D9D9] bg-white px-3 text-[12px] font-bold text-[#333333] hover:bg-[#F5F7FB] hover:text-[#333333]"
                           >
                             <Pencil className="size-3.5" />
                             Sửa
-                          </button>
+                          </Button>
 
-                          <button
+                          <Button
                             type="button"
+                            variant="outline"
                             disabled={duplicateJob.isPending}
                             onClick={() => handleDuplicate(job)}
                             title="Nhân bản thành bản nháp"
-                            className="inline-flex h-8 items-center gap-1 rounded-full border border-[#D9D9D9] px-2.5 text-[12px] font-bold text-[#475569] hover:bg-[#F5F7FB]"
+                            className="h-8 gap-1 rounded-full border-[#D9D9D9] bg-white px-2.5 text-[12px] font-bold text-[#475569] hover:bg-[#F5F7FB] hover:text-[#475569]"
                           >
                             <Copy className="size-3.5" />
-                          </button>
+                          </Button>
 
                           {job.status !== "archived" && (
-                            <button
+                            <Button
                               type="button"
+                              variant="outline"
                               disabled={setStatus.isPending}
                               onClick={() => handleToggleStatus(job)}
                               className={cn(
-                                "inline-flex h-8 items-center gap-1 rounded-full border px-3 text-[12px] font-bold disabled:opacity-60",
+                                "h-8 gap-1 rounded-full bg-white px-3 text-[12px] font-bold",
                                 job.status === "active"
-                                  ? "border-[#FECACA] text-[#B91C1C] hover:bg-[#FEF2F2]"
-                                  : "border-[#BBF7D0] text-[#15803D] hover:bg-[#F0FDF4]"
+                                  ? "border-[#FECACA] text-[#B91C1C] hover:bg-[#FEF2F2] hover:text-[#B91C1C]"
+                                  : "border-[#BBF7D0] text-[#15803D] hover:bg-[#F0FDF4] hover:text-[#15803D]"
                               )}
                             >
                               {job.status === "active" ? (
@@ -494,27 +517,41 @@ export default function HrJobsPage() {
                                     : "Mở lại"}
                                 </>
                               )}
-                            </button>
+                            </Button>
                           )}
 
-                          {job.status !== "archived" && (
-                            <button
+                          {job.status !== "archived" ? (
+                            <Button
                               type="button"
+                              variant="outline"
+                              size="icon"
                               disabled={deleteJob.isPending}
-                              onClick={() => handleDeleteOrArchive(job)}
+                              onClick={() => setConfirmDeleteJob(job)}
                               title={
                                 job.applications_count > 0
                                   ? "Lưu trữ tin"
                                   : "Xóa tin"
                               }
-                              className="inline-flex size-8 items-center justify-center rounded-full border border-[#FECACA] text-[#DC2626] hover:bg-[#FEF2F2]"
+                              className="size-8 rounded-full border-[#FECACA] bg-white text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
                             >
                               {job.applications_count > 0 ? (
                                 <Archive className="size-3.5" />
                               ) : (
                                 <Trash2 className="size-3.5" />
                               )}
-                            </button>
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              disabled={setStatus.isPending}
+                              onClick={() => handleRestoreArchived(job)}
+                              title="Khôi phục về bản nháp để chỉnh sửa và mở lại"
+                              className="h-8 gap-1 rounded-full border-[#BBF7D0] bg-white px-3 text-[12px] font-bold text-[#15803D] hover:bg-[#F0FDF4] hover:text-[#15803D]"
+                            >
+                              <RotateCcw className="size-3.5" />
+                              Khôi phục
+                            </Button>
                           )}
                         </div>
                       </td>
@@ -553,22 +590,86 @@ export default function HrJobsPage() {
               className="h-10 rounded-[10px]"
             />
             <div className="flex justify-end gap-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setReopenJob(null)}
-                className="h-9 rounded-full border border-[#D9D9D9] px-4 text-[13px] font-bold text-[#444444]"
+                className="h-9 rounded-full border-[#D9D9D9] px-4 text-[13px] font-bold text-[#444444]"
               >
                 Hủy
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={setStatus.isPending}
                 onClick={confirmReopen}
                 className="h-9 rounded-full bg-[#306BD9] px-5 text-[13px] font-bold text-white hover:bg-[#2458BD]"
               >
                 Gia hạn &amp; Mở tuyển
-              </button>
+              </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Hộp thoại xác nhận Lưu trữ / Xóa tin */}
+      <Dialog
+        open={!!confirmDeleteJob}
+        onOpenChange={(o) => !o && setConfirmDeleteJob(null)}
+      >
+        <DialogContent className="rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[17px] font-extrabold">
+              {confirmDeleteJob && confirmDeleteJob.applications_count > 0 ? (
+                <>
+                  <Archive className="size-5 text-[#D97706]" />
+                  Chuyển tin vào Lưu trữ?
+                </>
+              ) : (
+                <>
+                  <Trash2 className="size-5 text-[#DC2626]" />
+                  Xóa vĩnh viễn tin tuyển dụng?
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription className="text-[13px] leading-5">
+              {confirmDeleteJob && confirmDeleteJob.applications_count > 0 ? (
+                <>
+                  Tin <strong>{confirmDeleteJob.title}</strong> đã có{" "}
+                  <strong>{confirmDeleteJob.applications_count} hồ sơ ứng tuyển</strong>. Hệ
+                  thống sẽ chuyển tin vào mục Lưu trữ để bảo toàn lịch sử hồ sơ và đánh giá AI.
+                </>
+              ) : (
+                <>
+                  Bạn có chắc chắn muốn xóa vĩnh viễn bản tin{" "}
+                  <strong>{confirmDeleteJob?.title}</strong>? Thao tác này không thể hoàn tác.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDeleteJob(null)}
+              className="h-9 rounded-full border-[#D9D9D9] px-4 text-[13px] font-bold text-[#444444]"
+            >
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              disabled={deleteJob.isPending}
+              onClick={executeDeleteOrArchive}
+              className={cn(
+                "h-9 rounded-full px-5 text-[13px] font-bold text-white",
+                confirmDeleteJob && confirmDeleteJob.applications_count > 0
+                  ? "bg-[#D97706] hover:bg-[#B45309]"
+                  : "bg-[#DC2626] hover:bg-[#B91C1C]"
+              )}
+            >
+              {confirmDeleteJob && confirmDeleteJob.applications_count > 0
+                ? "Chuyển vào Lưu trữ"
+                : "Xóa vĩnh viễn"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

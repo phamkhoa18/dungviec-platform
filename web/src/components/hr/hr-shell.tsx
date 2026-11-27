@@ -19,6 +19,7 @@ import {
 import { Logo } from "@/components/shared/brand";
 import { NotificationBell } from "@/components/shared/notification-bell";
 import { JobFormDialog } from "@/components/hr/job-form-dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,23 +93,24 @@ export function HrShell({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => openJobForm(null)}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#306BD9] px-4 text-[13px] font-bold text-white transition-colors hover:bg-[#2458BD]"
+                className="h-9 gap-1.5 rounded-full bg-[#306BD9] px-4 text-[13px] font-bold text-white hover:bg-[#2458BD]"
               >
                 <PlusCircle className="size-4" />
                 <span className="hidden sm:inline">Đăng tin</span>
-              </button>
+              </Button>
 
               <NotificationBell />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     aria-label="Menu tài khoản"
-                    className="flex h-9 items-center gap-2 rounded-full border border-[#D8E5FF] bg-[#F5F9FF] pr-2.5 pl-1.5 transition-colors hover:border-[#306BD9]"
+                    className="h-9 gap-2 rounded-full border-[#D8E5FF] bg-[#F5F9FF] pr-2.5 pl-1.5 text-[#222222] hover:border-[#306BD9] hover:bg-[#F5F9FF]"
                   >
                     <span className="grid size-6.5 place-items-center rounded-full bg-[#306BD9] text-[12px] font-extrabold text-white">
                       {initial}
@@ -117,12 +119,14 @@ export function HrShell({ children }: { children: React.ReactNode }) {
                       {company?.company_name ?? user?.full_name}
                     </span>
                     <ChevronDown className="size-3.5 text-[#555555]" />
-                  </button>
+                  </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 rounded-xl p-2">
+                <DropdownMenuContent align="end" className="w-72 rounded-xl p-2">
                   <DropdownMenuLabel className="rounded-lg bg-[#F5F9FF] p-3">
-                    <p className="flex items-center gap-1 truncate text-[13px] font-bold">
-                      {company?.company_name ?? "Nhà tuyển dụng"}
+                    <p className="flex min-w-0 items-center gap-1.5 text-[13px] font-bold">
+                      <span className="min-w-0 flex-1 truncate">
+                        {company?.company_name ?? "Nhà tuyển dụng"}
+                      </span>
                       {company?.verified && <BadgeCheck className="size-4 shrink-0 text-[#16A34A]" />}
                     </p>
                     <p className="truncate text-[11.5px] font-normal text-[#666666]">{user?.email}</p>

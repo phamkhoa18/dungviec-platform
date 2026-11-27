@@ -39,7 +39,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import {
   interviewIcsUrl,
@@ -184,11 +187,13 @@ function AiTab({ app }: { app: EnrichedApplication }) {
             </p>
           )}
         </div>
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={rerun}
           disabled={reEval.isPending}
-          className="inline-flex h-8.5 items-center gap-1.5 rounded-full border border-[#306BD9] bg-[#F5F9FF] px-3.5 text-[12px] font-bold text-[#306BD9] hover:bg-[#EBF2FF] disabled:opacity-60"
+          className="h-8.5 rounded-full border-[#306BD9] bg-[#F5F9FF] px-3.5 text-[12px] font-bold text-[#306BD9] hover:bg-[#EBF2FF] hover:text-[#306BD9]"
         >
           {reEval.isPending ? (
             <Loader2 className="size-3.5 animate-spin" />
@@ -196,7 +201,7 @@ function AiTab({ app }: { app: EnrichedApplication }) {
             <RefreshCw className="size-3.5" />
           )}
           Chấm điểm lại
-        </button>
+        </Button>
       </div>
 
       {app.ai_is_stale && (
@@ -212,14 +217,15 @@ function AiTab({ app }: { app: EnrichedApplication }) {
               phù hợp theo yêu cầu mới nhất.
             </span>
           </div>
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={rerun}
             disabled={reEval.isPending}
-            className="shrink-0 rounded-lg bg-[#D97706] px-3 py-1.5 text-[12px] font-bold text-white hover:bg-[#B45309]"
+            className="h-8 shrink-0 rounded-lg bg-[#D97706] px-3 text-[12px] font-bold text-white hover:bg-[#B45309]"
           >
             Cập nhật điểm ngay
-          </button>
+          </Button>
         </div>
       )}
 
@@ -343,11 +349,26 @@ function AiTab({ app }: { app: EnrichedApplication }) {
 }
 
 /* ---------------------------------------------------------------- TAB 2: NỘI DUNG HỒ SƠ */
-function StructuredProfileTab({ app }: { app: EnrichedApplication }) {
+function StructuredProfileTab({
+  app,
+  loading = false,
+}: {
+  app: EnrichedApplication;
+  loading?: boolean;
+}) {
   const rawText =
     app.cv_snapshot?.raw_text?.trim() ??
     app.cv_profile?.raw_text?.trim() ??
     "";
+
+  if (!rawText && loading) {
+    return (
+      <Panel className="flex items-center justify-center gap-2 p-8 text-[13.5px] text-[#64748B]">
+        <Loader2 className="size-4 animate-spin text-[#306BD9]" />
+        Đang tải nội dung hồ sơ...
+      </Panel>
+    );
+  }
 
   if (!rawText) {
     return (
@@ -518,14 +539,14 @@ function InterviewsTab({
             Đặt lịch phỏng vấn và đánh giá ứng viên sau phỏng vấn
           </p>
         </div>
-        <button
+        <Button
           type="button"
           onClick={onScheduleNew}
-          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#306BD9] px-4 text-[12.5px] font-bold text-white hover:bg-[#2458BD]"
+          className="h-9 rounded-full bg-[#306BD9] px-4 text-[12.5px] font-bold text-white hover:bg-[#2458BD]"
         >
           <Plus className="size-4" />
           Tạo lịch phỏng vấn
-        </button>
+        </Button>
       </div>
 
       {interviews.length === 0 ? (
@@ -578,37 +599,46 @@ function InterviewsTab({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <a
-                      href={interviewIcsUrl(iv.id)}
-                      className="inline-flex h-7.5 items-center gap-1 rounded-lg border border-[#BFDBFE] bg-white px-2.5 text-[11.5px] font-bold text-[#306BD9] hover:bg-[#EFF6FF]"
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="h-7.5 rounded-lg border-[#BFDBFE] bg-white px-2.5 text-[11.5px] font-bold text-[#306BD9] hover:bg-[#EFF6FF] hover:text-[#306BD9]"
                     >
-                      <Download className="size-3" />
-                      .ics
-                    </a>
+                      <a href={interviewIcsUrl(iv.id)}>
+                        <Download className="size-3" />
+                        .ics
+                      </a>
+                    </Button>
                     {iv.status !== "cancelled" && (
                       <>
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="sm"
                           onClick={() => onEditInterview(iv)}
-                          className="h-7.5 rounded-lg border border-[#D9D9D9] bg-white px-2.5 text-[11.5px] font-bold text-[#334155] hover:bg-[#F8FAFC]"
+                          className="h-7.5 rounded-lg border-[#D9D9D9] bg-white px-2.5 text-[11.5px] font-bold text-[#334155] hover:bg-[#F8FAFC]"
                         >
                           Đổi lịch
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
+                          size="sm"
                           onClick={() => onOpenScorecard(iv)}
                           className="h-7.5 rounded-lg bg-[#16A34A] px-2.5 text-[11.5px] font-bold text-white hover:bg-[#15803D]"
                         >
                           {iv.feedback ? "Sửa phiếu điểm" : "Ghi phiếu đánh giá"}
-                        </button>
+                        </Button>
                         {iv.status !== "completed" && (
-                          <button
+                          <Button
                             type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={() => cancelInterview(iv)}
-                            className="h-7.5 rounded-lg border border-[#FECACA] bg-white px-2.5 text-[11.5px] font-bold text-[#DC2626] hover:bg-[#FEF2F2]"
+                            className="h-7.5 rounded-lg border-[#FECACA] bg-white px-2.5 text-[11.5px] font-bold text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
                           >
                             Hủy
-                          </button>
+                          </Button>
                         )}
                       </>
                     )}
@@ -721,14 +751,14 @@ function ActivityNotesTab({ app }: { app: EnrichedApplication }) {
             className="rounded-xl text-[13px]"
           />
           <div className="flex justify-end">
-            <button
+            <Button
               type="submit"
               disabled={!draft.trim() || addNote.isPending}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#306BD9] px-4 text-[12.5px] font-bold text-white hover:bg-[#2458BD] disabled:opacity-50"
+              className="h-9 rounded-full bg-[#306BD9] px-4 text-[12.5px] font-bold text-white hover:bg-[#2458BD]"
             >
               {addNote.isPending && <Loader2 className="size-3.5 animate-spin" />}
               Lưu ghi chú
-            </button>
+            </Button>
           </div>
         </form>
 
@@ -742,16 +772,19 @@ function ActivityNotesTab({ app }: { app: EnrichedApplication }) {
                 <span className="font-bold text-[#334155]">{n.author_name}</span>
                 <div className="flex items-center gap-2">
                   <span>{formatDateTime(n.created_at)}</span>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon-xs"
                     onClick={() =>
                       deleteNote.mutate({ appId: app.id, noteId: n.id })
                     }
-                    className="text-[#DC2626] hover:underline"
+                    className="size-6 text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
                     title="Xóa ghi chú"
+                    aria-label="Xóa ghi chú"
                   >
                     <Trash2 className="size-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
               <p className="mt-1 whitespace-pre-line text-[#222222]">
@@ -927,11 +960,14 @@ export function ApplicantDetail({
                 title="Đánh giá nhanh ứng viên (1 - 5 sao)"
               >
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <button
+                  <Button
                     key={n}
                     type="button"
+                    variant="ghost"
+                    size="icon-xs"
                     onClick={() => handleSetRating(n)}
-                    className="p-0.5"
+                    aria-label={`Đánh giá ${n} sao`}
+                    className="size-6 p-0.5 hover:bg-transparent"
                   >
                     <Star
                       className={cn(
@@ -941,7 +977,7 @@ export function ApplicantDetail({
                           : "text-[#CBD5E1] hover:text-[#F59E0B]"
                       )}
                     />
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -987,28 +1023,33 @@ export function ApplicantDetail({
                   className="inline-flex items-center gap-1 rounded-full bg-[#EBF2FF] py-0.5 pr-1.5 pl-2.5 text-[11.5px] font-semibold text-[#1D4ED8]"
                 >
                   {t}
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon-xs"
                     onClick={() => handleRemoveTag(t)}
-                    className="rounded-full hover:bg-[#306BD9]/20"
+                    aria-label={`Xóa thẻ ${t}`}
+                    className="size-4 rounded-full p-0 text-[#1D4ED8] hover:bg-[#306BD9]/20"
                   >
                     <X className="size-3" />
-                  </button>
+                  </Button>
                 </span>
               ))}
               {SUGGESTED_TAGS.filter((t) => !tags.includes(t))
                 .slice(0, 3)
                 .map((s) => (
-                  <button
+                  <Button
                     key={s}
                     type="button"
+                    variant="outline"
+                    size="xs"
                     onClick={() => handleAddTag(s)}
-                    className="rounded-full border border-dashed border-[#CBD5E1] px-2 py-0.5 text-[11px] font-medium text-[#64748B] hover:border-[#306BD9] hover:text-[#306BD9]"
+                    className="h-6 rounded-full border-dashed border-[#CBD5E1] bg-transparent px-2 text-[11px] font-medium text-[#64748B] hover:border-[#306BD9] hover:bg-transparent hover:text-[#306BD9]"
                   >
                     + {s}
-                  </button>
+                  </Button>
                 ))}
-              <input
+              <Input
                 value={tagDraft}
                 onChange={(e) => setTagDraft(e.target.value)}
                 onKeyDown={(e) => {
@@ -1018,24 +1059,24 @@ export function ApplicantDetail({
                   }
                 }}
                 placeholder="Thêm thẻ..."
-                className="w-24 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-[11.5px] outline-none focus:border-[#306BD9] focus:bg-white"
+                className="h-6 w-24 rounded-md border-transparent bg-transparent px-1.5 py-0 text-[11.5px] shadow-none focus-visible:border-[#306BD9] focus-visible:bg-white focus-visible:ring-0"
               />
             </div>
           </div>
 
           {/* Nút hẹn phỏng vấn nhanh */}
           <div className="flex flex-wrap items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => {
                 setEditingInterview(null);
                 setInterviewDialogOpen(true);
               }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#6D28D9] px-4 text-[12.5px] font-bold text-white shadow-xs hover:bg-[#5B21B6]"
+              className="h-9 rounded-full bg-[#6D28D9] px-4 text-[12.5px] font-bold text-white shadow-xs hover:bg-[#5B21B6]"
             >
               <CalendarClock className="size-4" />
               Hẹn phỏng vấn
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -1063,21 +1104,23 @@ export function ApplicantDetail({
                 {allowedNext.map((next) => {
                   const isReject = next === "rejected";
                   return (
-                    <button
+                    <Button
                       key={next}
                       type="button"
+                      variant="outline"
+                      size="sm"
                       disabled={updateApp.isPending}
                       onClick={() => void handleTransition(next)}
                       className={cn(
-                        "inline-flex h-8 items-center gap-1 rounded-full border px-3 text-[12px] font-bold transition-colors disabled:opacity-50",
+                        "h-8 rounded-full px-3 text-[12px] font-bold",
                         isReject
-                          ? "border-[#FECACA] bg-white text-[#B91C1C] hover:bg-[#FEF2F2]"
+                          ? "border-[#FECACA] bg-white text-[#B91C1C] hover:bg-[#FEF2F2] hover:text-[#B91C1C]"
                           : "border-[#306BD9] bg-white text-[#306BD9] hover:bg-[#306BD9] hover:text-white"
                       )}
                     >
                       {!isReject && <CheckCircle2 className="size-3.5" />}
                       {STATUS_META[next].label}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -1130,16 +1173,17 @@ export function ApplicantDetail({
         ).map((t) => {
           const active = activeTab === t.id;
           return (
-            <button
+            <Button
               key={t.id}
               type="button"
               role="tab"
+              variant={active ? "default" : "ghost"}
               aria-selected={active}
               onClick={() => setActiveTab(t.id)}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12.5px] font-bold transition-colors",
+                "h-9 rounded-xl px-3.5 text-[12.5px] font-bold",
                 active
-                  ? "bg-[#306BD9] text-white"
+                  ? "bg-[#306BD9] text-white hover:bg-[#2458BD]"
                   : "text-[#555555] hover:bg-[#F5F7FB] hover:text-[#222222]"
               )}
             >
@@ -1162,14 +1206,16 @@ export function ApplicantDetail({
                   {t.badge}
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
 
       {/* Nội dung Tab */}
       {activeTab === "ai" && <AiTab app={app} />}
-      {activeTab === "structured" && <StructuredProfileTab app={app} />}
+      {activeTab === "structured" && (
+        <StructuredProfileTab app={app} loading={detailQ.isLoading} />
+      )}
       {activeTab === "cv" && <CvViewerTab key={`cv-${app.id}`} app={app} />}
       {activeTab === "interviews" && (
         <InterviewsTab
@@ -1224,13 +1270,18 @@ export function ApplicantDetail({
 
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <p className="text-[12.5px] font-bold text-[#222222]">
+              <Label className="text-[12.5px] font-bold text-[#222222]">
                 Lý do từ chối *
-              </p>
-              <div className="space-y-1.5">
-                {REJECTION_REASONS.map((r) => (
-                  <label
+              </Label>
+              <RadioGroup
+                value={rejectReason}
+                onValueChange={setRejectReason}
+                className="gap-1.5"
+              >
+                {REJECTION_REASONS.map((r, idx) => (
+                  <Label
                     key={r}
+                    htmlFor={`single-reject-${idx}`}
                     className={cn(
                       "flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2 text-[12.5px] font-medium transition-colors",
                       rejectReason === r
@@ -1238,23 +1289,17 @@ export function ApplicantDetail({
                         : "border-[#E2E8F0] bg-white text-[#334155]"
                     )}
                   >
-                    <input
-                      type="radio"
-                      name="rejectReason"
-                      checked={rejectReason === r}
-                      onChange={() => setRejectReason(r)}
-                      className="accent-[#DC2626]"
-                    />
+                    <RadioGroupItem value={r} id={`single-reject-${idx}`} />
                     {r}
-                  </label>
+                  </Label>
                 ))}
-              </div>
+              </RadioGroup>
             </div>
 
             <div className="space-y-1">
-              <p className="text-[12px] font-bold text-[#475569]">
+              <Label className="text-[12px] font-bold text-[#475569]">
                 Ghi chú thêm (Không bắt buộc)
-              </p>
+              </Label>
               <Input
                 value={rejectNote}
                 onChange={(e) => setRejectNote(e.target.value)}
@@ -1264,24 +1309,26 @@ export function ApplicantDetail({
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setRejectDialogOpen(false)}
-                className="h-9 rounded-full border border-[#D9D9D9] px-4 text-[12.5px] font-bold text-[#444444]"
+                className="h-9 rounded-full border-[#D9D9D9] px-4 text-[12.5px] font-bold text-[#444444]"
               >
                 Hủy
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="destructive"
                 disabled={updateApp.isPending}
                 onClick={confirmReject}
-                className="flex h-9 items-center gap-1.5 rounded-full bg-[#DC2626] px-5 text-[12.5px] font-bold text-white hover:bg-[#B91C1C]"
+                className="h-9 rounded-full bg-[#DC2626] px-5 text-[12.5px] font-bold text-white hover:bg-[#B91C1C]"
               >
                 {updateApp.isPending && (
                   <Loader2 className="size-3.5 animate-spin" />
                 )}
                 Xác nhận từ chối
-              </button>
+              </Button>
             </div>
           </div>
         </DialogContent>

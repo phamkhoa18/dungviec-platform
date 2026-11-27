@@ -21,6 +21,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type {
   CandidateProfileRecord,
   CertificationItem,
@@ -220,15 +224,15 @@ export function CvReviewDialog({
             )}
 
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => preset("all")} className="rounded-lg border border-[#306BD9] bg-[#EBF2FF] px-3 py-1.5 text-[12px] font-bold text-[#306BD9] hover:bg-[#DCE8FF]">
+              <Button type="button" variant="outline" size="sm" onClick={() => preset("all")} className="h-8 rounded-lg border-[#306BD9] bg-[#EBF2FF] px-3 text-[12px] font-bold text-[#306BD9] hover:bg-[#DCE8FF] hover:text-[#306BD9]">
                 Chọn tất cả gợi ý
-              </button>
-              <button type="button" onClick={() => preset("empty")} className="rounded-lg border border-[#D9D9D9] px-3 py-1.5 text-[12px] font-bold text-[#334155] hover:bg-[#F5F7FA]">
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => preset("empty")} className="h-8 rounded-lg border-[#D9D9D9] px-3 text-[12px] font-bold text-[#334155] hover:bg-[#F5F7FA]">
                 Chỉ điền trường còn trống
-              </button>
-              <button type="button" onClick={() => preset("none")} className="rounded-lg border border-[#D9D9D9] px-3 py-1.5 text-[12px] font-bold text-[#64748B] hover:bg-[#F5F7FA]">
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => preset("none")} className="h-8 rounded-lg border-[#D9D9D9] px-3 text-[12px] font-bold text-[#64748B] hover:bg-[#F5F7FA]">
                 Bỏ chọn tất cả
-              </button>
+              </Button>
             </div>
 
             {/* THÔNG TIN CÁ NHÂN */}
@@ -244,13 +248,12 @@ export function CvReviewDialog({
                     const isLong = s.field === "summary";
                     return (
                       <div key={s.field} className="grid gap-2 px-4 py-3 sm:grid-cols-[22px_150px_1fr]">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={st.apply}
-                          onChange={(e) =>
-                            setScalarState((prev) => ({ ...prev, [s.field]: { ...st, apply: e.target.checked } }))
+                          onCheckedChange={(checked) =>
+                            setScalarState((prev) => ({ ...prev, [s.field]: { ...st, apply: checked === true } }))
                           }
-                          className="mt-1 size-4 accent-[#306BD9]"
+                          className="mt-1"
                           aria-label={`Áp dụng ${s.label}`}
                         />
                         <div>
@@ -269,21 +272,21 @@ export function CvReviewDialog({
                             </p>
                           )}
                           {isLong ? (
-                            <textarea
+                            <Textarea
                               value={st.value}
                               onChange={(e) =>
                                 setScalarState((prev) => ({ ...prev, [s.field]: { apply: true, value: e.target.value } }))
                               }
                               rows={3}
-                              className="w-full rounded-lg border border-[#D9D9D9] px-2.5 py-1.5 text-[12.5px] focus:border-[#306BD9] focus:outline-none"
+                              className="rounded-lg bg-white text-[12.5px]"
                             />
                           ) : (
-                            <input
+                            <Input
                               value={st.value}
                               onChange={(e) =>
                                 setScalarState((prev) => ({ ...prev, [s.field]: { apply: true, value: e.target.value } }))
                               }
-                              className="h-8 w-full rounded-lg border border-[#D9D9D9] px-2.5 text-[12.5px] focus:border-[#306BD9] focus:outline-none"
+                              className="h-8 rounded-lg bg-white text-[12.5px]"
                             />
                           )}
                         </div>
@@ -331,20 +334,22 @@ export function CvReviewDialog({
                           );
                         }
                         return (
-                          <button
+                          <Button
                             key={i.key}
                             type="button"
+                            variant={on ? "default" : "outline"}
+                            size="xs"
                             onClick={() => toggleItem("skills", i.key)}
                             title={sk.source === "inferred" ? "Suy luận từ mô tả kinh nghiệm/dự án" : sk.category}
-                            className={`rounded-full border px-2.5 py-1 text-[11.5px] font-semibold transition-colors ${
+                            className={`h-7 rounded-full px-2.5 text-[11.5px] font-semibold ${
                               on
-                                ? "border-[#306BD9] bg-[#306BD9] text-white"
+                                ? "border-[#306BD9] bg-[#306BD9] text-white hover:bg-[#2458BD]"
                                 : "border-[#CBD5E1] bg-white text-[#475569] hover:border-[#306BD9]"
                             } ${sk.source === "inferred" ? "border-dashed" : ""}`}
                           >
                             {sk.name}
                             {sk.type === "soft" && <span className="ml-1 opacity-75">(mềm)</span>}
-                          </button>
+                          </Button>
                         );
                       })}
                       <p className="mt-1 w-full text-[11px] text-[#94A3B8]">
@@ -354,13 +359,12 @@ export function CvReviewDialog({
                   ) : (
                     <div className="divide-y divide-[#F1F5F9]">
                       {l.items.map((i) => (
-                        <label key={i.key} className={`flex cursor-pointer items-start gap-3 px-4 py-3 ${!i.isNew ? "opacity-60" : ""}`}>
-                          <input
-                            type="checkbox"
+                        <Label key={i.key} className={`flex cursor-pointer items-start gap-3 px-4 py-3 font-normal ${!i.isNew ? "opacity-60" : ""}`}>
+                          <Checkbox
                             disabled={!i.isNew}
                             checked={i.isNew ? chosen.has(i.key) : true}
-                            onChange={() => toggleItem(l.field, i.key)}
-                            className="mt-1 size-4 accent-[#306BD9]"
+                            onCheckedChange={() => toggleItem(l.field, i.key)}
+                            className="mt-1"
                           />
                           <div className="min-w-0 flex-1 text-[12.5px]">
                             <ListItemPreview field={l.field} item={i.item} />
@@ -369,7 +373,7 @@ export function CvReviewDialog({
                               {i.lowConfidence && <span className="rounded-full bg-[#FEF3C7] px-1.5 py-0.5 text-[10px] font-bold text-[#B45309]">Cần kiểm tra</span>}
                             </div>
                           </div>
-                        </label>
+                        </Label>
                       ))}
                     </div>
                   )}

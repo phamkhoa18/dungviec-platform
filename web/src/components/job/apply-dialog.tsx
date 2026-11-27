@@ -17,6 +17,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -200,30 +202,29 @@ export function ApplyDialog({
               <div className="space-y-4">
                 {cvProfiles.length > 0 && (
                   <div>
-                    <label className="mb-1.5 block text-[12.5px] font-bold text-[#333333]">
+                    <Label className="mb-1.5 block text-[12.5px] font-bold text-[#333333]">
                       Chọn CV đã lưu của bạn:
-                    </label>
-                    <div className="space-y-1.5">
+                    </Label>
+                    <RadioGroup
+                      value={selectedCvId === "upload" ? "" : String(selectedCvId)}
+                      onValueChange={(val) => {
+                        setSelectedCvId(Number(val));
+                        setFile(null);
+                      }}
+                      className="gap-1.5"
+                    >
                       {cvProfiles.map((cv) => (
-                        <label
+                        <Label
                           key={cv.id}
-                          className={`flex cursor-pointer items-center justify-between rounded-xl border p-3 text-[13px] transition-colors ${
+                          htmlFor={`apply-cv-${cv.id}`}
+                          className={`flex cursor-pointer items-center justify-between rounded-xl border p-3 text-[13px] font-normal transition-colors ${
                             selectedCvId === cv.id
                               ? "border-[#306BD9] bg-[#F2F6FC]"
                               : "border-[#E5E7EB] bg-white hover:bg-[#FAFAFA]"
                           }`}
                         >
                           <div className="flex min-w-0 items-center gap-2.5">
-                            <input
-                              type="radio"
-                              name="cvChoice"
-                              checked={selectedCvId === cv.id}
-                              onChange={() => {
-                                setSelectedCvId(cv.id);
-                                setFile(null);
-                              }}
-                              className="accent-[#306BD9]"
-                            />
+                            <RadioGroupItem value={String(cv.id)} id={`apply-cv-${cv.id}`} />
                             <div className="min-w-0">
                               <p className="truncate font-bold text-[#222222]">
                                 {cv.cv_title}
@@ -237,18 +238,18 @@ export function ApplyDialog({
                           <span className="shrink-0 rounded bg-[#EBF2FF] px-2 py-0.5 text-[11px] font-bold uppercase text-[#306BD9]">
                             {cv.file_type}
                           </span>
-                        </label>
+                        </Label>
                       ))}
-                    </div>
+                    </RadioGroup>
                   </div>
                 )}
 
                 <div>
-                  <label className="mb-1.5 block text-[12.5px] font-bold text-[#333333]">
+                  <Label className="mb-1.5 block text-[12.5px] font-bold text-[#333333]">
                     {cvProfiles.length > 0
                       ? "Hoặc tải lên CV mới từ máy tính:"
                       : "Tải lên CV của bạn:"}
-                  </label>
+                  </Label>
                   <div
                     {...getRootProps()}
                     className={`cursor-pointer rounded-2xl border-2 border-dashed p-5 text-center transition-colors ${
@@ -271,8 +272,10 @@ export function ApplyDialog({
                             {(file.size / 1024).toFixed(1)} KB
                           </p>
                         </div>
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             setFile(null);
@@ -281,10 +284,10 @@ export function ApplyDialog({
                             }
                           }}
                           aria-label="Bỏ file"
-                          className="ml-2 grid size-8 place-items-center rounded-full hover:bg-zinc-100"
+                          className="ml-2 rounded-full"
                         >
                           <X className="size-4" />
-                        </button>
+                        </Button>
                       </div>
                     ) : (
                       <>
