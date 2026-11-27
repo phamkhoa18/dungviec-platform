@@ -259,7 +259,7 @@ Chỉ số xếp hạng: **NDCG@5 = 0,9192**, **NDCG@10 = 0,9302**, **Recall@5 =
 ├── database/                         # Schema MongoDB / PostgreSQL & runtime DB JSON
 ├── dataset_200_cv_pdfs/              # Tập 200 CV PDF mẫu phục vụ kiểm thử & seed
 ├── docs/                             # Tài liệu thiết kế & sơ đồ .drawio / .png
-├── scripts/                          # Script kiểm thử E2E & tạo dữ liệu mẫu
+├── scripts/                          # Script tải/nạp 200 CV & chụp ảnh minh họa
 └── TRAIN_BGE_M3_BILINGUAL_COLAB.ipynb # Notebook huấn luyện BAAI/bge-m3 Hybrid trên Colab
 ```
 
@@ -323,12 +323,14 @@ Mật khẩu chung cho các tài khoản mẫu: **`123456`**
 
 | Vai trò | Email | Ghi chú |
 |---|---|---|
-| Nhà tuyển dụng | `hr@fptsoftware.com` | FPT Software — có sẵn tin tuyển dụng và hồ sơ ứng tuyển |
+| Nhà tuyển dụng | `hr@fptsoftware.com` | CÔNG TY TNHH PHẦN MỀM FPT — có sẵn tin tuyển dụng và hồ sơ ứng tuyển |
 | Nhà tuyển dụng | `hr@momo.vn` | M_Service (MoMo) |
-| Ứng viên | `minhanh.dev@gmail.com` | CV Python Backend Developer |
-| Ứng viên | `thaovy.fe@gmail.com` | CV ReactJS Frontend Developer |
-| Ứng viên | `hoangnam.da@gmail.com` | CV Data Analyst |
-| Ứng viên | `quocbao.civil@gmail.com` | CV Kỹ sư xây dựng |
+| Ứng viên | `minhkhoa.ai2026@gmail.com` | Nguyễn Minh Khoa (`CV_002_VI_NGUYEN_MINH_KHOA.pdf`) |
+| Ứng viên | `pham.dang.khoa.cv001@ungvien.vn` | Pham Dang Khoa (`CV_001_EN_EDUCATION.pdf`) |
+| Ứng viên | `tran.quoc.bao.cv003@ungvien.vn` | Trần Quốc Bảo (`CV_003_EN_Candidate_CV.pdf`) |
+| Ứng viên | `hung.le.mkt@gmail.com` | Lê Văn Hùng (`CV_004_VI_LE_VAN_HUNG.pdf`) |
+
+*(Ghi chú: Nếu khởi tạo mới hoàn toàn khi chưa có `database/mongodb_collections.json`, `web/src/lib/db/store.ts` sẽ seed nhóm tài khoản ứng viên mặc định `minhanh.dev@gmail.com`, `thaovy.fe@gmail.com`, `hoangnam.da@gmail.com`, `quocbao.civil@gmail.com`.)*
 
 Đăng ký tài khoản HR mới yêu cầu **Mã số thuế đang hoạt động và chưa được đăng ký** (10 số hoặc 13 số dạng `XXXXXXXXXX-NNN`).
 
