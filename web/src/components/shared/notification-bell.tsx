@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bell,
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -90,6 +92,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
   const router = useRouter();
   const { data } = useNotifications(!!user);
   const markRead = useMarkNotificationsRead();
+  const [open, setOpen] = useState(false);
 
   if (!user) return null;
 
@@ -97,6 +100,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
   const unread = data?.unread ?? 0;
 
   const handleSelect = (n: NotificationRecord) => {
+    setOpen(false);
     if (!n.read) {
       markRead.mutate({ ids: [n.id] });
     }
@@ -106,7 +110,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           type="button"
@@ -131,7 +135,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
 
       <DropdownMenuContent
         align="end"
-        className="w-[340px] rounded-[16px] p-0 shadow-xl sm:w-[380px]"
+        className="w-[min(340px,calc(100vw-1rem))] rounded-[16px] p-0 shadow-xl sm:w-[380px]"
       >
         <div className="flex items-center justify-between border-b border-[#EBEBEB] px-4 py-3">
           <div className="flex items-center gap-2">
@@ -173,13 +177,11 @@ export function NotificationBell({ light }: { light?: boolean }) {
             </div>
           ) : (
             notifications.map((n) => (
-              <Button
+              <DropdownMenuItem
                 key={n.id}
-                type="button"
-                variant="ghost"
-                onClick={() => handleSelect(n)}
+                onSelect={() => handleSelect(n)}
                 className={cn(
-                  "flex h-auto w-full items-start justify-start gap-3 rounded-none px-4 py-3 text-left font-normal whitespace-normal transition-colors hover:bg-[#F8FAFC]",
+                  "flex h-auto w-full cursor-pointer items-start justify-start gap-3 rounded-none px-4 py-3 text-left font-normal whitespace-normal transition-colors focus:bg-[#F8FAFC]",
                   !n.read && "bg-[#F5F9FF]/70"
                 )}
               >
@@ -205,7 +207,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
                     {formatRelativeVi(n.created_at)}
                   </p>
                 </div>
-              </Button>
+              </DropdownMenuItem>
             ))
           )}
         </div>

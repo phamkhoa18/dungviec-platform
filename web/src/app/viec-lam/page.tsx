@@ -28,7 +28,7 @@ export default function JobsPage() {
       <main className="mx-auto max-w-[1140px] px-4 py-5 xl:px-0">
         <nav
           aria-label="Breadcrumb"
-          className="mb-3 flex items-center gap-1.5 text-[13px] text-[#777777]"
+          className="mb-2 flex items-center gap-1.5 text-[13px] text-[#777777]"
         >
           <Link href="/" className="hover:text-[#306BD9]">
             Đúng Việc
@@ -39,9 +39,13 @@ export default function JobsPage() {
           </span>
         </nav>
 
+        <h1 className="mb-3 text-[20px] font-bold text-[#222222] sm:text-[22px]">
+          Việc làm đang tuyển dụng
+        </h1>
+
         <Suspense
           fallback={
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton key={i} className="h-32 rounded-xl bg-white" />
               ))}

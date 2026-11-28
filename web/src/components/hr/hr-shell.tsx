@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -164,28 +164,8 @@ export function HrShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          {/* Điều hướng trên màn hình nhỏ */}
-          <nav
-            className="flex gap-1 overflow-x-auto border-t border-[#F0F0F0] px-3 py-1.5 md:hidden"
-            aria-label="Điều hướng nhà tuyển dụng"
-          >
-            {NAV.map((n) => {
-              const active = pathname.startsWith(n.href);
-              return (
-                <Link
-                  key={n.href}
-                  href={n.href}
-                  className={cn(
-                    "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12.5px]",
-                    active ? "bg-[#EBF2FF] font-bold text-[#306BD9]" : "font-medium text-[#555555]"
-                  )}
-                >
-                  <n.icon className="size-4" />
-                  {n.label}
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Điều hướng trên màn hình nhỏ — tự cuộn tab đang chọn vào tầm nhìn */}
+          <MobileHrNav pathname={pathname} />
         </header>
 
         <main className="mx-auto max-w-[1240px] px-4 py-6 md:py-8">{children}</main>
@@ -214,5 +194,43 @@ export function PageHeader({
       </div>
       {actions}
     </div>
+  );
+}
+
+/** Thanh điều hướng cuộn ngang trên mobile tự đưa tab đang chọn vào giữa màn hình. */
+function MobileHrNav({ pathname }: { pathname: string }) {
+  const activeRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({
+      behavior: "auto",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [pathname]);
+
+  return (
+    <nav
+      className="flex gap-1 overflow-x-auto border-t border-[#F0F0F0] px-3 py-1.5 md:hidden"
+      aria-label="Điều hướng nhà tuyển dụng"
+    >
+      {NAV.map((n) => {
+        const active = pathname.startsWith(n.href);
+        return (
+          <Link
+            key={n.href}
+            href={n.href}
+            ref={active ? activeRef : undefined}
+            className={cn(
+              "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12.5px]",
+              active ? "bg-[#EBF2FF] font-bold text-[#306BD9]" : "font-medium text-[#555555]"
+            )}
+          >
+            <n.icon className="size-4" />
+            {n.label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

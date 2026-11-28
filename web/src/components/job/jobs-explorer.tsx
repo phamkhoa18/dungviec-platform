@@ -195,12 +195,12 @@ function JobsExplorerInner({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-[260px_1fr]">
+      <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="hidden h-fit rounded-xl bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.05)] md:sticky md:top-20 md:block">
           {Filters}
         </aside>
 
-        <div>
+        <div className="min-w-0">
           {/* Thanh tìm kiếm, chọn địa điểm & sắp xếp */}
           <div className="mb-3 flex flex-col gap-2 rounded-xl bg-white p-3 shadow-[0_1px_4px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center">
             <div className="relative min-w-0 flex-1">
@@ -285,7 +285,7 @@ function JobsExplorerInner({
           </div>
 
           {list.length ? (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
               {list.map((j) => (
                 <JobCard key={j.slug} job={j} />
               ))}

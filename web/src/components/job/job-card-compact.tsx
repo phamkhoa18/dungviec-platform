@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BadgeCheck, MapPin } from "lucide-react";
+import { BadgeCheck, Flame, MapPin } from "lucide-react";
 import type { Job } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +54,15 @@ export function JobCardCompact({ job, className }: { job: Job; className?: strin
           )}
         </p>
 
-        <p className="text-[15px] font-bold leading-5 text-[#F0325E]">{job.salary}</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          <p className="text-[15px] font-bold leading-5 text-[#F0325E]">{job.salary}</p>
+          {job.urgent && (
+            <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-[#FFF7ED] px-1.5 py-0.5 text-[10px] font-bold text-[#EA580C] ring-1 ring-[#FED7AA]">
+              <Flame className="size-2.5" />
+              Gấp
+            </span>
+          )}
+        </div>
 
         <div className="mt-0.5 flex min-w-0 items-center gap-1 text-[12.5px] leading-[16px] text-[#8C8C8C]">
           <MapPin className="size-3.5 shrink-0 text-[#C0C0C0]" aria-hidden />

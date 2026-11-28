@@ -108,9 +108,9 @@ export default async function PublicCompanyPage({
           </div>
         </div>
 
-        <div className="mx-auto mt-6 grid max-w-[1140px] gap-6 px-4 lg:grid-cols-[1.6fr_1fr]">
+        <div className="mx-auto mt-6 grid min-w-0 max-w-[1140px] grid-cols-1 gap-6 px-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           {/* Cột trái: Giới thiệu + Danh sách việc làm */}
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <section className="rounded-2xl border border-[#E2E8F0] bg-white p-5 sm:p-6">
               <h2 className="text-[17px] font-extrabold text-[#222222]">
                 Giới thiệu doanh nghiệp
@@ -122,7 +122,7 @@ export default async function PublicCompanyPage({
             </section>
 
             <section className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="flex items-center gap-2 text-[17px] font-extrabold text-[#222222]">
                   <Briefcase className="size-5 text-[#306BD9]" />
                   Vị trí đang tuyển dụng ({jobs.length})
@@ -140,7 +140,7 @@ export default async function PublicCompanyPage({
                   Hiện tại doanh nghiệp chưa có vị trí nào đang mở tuyển.
                 </div>
               ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
                   {jobs.map((job) => (
                     <JobCard key={job.id} job={job} />
                   ))}

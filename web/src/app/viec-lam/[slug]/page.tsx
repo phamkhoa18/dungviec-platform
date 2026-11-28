@@ -11,6 +11,7 @@ import {
   UserCheck,
   Wallet,
   CheckCircle2,
+  Flame,
 } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -132,9 +133,9 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
           <span className="truncate font-medium text-[#222222]">{job.title}</span>
         </nav>
 
-        <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
+        <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
           {/* CỘT TRÁI: THÔNG TIN CHI TIẾT TIN TUYỂN DỤNG */}
-          <div className="space-y-4">
+          <div className="min-w-0 space-y-4">
             {/* 1. Khối Header Tin Đăng */}
             <section className="rounded-xl bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -154,9 +155,17 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-[20px] font-bold leading-7 text-[#222222] sm:text-[22px]">
-                    {job.title}
-                  </h1>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-[20px] font-bold leading-7 text-[#222222] sm:text-[22px]">
+                      {job.title}
+                    </h1>
+                    {job.urgent && (
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#FFF7ED] px-2.5 py-0.5 text-[11.5px] font-bold text-[#EA580C] ring-1 ring-[#FED7AA]">
+                        <Flame className="size-3.5" />
+                        Tuyển gấp
+                      </span>
+                    )}
+                  </div>
 
                   <p className="mt-1 text-[14px] font-medium text-[#666666]">
                     {companyDisplayName}
@@ -339,6 +348,7 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
                 </div>
               ) : (
               <EmployerContactActions
+                jobId={job.id}
                 jobSlug={job.slug}
                 jobTitle={job.title}
                 companyName={companyDisplayName}
@@ -371,7 +381,7 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
               Xem tất cả →
             </Link>
           </div>
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {relatedJobs.map((j) => (
               <JobCardCompact key={j.slug} job={j} />
             ))}

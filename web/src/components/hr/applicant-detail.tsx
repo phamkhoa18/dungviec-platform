@@ -68,7 +68,22 @@ import {
 import type { AiEvaluationRecord, InterviewRecord } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
-const pct = (v: number) => Math.round(v <= 1 ? v * 100 : v);
+/** Chia đều phần trăm bằng quy tắc số dư lớn nhất để tổng luôn đạt đúng 100%. */
+function distributePercentages(values: [number, number, number]): [number, number, number] {
+  const scaled = values.map((v) => (v <= 1 ? v * 100 : v));
+  const totalRaw = scaled.reduce((a, b) => a + b, 0);
+  if (totalRaw <= 0) return [0, 0, 0];
+  const normalized = scaled.map((v) => (v / totalRaw) * 100);
+  const floored = normalized.map((v) => Math.floor(v));
+  const remainder = 100 - floored.reduce((a, b) => a + b, 0);
+  const order = normalized
+    .map((v, idx) => ({ idx, frac: v - floored[idx] }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let i = 0; i < remainder; i++) {
+    floored[order[i % order.length].idx] += 1;
+  }
+  return floored as [number, number, number];
+}
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("vi-VN", {
@@ -276,21 +291,32 @@ function AiTab({ app }: { app: EnrichedApplication }) {
               </div>
 
               <div className="flex flex-col justify-center space-y-2.5 rounded-2xl border border-[#F0F2F6] p-4">
-                <ProbBar
-                  label="Mức độ Rất phù hợp"
-                  value={pct(ev.prob_good)}
-                  color={FIT_META["Good Fit"].color}
-                />
-                <ProbBar
-                  label="Mức độ Tiềm năng"
-                  value={pct(ev.prob_potential)}
-                  color={FIT_META["Potential Fit"].color}
-                />
-                <ProbBar
-                  label="Mức độ Chưa phù hợp"
-                  value={pct(ev.prob_no_fit)}
-                  color={FIT_META["No Fit"].color}
-                />
+                {(() => {
+                  const [pGood, pPotential, pNoFit] = distributePercentages([
+                    ev.prob_good,
+                    ev.prob_potential,
+                    ev.prob_no_fit,
+                  ]);
+                  return (
+                    <>
+                      <ProbBar
+                        label="Mức độ Rất phù hợp"
+                        value={pGood}
+                        color={FIT_META["Good Fit"].color}
+                      />
+                      <ProbBar
+                        label="Mức độ Tiềm năng"
+                        value={pPotential}
+                        color={FIT_META["Potential Fit"].color}
+                      />
+                      <ProbBar
+                        label="Mức độ Chưa phù hợp"
+                        value={pNoFit}
+                        color={FIT_META["No Fit"].color}
+                      />
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
@@ -947,8 +973,8 @@ export function ApplicantDetail({
       <Panel className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h2 className="truncate text-[20px] font-extrabold text-[#111111]">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="break-words text-[18px] font-extrabold text-[#111111] sm:text-[20px]">
                 {c?.full_name ??
                   app.cv_snapshot?.parsed_data?.personal?.full_name ??
                   "Ứng viên"}

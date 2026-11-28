@@ -5,6 +5,7 @@
 import { categories, type Job } from "@/lib/data";
 import { enforceJobDeadlines, readDb, type CompanyRecord, type JobRecord } from "@/lib/db/store";
 import { isDeadlinePassed } from "@/lib/recruitment/status";
+import { provinceKey } from "@/lib/services/location-types";
 
 const CITY_HINTS: [RegExp, string][] = [
   [/hồ chí minh|tp\.?\s?hcm|sài gòn|thủ đức/i, "TP.HCM"],
@@ -33,6 +34,29 @@ const lines = (s: string | null | undefined) =>
     .split("\n")
     .map((x) => x.replace(/^\s*[-•*]\s*/, "").trim())
     .filter(Boolean);
+
+/** Chỉ dùng địa chỉ trụ sở công ty khi khớp tỉnh/thành với nơi làm việc của tin. */
+function resolveJobAddress(
+  job: JobRecord,
+  company?: CompanyRecord | null
+): string {
+  if (job.work_address?.trim()) return job.work_address.trim();
+  const jobLocKey = provinceKey(job.location || "");
+  if (!jobLocKey || jobLocKey === "toan quoc") {
+    return company?.address || job.location;
+  }
+  if (jobLocKey === "remote") return job.location;
+  if (company?.address) {
+    const compAddrKey = provinceKey(company.address);
+    const compPartsMatch = company.address
+      .split(",")
+      .some((part) => provinceKey(part) === jobLocKey);
+    if (compPartsMatch || compAddrKey.includes(jobLocKey)) {
+      return company.address;
+    }
+  }
+  return job.location;
+}
 
 function salaryMaxOf(job: JobRecord): number {
   if (job.salary_max) return job.salary_max;
@@ -89,13 +113,13 @@ export function toPublicJob(job: JobRecord, company: CompanyRecord | null | unde
     posted: relativePosted(job.published_at || job.created_at),
     urgent: !!job.urgent,
     partner: !!company?.verified,
-    tags: job.tags?.length ? job.tags : job.required_skills.slice(0, 4),
+    tags: job.required_skills.length > 0 ? job.required_skills : (job.tags ?? []),
     payType: job.pay_type || "Theo tháng",
     ageRange: job.age_range || undefined,
     education: job.education_required || undefined,
     gender: job.gender_required || undefined,
     vacancies: job.vacancies || undefined,
-    address: job.work_address || company?.address || job.location,
+    address: resolveJobAddress(job, company),
     description: lines(job.description || job.jd_text),
     requirements: lines(job.requirements !== job.description ? job.requirements : ""),
     benefits: lines(job.benefits),

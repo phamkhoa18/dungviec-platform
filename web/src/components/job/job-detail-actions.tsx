@@ -7,12 +7,14 @@ import { ApplyDialog } from "@/components/job/apply-dialog";
  * chỉ còn nút "Ứng tuyển ngay" kết nối POST /api/applications.
  */
 export function EmployerContactActions({
+  jobId,
   jobSlug,
   jobTitle,
   companyName,
   jdText,
   requiredSkills,
 }: {
+  jobId?: number;
   jobSlug?: string;
   jobTitle: string;
   companyName: string;
@@ -22,6 +24,7 @@ export function EmployerContactActions({
   return (
     <div className="space-y-2.5">
       <ApplyDialog
+        jobId={jobId}
         jobSlug={jobSlug}
         jobTitle={jobTitle}
         companyName={companyName}

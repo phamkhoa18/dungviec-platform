@@ -13,6 +13,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { CATALOG_VERSION, importStaticCatalog } from "@/lib/jobs/static-catalog";
+import { normalizeStatus } from "@/lib/recruitment/status";
 import type {
   AiEvaluationRecord,
   ApplicationNoteRecord,
@@ -911,11 +912,27 @@ export function getUserWithContext(userId: number) {
       ? db.candidate_profiles.find((p) => p.user_id === user.id) || null
       : null;
 
+  const appliedJobIds =
+    user.role === "candidate"
+      ? Array.from(
+          new Set(
+            db.applications
+              .filter(
+                (a) =>
+                  a.candidate_id === user.id &&
+                  normalizeStatus(a.status) !== "withdrawn"
+              )
+              .map((a) => a.job_id)
+          )
+        )
+      : [];
+
   return {
     user: sanitizeUser(user),
     company,
     cv_profiles: cvProfiles,
     candidate_profile: candidateProfile,
+    applied_job_ids: appliedJobIds,
   };
 }
 

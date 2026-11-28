@@ -34,10 +34,12 @@ type Step = "form" | "loading" | "done";
 const MAX = 5 * 1024 * 1024;
 
 export function ApplyDialog({
+  jobId,
   jobSlug,
   jobTitle,
   className,
 }: {
+  jobId?: number;
   jobSlug?: string;
   jobTitle: string;
   companyName?: string;
@@ -45,7 +47,7 @@ export function ApplyDialog({
   requiredSkills?: string[];
   className?: string;
 }) {
-  const { user, cvProfiles, refreshAuth } = useAuth();
+  const { user, cvProfiles, appliedJobIds, refreshAuth } = useAuth();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const defaultCv = cvProfiles.find((c) => c.is_default) ?? cvProfiles[0];
@@ -54,6 +56,11 @@ export function ApplyDialog({
   );
   const [coverLetter, setCoverLetter] = useState("");
   const [step, setStep] = useState<Step>("form");
+  const alreadyApplied =
+    !!jobId &&
+    user?.role === "candidate" &&
+    appliedJobIds.includes(jobId) &&
+    !open;
 
   const onDrop = useCallback((acc: File[], rej: FileRejection[]) => {
     if (rej.length) {
@@ -117,6 +124,9 @@ export function ApplyDialog({
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 409) {
+          await refreshAuth();
+        }
         toast.error(data.error || "Không thể nộp hồ sơ ứng tuyển.");
         setStep("form");
         return;
@@ -148,6 +158,29 @@ export function ApplyDialog({
     }
   };
 
+  if (alreadyApplied) {
+    return (
+      <div className="space-y-2">
+        <Button
+          type="button"
+          size="lg"
+          disabled
+          className="h-11 w-full rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] text-[15px] font-bold text-[#15803D] opacity-100 shadow-none"
+        >
+          <CheckCircle2 className="size-4" />
+          Đã ứng tuyển
+        </Button>
+        <Link
+          href="/ung-vien/tai-khoan?tab=applications"
+          className="flex items-center justify-center gap-1 text-[12.5px] font-semibold text-[#306BD9] hover:underline"
+        >
+          Xem trạng thái đơn ứng tuyển
+          <ExternalLink className="size-3.5" />
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogTrigger asChild>
@@ -156,7 +189,7 @@ export function ApplyDialog({
           Ứng tuyển ngay
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="max-h-[90vh] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] overflow-x-hidden overflow-y-auto rounded-2xl p-4 sm:max-w-xl sm:p-6">
         {step === "form" && (
           <>
             <DialogHeader>
@@ -199,9 +232,9 @@ export function ApplyDialog({
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="min-w-0 space-y-4">
                 {cvProfiles.length > 0 && (
-                  <div>
+                  <div className="min-w-0">
                     <Label className="mb-1.5 block text-[12.5px] font-bold text-[#333333]">
                       Chọn CV đã lưu của bạn:
                     </Label>
@@ -211,27 +244,26 @@ export function ApplyDialog({
                         setSelectedCvId(Number(val));
                         setFile(null);
                       }}
-                      className="gap-1.5"
+                      className="min-w-0 grid-cols-1 gap-1.5"
                     >
                       {cvProfiles.map((cv) => (
                         <Label
                           key={cv.id}
                           htmlFor={`apply-cv-${cv.id}`}
-                          className={`flex cursor-pointer items-center justify-between rounded-xl border p-3 text-[13px] font-normal transition-colors ${
+                          className={`flex w-full min-w-0 cursor-pointer items-center justify-between gap-2 overflow-hidden rounded-xl border p-3 text-[13px] font-normal transition-colors ${
                             selectedCvId === cv.id
                               ? "border-[#306BD9] bg-[#F2F6FC]"
                               : "border-[#E5E7EB] bg-white hover:bg-[#FAFAFA]"
                           }`}
                         >
-                          <div className="flex min-w-0 items-center gap-2.5">
-                            <RadioGroupItem value={String(cv.id)} id={`apply-cv-${cv.id}`} />
-                            <div className="min-w-0">
+                          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                            <RadioGroupItem value={String(cv.id)} id={`apply-cv-${cv.id}`} className="shrink-0" />
+                            <div className="min-w-0 flex-1">
                               <p className="truncate font-bold text-[#222222]">
                                 {cv.cv_title}
                               </p>
-                              <p className="text-[11.5px] text-[#666666]">
-                                {cv.file_name} · {cv.extracted_skills.length} kỹ
-                                năng · {cv.years_of_experience} năm kinh nghiệm
+                              <p className="truncate text-[11.5px] text-[#666666]">
+                                {cv.file_name} · {cv.extracted_skills.length} kỹ năng nhận diện
                               </p>
                             </div>
                           </div>

@@ -1,9 +1,8 @@
 "use client";
 
 import {
-  Briefcase,
   CheckCircle2,
-  GraduationCap,
+  FileText,
   Scale,
   Sparkles,
   Star,
@@ -34,15 +33,16 @@ export function CompareDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-[96vw] overflow-y-auto rounded-2xl sm:max-w-5xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-[19px] font-extrabold">
-            <Scale className="size-5 text-[#306BD9]" />
-            So sánh song song ứng viên ({applications.length} hồ sơ)
+      <DialogContent className="max-h-[90vh] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] overflow-x-hidden overflow-y-auto rounded-2xl p-4 sm:max-w-5xl sm:p-6">
+        <DialogHeader className="min-w-0 pr-8 text-left">
+          <DialogTitle className="flex flex-wrap items-start gap-2 text-[17px] leading-snug font-bold sm:text-[19px]">
+            <Scale className="mt-0.5 size-5 shrink-0 text-[#306BD9]" />
+            <span className="min-w-0">
+              So sánh song song ứng viên ({applications.length} hồ sơ)
+            </span>
           </DialogTitle>
-          <DialogDescription className="text-[13px]">
-            Đối chiếu trực tiếp điểm phù hợp AI, kỹ năng đáp ứng, kinh nghiệm và
-            học vấn giữa các ứng viên.
+          <DialogDescription className="text-[12.5px] leading-relaxed sm:text-[13px]">
+            Đối chiếu trực tiếp điểm phù hợp AI, xác suất mô hình BAAI/bge-m3, kỹ năng đáp ứng và thiếu so với JD.
           </DialogDescription>
         </DialogHeader>
 
@@ -52,26 +52,13 @@ export function CompareDialog({
           </p>
         ) : (
           <div
-            className="grid gap-4 pt-2"
-            style={{
-              gridTemplateColumns: `repeat(${Math.min(
-                3,
-                applications.length
-              )}, minmax(260px, 1fr))`,
-            }}
+            className={`grid min-w-0 grid-cols-1 gap-4 pt-2 md:grid-cols-2 ${
+              applications.length >= 3 ? "lg:grid-cols-3" : ""
+            }`}
           >
             {applications.slice(0, 3).map((app) => {
               const ev = app.ai_evaluation;
-              const parsed =
-                app.cv_snapshot?.parsed_data ?? app.cv_profile?.parsed_data;
-              const expYears =
-                app.cv_snapshot?.years_of_experience ??
-                app.cv_profile?.years_of_experience ??
-                0;
-              const eduLevel =
-                app.cv_snapshot?.education_level ??
-                app.cv_profile?.education_level ??
-                "—";
+              const cvFileName = app.cv_snapshot?.file_name ?? app.cv_profile?.file_name;
               const scoreColor = ev
                 ? FIT_META[ev.predicted_label].color
                 : "#94A3B8";
@@ -136,27 +123,32 @@ export function CompareDialog({
                       </span>
                     </div>
 
-                    {/* Kinh nghiệm & Học vấn */}
+                    {/* Phân bố xác suất BGE-M3 & Tệp CV */}
                     <div className="grid grid-cols-2 gap-2 text-[12px]">
                       <div className="rounded-xl bg-white p-2.5">
-                        <p className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                          <Briefcase className="size-3 text-[#306BD9]" />
-                          Kinh nghiệm
+                        <p className="text-[11px] text-[#64748B]">
+                          P(Rất phù hợp)
                         </p>
-                        <p className="mt-0.5 font-extrabold text-[#222222]">
-                          {expYears} năm
+                        <p className="mt-0.5 font-extrabold text-[#15803D] tabular-nums">
+                          {ev ? `${Math.round((ev.prob_good ?? 0) * 100)}%` : "—"}
                         </p>
                       </div>
                       <div className="rounded-xl bg-white p-2.5">
-                        <p className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                          <GraduationCap className="size-3 text-[#16A34A]" />
-                          Học vấn
+                        <p className="text-[11px] text-[#64748B]">
+                          P(Tiềm năng)
                         </p>
-                        <p className="mt-0.5 truncate font-extrabold text-[#222222]">
-                          {eduLevel}
+                        <p className="mt-0.5 font-extrabold text-[#B45309] tabular-nums">
+                          {ev ? `${Math.round((ev.prob_potential ?? 0) * 100)}%` : "—"}
                         </p>
                       </div>
                     </div>
+
+                    {cvFileName && (
+                      <div className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-[11.5px] text-[#475569]">
+                        <FileText className="size-3.5 shrink-0 text-[#306BD9]" />
+                        <span className="truncate font-medium">{cvFileName}</span>
+                      </div>
+                    )}
 
                     {/* Kỹ năng khớp */}
                     <div className="rounded-xl bg-white p-3">
@@ -206,34 +198,17 @@ export function CompareDialog({
                       </div>
                     </div>
 
-                    {/* Nội dung kinh nghiệm gần nhất */}
-                    {parsed && parsed.experiences.length > 0 && (() => {
-                      const exp = parsed.experiences[0];
-                      const hasDetail = exp.position || exp.company || (exp.description?.length > 0);
-                      if (!hasDetail) return null;
-                      return (
-                        <div className="rounded-xl bg-white p-3 text-[12px]">
-                          <p className="font-bold text-[#334155]">
-                            Kinh nghiệm gần nhất
-                          </p>
-                          {exp.position && (
-                            <p className="mt-1 font-semibold text-[#1E3A8A]">
-                              {exp.position}
-                            </p>
-                          )}
-                          {exp.company && (
-                            <p className="text-[11.5px] text-[#64748B]">
-                              {exp.company}
-                            </p>
-                          )}
-                          {!exp.position && !exp.company && exp.description?.length > 0 && (
-                            <p className="mt-1 text-[11.5px] text-[#475569] line-clamp-2">
-                              {exp.description.slice(0, 2).join(" · ")}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })()}
+                    {/* Nhận xét AI đối chiếu CV vs JD */}
+                    {ev?.explanation && (
+                      <div className="rounded-xl bg-white p-3 text-[12px]">
+                        <p className="font-bold text-[#334155]">
+                          Nhận xét AI đối chiếu JD
+                        </p>
+                        <p className="mt-1 text-[11.5px] leading-relaxed text-[#475569]">
+                          {ev.explanation}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {onSelectCandidate && (

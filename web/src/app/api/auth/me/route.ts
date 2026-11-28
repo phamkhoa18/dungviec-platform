@@ -10,13 +10,20 @@ import {
 export async function GET() {
   const sessionCtx = await getSessionUser();
   if (!sessionCtx) {
-    return NextResponse.json({ user: null, company: null, cv_profiles: [], candidate_profile: null });
+    return NextResponse.json({
+      user: null,
+      company: null,
+      cv_profiles: [],
+      candidate_profile: null,
+      applied_job_ids: [],
+    });
   }
   return NextResponse.json({
     user: sessionCtx.user,
     company: sessionCtx.company,
     cv_profiles: sessionCtx.cv_profiles,
     candidate_profile: sessionCtx.candidate_profile,
+    applied_job_ids: sessionCtx.applied_job_ids,
   });
 }
 

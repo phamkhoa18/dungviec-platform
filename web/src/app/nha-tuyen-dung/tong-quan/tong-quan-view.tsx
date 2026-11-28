@@ -173,7 +173,7 @@ export default function HrOverviewPage() {
           )}
 
           {/* 4 Thẻ KPI chính */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <KpiCard
               icon={Briefcase}
               label="Tin đang tuyển"
@@ -218,7 +218,7 @@ export default function HrOverviewPage() {
           </div>
 
           {/* Hàng 2: Phễu chuyển đổi tuyển dụng + Biểu đồ hồ sơ theo ngày */}
-          <div className="grid gap-5 lg:grid-cols-[1.15fr_1fr]">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
             <Panel className="p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -463,8 +463,8 @@ export default function HrOverviewPage() {
           {/* Hàng 3: Hiệu quả theo từng tin tuyển dụng + Hoạt động gần đây */}
           <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
             <Panel className="overflow-hidden">
-              <div className="flex items-center justify-between border-b border-[#F0F2F6] px-5 py-4">
-                <div>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F0F2F6] px-4 py-3.5 sm:px-5 sm:py-4">
+                <div className="min-w-0">
                   <h2 className="text-[15px] font-extrabold">
                     Hiệu quả theo từng tin tuyển dụng
                   </h2>
@@ -475,7 +475,7 @@ export default function HrOverviewPage() {
                 </div>
                 <Link
                   href="/nha-tuyen-dung/tin-tuyen-dung"
-                  className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#306BD9] hover:underline"
+                  className="inline-flex shrink-0 items-center gap-1 text-[12.5px] font-bold text-[#306BD9] hover:underline"
                 >
                   Quản lý tin <ArrowRight className="size-3.5" />
                 </Link>
@@ -487,74 +487,135 @@ export default function HrOverviewPage() {
                   hint="Hãy đăng tin tuyển dụng để bắt đầu thu hút ứng viên."
                 />
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-[12.5px]">
-                    <thead className="bg-[#F8FAFC] text-left text-[11px] font-bold uppercase text-[#64748B]">
-                      <tr>
-                        <th className="px-4 py-2.5">Vị trí</th>
-                        <th className="px-2.5 py-2.5 text-center">Lượt xem</th>
-                        <th className="px-2.5 py-2.5 text-center">Hồ sơ</th>
-                        <th className="px-2.5 py-2.5 text-center">Rất hợp</th>
-                        <th className="px-2.5 py-2.5 text-center">Điểm TB</th>
-                        <th className="px-4 py-2.5 text-right">Trạng thái</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#F0F2F6]">
-                      {data.per_job.slice(0, 8).map((j) => {
-                        const st =
-                          JOB_STATUS_META[j.status] ?? JOB_STATUS_META.active;
-                        return (
-                          <tr key={j.id} className="hover:bg-[#FAFBFE]">
-                            <td className="px-4 py-3">
+                <>
+                  {/* Thẻ gọn trên mobile (< 900px) để không bị tràn cột */}
+                  <div className="divide-y divide-[#F0F2F6] md:hidden">
+                    {data.per_job.slice(0, 8).map((j) => {
+                      const st =
+                        JOB_STATUS_META[j.status] ?? JOB_STATUS_META.active;
+                      return (
+                        <div key={j.id} className="space-y-2 p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
                               <Link
                                 href={`/nha-tuyen-dung/ung-vien?jobId=${j.id}`}
-                                className="font-bold text-[#111111] hover:text-[#306BD9]"
+                                className="block font-bold leading-snug text-[#111111] hover:text-[#306BD9]"
                               >
                                 {j.title}
                               </Link>
                               {j.new_count > 0 && (
-                                <span className="ml-1.5 rounded-full bg-[#FEE2E2] px-1.5 py-0.2 text-[10px] font-extrabold text-[#DC2626]">
+                                <span className="mt-1 inline-block whitespace-nowrap rounded-full bg-[#FEE2E2] px-2 py-0.5 text-[10px] font-extrabold text-[#DC2626]">
                                   +{j.new_count} mới
                                 </span>
                               )}
-                            </td>
-                            <td className="px-2.5 py-3 text-center text-[#64748B]">
-                              <span className="inline-flex items-center gap-1">
-                                <Eye className="size-3" />
-                                {j.view_count}
-                              </span>
-                            </td>
-                            <td className="px-2.5 py-3 text-center font-bold text-[#306BD9]">
+                            </div>
+                            <span
+                              className={cn(
+                                "inline-flex shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-bold",
+                                st.badge
+                              )}
+                            >
+                              {st.label}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-4 gap-2 rounded-xl bg-[#F8FAFC] px-3 py-2 text-center text-[11.5px]">
+                            <div>
+                              <p className="text-[#64748B]">Lượt xem</p>
+                              <p className="font-bold text-[#334155]">{j.view_count}</p>
+                            </div>
+                            <div>
+                              <p className="text-[#64748B]">Hồ sơ</p>
                               <Link
                                 href={`/nha-tuyen-dung/ung-vien?jobId=${j.id}`}
-                                className="inline-flex items-center gap-1 hover:underline"
+                                className="font-bold text-[#306BD9] hover:underline"
                               >
-                                <Users className="size-3" />
                                 {j.applications_count}
                               </Link>
-                            </td>
-                            <td className="px-2.5 py-3 text-center font-bold text-[#15803D]">
-                              {j.good_fit_count}
-                            </td>
-                            <td className="px-2.5 py-3 text-center font-extrabold text-[#1E3A8A]">
-                              {j.avg_ai_score ?? "—"}
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <span
-                                className={cn(
-                                  "inline-flex rounded-full border px-2 py-0.5 text-[11px] font-bold",
-                                  st.badge
+                            </div>
+                            <div>
+                              <p className="text-[#64748B]">Rất hợp</p>
+                              <p className="font-bold text-[#15803D]">{j.good_fit_count}</p>
+                            </div>
+                            <div>
+                              <p className="text-[#64748B]">Điểm TB</p>
+                              <p className="font-extrabold text-[#1E3A8A]">{j.avg_ai_score ?? "—"}</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Bảng đầy đủ trên desktop (>= 900px) */}
+                  <div className="hidden overflow-x-auto md:block">
+                    <table className="w-full text-[12.5px]">
+                      <thead className="bg-[#F8FAFC] text-left text-[11px] font-bold uppercase text-[#64748B]">
+                        <tr>
+                          <th className="px-4 py-2.5">Vị trí</th>
+                          <th className="px-2.5 py-2.5 text-center">Lượt xem</th>
+                          <th className="px-2.5 py-2.5 text-center">Hồ sơ</th>
+                          <th className="px-2.5 py-2.5 text-center">Rất hợp</th>
+                          <th className="px-2.5 py-2.5 text-center">Điểm TB</th>
+                          <th className="px-4 py-2.5 text-right">Trạng thái</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#F0F2F6]">
+                        {data.per_job.slice(0, 8).map((j) => {
+                          const st =
+                            JOB_STATUS_META[j.status] ?? JOB_STATUS_META.active;
+                          return (
+                            <tr key={j.id} className="hover:bg-[#FAFBFE]">
+                              <td className="px-4 py-3">
+                                <Link
+                                  href={`/nha-tuyen-dung/ung-vien?jobId=${j.id}`}
+                                  className="font-bold text-[#111111] hover:text-[#306BD9]"
+                                >
+                                  {j.title}
+                                </Link>
+                                {j.new_count > 0 && (
+                                  <span className="ml-1.5 inline-block whitespace-nowrap rounded-full bg-[#FEE2E2] px-1.5 py-0.2 text-[10px] font-extrabold text-[#DC2626]">
+                                    +{j.new_count} mới
+                                  </span>
                                 )}
-                              >
-                                {st.label}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                              </td>
+                              <td className="px-2.5 py-3 text-center text-[#64748B]">
+                                <span className="inline-flex items-center gap-1">
+                                  <Eye className="size-3" />
+                                  {j.view_count}
+                                </span>
+                              </td>
+                              <td className="px-2.5 py-3 text-center font-bold text-[#306BD9]">
+                                <Link
+                                  href={`/nha-tuyen-dung/ung-vien?jobId=${j.id}`}
+                                  className="inline-flex items-center gap-1 hover:underline"
+                                >
+                                  <Users className="size-3" />
+                                  {j.applications_count}
+                                </Link>
+                              </td>
+                              <td className="px-2.5 py-3 text-center font-bold text-[#15803D]">
+                                {j.good_fit_count}
+                              </td>
+                              <td className="px-2.5 py-3 text-center font-extrabold text-[#1E3A8A]">
+                                {j.avg_ai_score ?? "—"}
+                              </td>
+                              <td className="px-4 py-3 text-right whitespace-nowrap">
+                                <span
+                                  className={cn(
+                                    "inline-flex whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-bold",
+                                    st.badge
+                                  )}
+                                >
+                                  {st.label}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </Panel>
 

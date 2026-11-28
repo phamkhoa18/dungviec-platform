@@ -118,7 +118,7 @@ export default function HomePage() {
               Xem tất cả <ArrowRight className="size-4" />
             </Link>
           </div>
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             <Suspense
               fallback={Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="h-24 animate-pulse rounded-xl bg-[#F1F5F9]" />
@@ -132,7 +132,7 @@ export default function HomePage() {
         {/* 4. AI hoạt động thế nào */}
         <section className="rounded-xl bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
           <h2 className="mb-4 text-[19px] font-bold">AI hỗ trợ tuyển dụng như thế nào?</h2>
-          <div className="grid gap-3.5 md:grid-cols-3">
+          <div className="grid min-w-0 grid-cols-1 gap-3.5 md:grid-cols-3">
             {aiSteps.map((s) => (
               <div key={s.title} className="rounded-xl bg-[#F2F6FC] p-4">
                 <span className="grid size-10 place-items-center rounded-lg bg-white text-[#306BD9] shadow-xs">
