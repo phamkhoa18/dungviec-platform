@@ -302,8 +302,8 @@ export type CompanyInput = {
   industry: string;
   company_size: string;
   description: string;
-  logo_url?: string;
-  cover_url?: string;
+  logo_url?: string | null;
+  cover_url?: string | null;
   benefits?: string[];
   social_links?: { facebook?: string; linkedin?: string };
   company_name?: string;

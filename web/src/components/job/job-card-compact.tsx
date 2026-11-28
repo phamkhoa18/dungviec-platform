@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BadgeCheck, Flame, MapPin } from "lucide-react";
+import { CompanyLogoFrame } from "@/components/shared/user-avatar";
 import type { Job } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +11,6 @@ import { cn } from "@/lib/utils";
 export function JobCardCompact({ job, className }: { job: Job; className?: string }) {
   const companyDisplayName = job.companyName || "Doanh nghiệp";
   const logo = job.companyLogo || job.thumbnail || "";
-  const initial = companyDisplayName.trim()[0]?.toUpperCase() || "Đ";
 
   return (
     <article
@@ -19,25 +19,13 @@ export function JobCardCompact({ job, className }: { job: Job; className?: strin
         className
       )}
     >
-      <Link
-        href={`/viec-lam/${job.slug}`}
-        className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#F0F0F0] bg-[#FAFAFA]"
-      >
-        {logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logo}
-            alt={`${job.title} - ${companyDisplayName}`}
-            width={56}
-            height={56}
-            className="size-full object-contain p-1"
-            loading="lazy"
-          />
-        ) : (
-          <span className="grid size-full place-items-center bg-[#EBF2FF] text-base font-bold text-[#306BD9]">
-            {initial}
-          </span>
-        )}
+      <Link href={`/viec-lam/${job.slug}`} className="shrink-0">
+        <CompanyLogoFrame
+          src={logo}
+          name={companyDisplayName}
+          className="size-14 rounded-lg border-[#F0F0F0] bg-[#FAFAFA]"
+          fallbackClassName="text-base"
+        />
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">

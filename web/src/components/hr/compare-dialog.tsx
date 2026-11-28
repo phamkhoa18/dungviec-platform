@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FitBadge, StatusBadge } from "@/components/hr/ui-parts";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { FIT_META } from "@/lib/ai-thresholds";
 import type { EnrichedApplication } from "@/lib/hr-types";
 
@@ -72,13 +73,21 @@ export function CompareDialog({
                     {/* Thông tin định danh */}
                     <div className="border-b border-[#E2E8F0] pb-3">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <h3 className="truncate text-[16px] font-bold text-[#111111]">
-                            {app.candidate?.full_name ?? "Ứng viên"}
-                          </h3>
-                          <p className="truncate text-[12px] text-[#64748B]">
-                            {app.job?.title}
-                          </p>
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <UserAvatar
+                            src={app.candidate?.avatar_url}
+                            name={app.candidate?.full_name}
+                            className="size-9"
+                            fallbackClassName="text-[12px]"
+                          />
+                          <div className="min-w-0">
+                            <h3 className="truncate text-[16px] font-bold text-[#111111]">
+                              {app.candidate?.full_name ?? "Ứng viên"}
+                            </h3>
+                            <p className="truncate text-[12px] text-[#64748B]">
+                              {app.job?.title}
+                            </p>
+                          </div>
                         </div>
                         <StatusBadge status={app.status} />
                       </div>

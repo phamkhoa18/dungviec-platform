@@ -6,6 +6,7 @@ import {
   readDb,
   writeDb,
 } from "@/lib/db/store";
+import { deleteMediaByUrl, validateMediaUrl } from "@/lib/files/media-storage";
 
 export async function GET() {
   const sessionCtx = await getSessionUser();
@@ -67,8 +68,16 @@ export async function PUT(req: Request) {
       }
       user.phone = phone || null;
     }
-    if (typeof body.avatar_url === "string") {
-      user.avatar_url = body.avatar_url.trim() || null;
+    let prevAvatarToDelete: string | null = null;
+    if (body.avatar_url !== undefined) {
+      const checkedAvatar = validateMediaUrl(body.avatar_url);
+      if (!checkedAvatar.ok) {
+        return NextResponse.json({ error: checkedAvatar.error }, { status: 400 });
+      }
+      if (user.avatar_url && user.avatar_url !== checkedAvatar.value) {
+        prevAvatarToDelete = user.avatar_url;
+      }
+      user.avatar_url = checkedAvatar.value;
     }
     if (body.new_password !== undefined && String(body.new_password).trim() !== "") {
       const newPwd = String(body.new_password).trim();
@@ -83,6 +92,7 @@ export async function PUT(req: Request) {
     user.updated_at = new Date().toISOString();
 
     writeDb(db);
+    if (prevAvatarToDelete) deleteMediaByUrl(prevAvatarToDelete);
 
     await setSessionCookie({
       userId: user.id,

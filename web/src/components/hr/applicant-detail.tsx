@@ -27,6 +27,7 @@ import {
   X,
 } from "lucide-react";
 import { ScoreRing } from "@/components/shared/brand";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { FitBadge, Panel, StatusBadge } from "@/components/hr/ui-parts";
 import {
   InterviewDialog,
@@ -973,7 +974,16 @@ export function ApplicantDetail({
       <Panel className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <UserAvatar
+                src={c?.avatar_url}
+                name={
+                  c?.full_name ??
+                  app.cv_snapshot?.parsed_data?.personal?.full_name
+                }
+                className="size-11 border border-[#DCE7FB]"
+                fallbackClassName="text-[15px]"
+              />
               <h2 className="break-words text-[18px] font-bold text-[#111111] sm:text-[20px]">
                 {c?.full_name ??
                   app.cv_snapshot?.parsed_data?.personal?.full_name ??

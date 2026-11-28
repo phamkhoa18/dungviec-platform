@@ -10,7 +10,6 @@ import {
   Gift,
   Globe,
   Hash,
-  Image as ImageIcon,
   Loader2,
   MapPin,
   Plus,
@@ -18,6 +17,8 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/hr/hr-shell";
 import { EmptyState, Panel } from "@/components/hr/ui-parts";
+import { ImageUploadField } from "@/components/shared/image-upload-field";
+import { CompanyLogoFrame } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -80,7 +81,7 @@ function ReadonlyRow({
 }
 
 function CompanyForm({ company }: { company: CompanyRecord }) {
-  const { refreshAuth } = useAuth();
+  const { user, refreshAuth } = useAuth();
   const save = useSaveCompany(company);
   const [website, setWebsite] = useState(company.website ?? "");
   const [industry, setIndustry] = useState(company.industry ?? "");
@@ -121,8 +122,8 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
         industry: industry.trim(),
         company_size: size,
         description: description.trim(),
-        logo_url: logoUrl.trim() || undefined,
-        cover_url: coverUrl.trim() || undefined,
+        logo_url: logoUrl.trim() || null,
+        cover_url: coverUrl.trim() || null,
         benefits,
         social_links: {
           facebook: facebook.trim() || undefined,
@@ -189,14 +190,66 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
             </div>
           )}
         </Panel>
+
+        {/* Ảnh đại diện tài khoản HR */}
+        <Panel className="p-5">
+          <div className="mb-3">
+            <h2 className="text-[15px] font-bold">Ảnh đại diện tài khoản HR</h2>
+            <p className="mt-0.5 text-[12px] text-[#666666]">
+              Hiển thị trên thanh công cụ quản lý của {user?.full_name || "bạn"}.
+            </p>
+          </div>
+          <ImageUploadField
+            kind="avatar"
+            value={user?.avatar_url}
+            displayName={user?.full_name}
+            onUploaded={async () => {
+              await refreshAuth();
+            }}
+          />
+        </Panel>
       </div>
 
       <Panel className="p-5">
         <h2 className="mb-4 text-[15px] font-bold">
           Hồ sơ thương hiệu tuyển dụng
         </h2>
+
+        {/* Xem trước trực tiếp đầu trang công ty */}
+        <div className="mb-5 overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white">
+          <div className="relative h-24 overflow-hidden bg-gradient-to-r from-[#1E3A8A] via-[#306BD9] to-[#2563EB] sm:h-28">
+            {coverUrl && (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={coverUrl}
+                  alt="Xem trước ảnh bìa"
+                  className="size-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+              </>
+            )}
+          </div>
+          <div className="flex flex-wrap items-start gap-3 px-4 pb-3.5">
+            <CompanyLogoFrame
+              src={logoUrl || null}
+              name={company.company_name}
+              className="relative z-10 -mt-8 size-14 rounded-xl border-2 border-white bg-white shadow-sm"
+              fallbackClassName="text-[20px]"
+            />
+            <div className="min-w-0 flex-1 pt-1.5">
+              <p className="truncate text-[14px] font-bold text-[#111111]">
+                {company.company_name}
+              </p>
+              <p className="truncate text-[11.5px] text-[#64748B]">
+                {[industry || "Chưa cập nhật lĩnh vực", size].filter(Boolean).join(" · ")}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={onSubmit} noValidate className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="co-website" className={labelCls}>
                 Website chính thức
@@ -252,38 +305,26 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="co-logo" className={labelCls}>
-                <span className="inline-flex items-center gap-1">
-                  <ImageIcon className="size-3.5 text-[#306BD9]" />
-                  URL Logo công ty
-                </span>
-              </Label>
-              <Input
-                id="co-logo"
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                placeholder="https://.../logo.png"
-                className={fieldCls}
-              />
-            </div>
+          <div className="grid grid-cols-1 gap-4">
+            <ImageUploadField
+              kind="company_logo"
+              value={logoUrl || null}
+              displayName={company.company_name}
+              onUploaded={async (url) => {
+                setLogoUrl(url ?? "");
+                await refreshAuth();
+              }}
+            />
 
-            <div className="space-y-1.5">
-              <Label htmlFor="co-cover" className={labelCls}>
-                <span className="inline-flex items-center gap-1">
-                  <ImageIcon className="size-3.5 text-[#306BD9]" />
-                  URL Ảnh bìa (Cover)
-                </span>
-              </Label>
-              <Input
-                id="co-cover"
-                value={coverUrl}
-                onChange={(e) => setCoverUrl(e.target.value)}
-                placeholder="https://.../cover.jpg"
-                className={fieldCls}
-              />
-            </div>
+            <ImageUploadField
+              kind="company_cover"
+              value={coverUrl || null}
+              displayName={company.company_name}
+              onUploaded={async (url) => {
+                setCoverUrl(url ?? "");
+                await refreshAuth();
+              }}
+            />
           </div>
 
           <div className="space-y-1.5">

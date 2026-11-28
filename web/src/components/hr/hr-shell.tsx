@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/brand";
 import { NotificationBell } from "@/components/shared/notification-bell";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { JobFormDialog } from "@/components/hr/job-form-dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,8 +61,6 @@ export function HrShell({ children }: { children: React.ReactNode }) {
     setEditingJob(job ?? null);
     setDialogOpen(true);
   }, []);
-
-  const initial = (company?.company_name ?? user?.full_name ?? "H").trim()[0]?.toUpperCase();
 
   return (
     <JobDialogContext.Provider value={{ openJobForm }}>
@@ -112,9 +111,12 @@ export function HrShell({ children }: { children: React.ReactNode }) {
                     aria-label="Menu tài khoản"
                     className="h-9 gap-2 rounded-full border-[#D8E5FF] bg-[#F5F9FF] pr-2.5 pl-1.5 text-[#222222] hover:border-[#306BD9] hover:bg-[#F5F9FF]"
                   >
-                    <span className="grid size-6.5 place-items-center rounded-full bg-[#306BD9] text-[12px] font-bold text-white">
-                      {initial}
-                    </span>
+                    <UserAvatar
+                      src={user?.avatar_url || company?.logo_url}
+                      name={user?.full_name || company?.company_name || "HR"}
+                      className="size-6.5"
+                      fallbackClassName="bg-[#306BD9] text-[12px] text-white"
+                    />
                     <span className="hidden max-w-[150px] truncate text-[12.5px] font-bold sm:block">
                       {company?.company_name ?? user?.full_name}
                     </span>

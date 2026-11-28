@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/brand";
 import { NotificationBell } from "@/components/shared/notification-bell";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -65,8 +66,6 @@ export function SiteHeader({ transparent }: { transparent?: boolean }) {
   const pathname = usePathname();
   const { user, company, cvProfiles, logout } = useAuth();
   const t = transparent;
-  const userInitial =
-    user?.full_name?.trim()?.split(/\s+/).at(-1)?.[0]?.toUpperCase() || "U";
 
   const navItems = !user ? guestNav : user.role === "hr" ? hrNav : candidateNav;
   const menuItems = user?.role === "hr" ? hrMenu : candidateMenu;
@@ -120,9 +119,12 @@ export function SiteHeader({ transparent }: { transparent?: boolean }) {
                     aria-label="Menu tài khoản"
                     className="h-9 gap-2 rounded-full border-[#D8E5FF] bg-[#F5F9FF] pr-2.5 pl-1.5 text-[#222222] shadow-2xs hover:border-[#306BD9] hover:bg-[#EBF2FF]"
                   >
-                    <span className="grid size-6.5 place-items-center rounded-full bg-gradient-to-br from-[#306BD9] to-[#1D4ED8] text-[12px] font-bold text-white">
-                      {userInitial}
-                    </span>
+                    <UserAvatar
+                      src={user.avatar_url}
+                      name={user.full_name}
+                      className="size-6.5"
+                      fallbackClassName="text-[12px]"
+                    />
                     <div className="hidden text-left leading-tight sm:block">
                       <p className="max-w-[120px] truncate text-[12px] font-bold text-[#222222]">
                         {user.full_name}

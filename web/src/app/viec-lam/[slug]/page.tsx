@@ -17,6 +17,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { JobCardCompact } from "@/components/job/job-card-compact";
 import { EmployerContactActions } from "@/components/job/job-detail-actions";
+import { CompanyLogoFrame } from "@/components/shared/user-avatar";
 import { connection } from "next/server";
 import { categories } from "@/lib/data";
 import { getPublicJob } from "@/lib/jobs/public-jobs";
@@ -139,20 +140,13 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
             {/* 1. Khối Header Tin Đăng */}
             <section className="rounded-xl bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#EBEBEB] bg-[#FAFAFA] sm:size-24">
-                  {job.thumbnail || company.logo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={job.thumbnail || company.logo || ""}
-                      alt={job.title}
-                      className="size-full object-contain p-1.5"
-                    />
-                  ) : (
-                    <span className="grid size-full place-items-center bg-[#EBF2FF] text-2xl font-bold text-[#306BD9]">
-                      {companyDisplayName.trim()[0]?.toUpperCase() || "Đ"}
-                    </span>
-                  )}
-                </div>
+                <CompanyLogoFrame
+                  src={job.thumbnail || company.logo}
+                  name={companyDisplayName}
+                  className="size-20 rounded-xl border-[#EBEBEB] bg-[#FAFAFA] sm:size-24"
+                  imgClassName="p-1.5"
+                  fallbackClassName="text-2xl"
+                />
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -292,20 +286,13 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
             <div className="rounded-xl bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
               {/* Khối Công ty */}
               <div className="flex items-start gap-3">
-                <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#EBEBEB] bg-white p-1">
-                  {company.logo || job.thumbnail ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={company.logo || job.thumbnail}
-                      alt={companyDisplayName}
-                      className="size-full object-contain"
-                    />
-                  ) : (
-                    <span className="grid size-full place-items-center rounded bg-[#EBF2FF] text-lg font-bold text-[#306BD9]">
-                      {companyDisplayName.trim()[0]?.toUpperCase() || "Đ"}
-                    </span>
-                  )}
-                </div>
+                <CompanyLogoFrame
+                  src={company.logo || job.thumbnail}
+                  name={companyDisplayName}
+                  className="size-16 rounded-lg border-[#EBEBEB] bg-white"
+                  imgClassName="p-1"
+                  fallbackClassName="text-lg"
+                />
                 <div className="min-w-0 flex-1">
                   <h2 className="line-clamp-2 text-[15px] font-bold leading-5 text-[#222222]">
                     {companyDisplayName}

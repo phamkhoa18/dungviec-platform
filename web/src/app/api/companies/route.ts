@@ -7,6 +7,7 @@ import {
   writeDb,
   type CompanyRecord,
 } from "@/lib/db/store";
+import { deleteMediaByUrl, validateMediaUrl } from "@/lib/files/media-storage";
 import { publicCompany } from "@/lib/hr/hr-server";
 
 const URL_RE = /^(https?:\/\/)?[\w.-]+\.[a-z]{2,}(\/\S*)?$/i;
@@ -44,7 +45,17 @@ export async function PUT(req: Request) {
     const companyName = String(body.company_name || body.name || "").trim();
     const address = String(body.address || "").trim();
     const website = String(body.website || "").trim() || null;
-    const logoUrl = String(body.logo_url || "").trim() || null;
+    const logoProvided = "logo_url" in body;
+    const logoCheck = logoProvided ? validateMediaUrl(body.logo_url) : ({ ok: true, value: undefined } as const);
+    if (!logoCheck.ok) {
+      return NextResponse.json({ error: logoCheck.error }, { status: 400 });
+    }
+    const coverProvided = "cover_url" in body;
+    const coverCheck = coverProvided ? validateMediaUrl(body.cover_url) : ({ ok: true, value: undefined } as const);
+    if (!coverCheck.ok) {
+      return NextResponse.json({ error: coverCheck.error }, { status: 400 });
+    }
+
     const description = String(body.description || "").trim() || null;
     const industry = String(body.industry || "").trim() || null;
     const companySize = String(body.company_size || "").trim() || null;
@@ -52,7 +63,6 @@ export async function PUT(req: Request) {
     if (website && !URL_RE.test(website)) {
       return NextResponse.json({ error: "Địa chỉ website không hợp lệ." }, { status: 400 });
     }
-    const coverUrl = typeof body.cover_url === "string" ? body.cover_url.trim() || null : undefined;
     const benefits = strList(body.benefits);
     const social =
       body.social_links && typeof body.social_links === "object"
@@ -90,7 +100,7 @@ export async function PUT(req: Request) {
         hr_object_id: sessionCtx.user._id,
         company_name: companyName,
         name: companyName,
-        logo_url: logoUrl,
+        logo_url: logoCheck.value ?? null,
         website,
         address,
         description,
@@ -98,7 +108,7 @@ export async function PUT(req: Request) {
         company_size: companySize,
         verified: false,
         slug: `${slugifyVietnamese(companyName)}-${nextId}`,
-        cover_url: coverUrl ?? null,
+        cover_url: coverCheck.value ?? null,
         benefits: benefits ?? [],
         social_links: social ?? {},
         created_at: now,
@@ -113,16 +123,31 @@ export async function PUT(req: Request) {
         company.name = companyName;
         company.address = address;
       }
+      const prevLogo = company.logo_url;
+      const prevCover = company.cover_url;
       company.website = website;
       company.industry = industry;
       company.company_size = companySize;
-      if (logoUrl !== null) company.logo_url = logoUrl;
+      if (logoProvided) company.logo_url = logoCheck.value ?? null;
       company.description = description;
-      if (coverUrl !== undefined) company.cover_url = coverUrl;
+      if (coverProvided) company.cover_url = coverCheck.value ?? null;
       if (benefits !== undefined) company.benefits = benefits;
       if (social !== undefined) company.social_links = social;
       if (!company.slug) company.slug = `${slugifyVietnamese(company.company_name)}-${company.id}`;
       company.updated_at = now;
+
+      writeDb(db);
+      if (logoProvided && prevLogo && prevLogo !== company.logo_url) {
+        deleteMediaByUrl(prevLogo);
+      }
+      if (coverProvided && prevCover && prevCover !== company.cover_url) {
+        deleteMediaByUrl(prevCover);
+      }
+      return NextResponse.json({
+        status: "ok",
+        message: "Đã cập nhật hồ sơ doanh nghiệp thành công!",
+        company,
+      });
     }
 
     writeDb(db);

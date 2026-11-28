@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,7 +53,12 @@ import {
   formatPeriod,
 } from "@/lib/profile/profile-utils";
 
-type UserLite = { full_name: string; phone: string | null; email: string };
+type UserLite = {
+  full_name: string;
+  phone: string | null;
+  email: string;
+  avatar_url?: string | null;
+};
 
 const inputCls = "h-9 rounded-[9px] text-[13px]";
 const labelCls = "mb-1 block text-[11.5px] font-bold text-[#475569]";
@@ -142,12 +148,14 @@ export function CandidateProfileTab({
   cvProfiles,
   onRefresh,
   onGoToCvTab,
+  onChangeAvatar,
 }: {
   user: UserLite;
   profile: CandidateProfileRecord | null;
   cvProfiles: CvProfileRecord[];
   onRefresh: () => Promise<void>;
   onGoToCvTab: () => void;
+  onChangeAvatar?: () => void;
 }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -231,11 +239,34 @@ export function CandidateProfileTab({
       <section className="overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white shadow-2xs">
         <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[1fr_300px]">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[11px] font-bold text-[#306BD9]">
-              <UserRound className="size-3" /> Hồ sơ ứng viên
-            </span>
-            <h1 className="mt-1.5 text-[21px] font-bold text-[#222222]">{user.full_name}</h1>
-            <p className="text-[14px] font-semibold text-[#306BD9]">{p?.headline || "Chưa có chức danh"}</p>
+            <div className="flex flex-wrap items-center gap-3.5">
+              <UserAvatar
+                src={user.avatar_url}
+                name={user.full_name}
+                className="size-14 border border-[#DCE7FB]"
+                fallbackClassName="text-[18px]"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[11px] font-bold text-[#306BD9]">
+                    <UserRound className="size-3" /> Hồ sơ ứng viên
+                  </span>
+                  {onChangeAvatar && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="xs"
+                      onClick={onChangeAvatar}
+                      className="h-6 rounded-full px-2 text-[11.5px] font-semibold text-[#306BD9] hover:bg-[#EBF2FF]"
+                    >
+                      Đổi ảnh đại diện
+                    </Button>
+                  )}
+                </div>
+                <h1 className="mt-1 text-[21px] font-bold text-[#222222]">{user.full_name}</h1>
+                <p className="text-[14px] font-semibold text-[#306BD9]">{p?.headline || "Chưa có chức danh"}</p>
+              </div>
+            </div>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-[#555555]">
               {p?.city && (
                 <span className="inline-flex items-center gap-1"><MapPin className="size-3.5" />{p.city}</span>

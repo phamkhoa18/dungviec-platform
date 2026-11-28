@@ -16,6 +16,7 @@ import {
   Star,
 } from "lucide-react";
 import { PageHeader } from "@/components/hr/hr-shell";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { ApplicantDetail } from "@/components/hr/applicant-detail";
 import { CompareDialog } from "@/components/hr/compare-dialog";
 import { PoolAutofillDialog } from "@/components/hr/pool-autofill-dialog";
@@ -146,9 +147,15 @@ function ListRow({
         aria-current={selected}
         className="flex h-auto min-w-0 flex-1 items-start justify-start gap-2.5 p-0 text-left font-normal whitespace-normal hover:bg-transparent"
       >
-        <span className="mt-0.5 w-4 shrink-0 text-center text-[12px] font-bold text-[#888888]">
+        <span className="mt-1.5 w-4 shrink-0 text-center text-[12px] font-bold text-[#888888]">
           {rank}
         </span>
+        <UserAvatar
+          src={app.candidate?.avatar_url}
+          name={app.candidate?.full_name}
+          className="mt-0.5 size-8"
+          fallbackClassName="text-[11px]"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <p className="truncate text-[13.5px] font-bold text-[#111111]">
@@ -635,13 +642,21 @@ function CandidatesViewContent({
                           className="cursor-pointer rounded-xl border border-[#E2E8F0] bg-white p-3 shadow-2xs transition-all hover:-translate-y-0.5 hover:border-[#306BD9] hover:shadow-md"
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="truncate text-[13px] font-bold text-[#111111]">
-                                {app.candidate?.full_name ?? "Ứng viên"}
-                              </p>
-                              <p className="truncate text-[11px] text-[#64748B]">
-                                {app.job?.title}
-                              </p>
+                            <div className="flex min-w-0 items-center gap-2">
+                              <UserAvatar
+                                src={app.candidate?.avatar_url}
+                                name={app.candidate?.full_name}
+                                className="size-7"
+                                fallbackClassName="text-[10.5px]"
+                              />
+                              <div className="min-w-0">
+                                <p className="truncate text-[13px] font-bold text-[#111111]">
+                                  {app.candidate?.full_name ?? "Ứng viên"}
+                                </p>
+                                <p className="truncate text-[11px] text-[#64748B]">
+                                  {app.job?.title}
+                                </p>
+                              </div>
                             </div>
                             {ev && (
                               <span

@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { ImageUploadField } from "@/components/shared/image-upload-field";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -471,9 +473,6 @@ export function CandidateAccountClient({
     );
   }
 
-  const userInitial =
-    user?.full_name?.trim()?.split(/\s+/).at(-1)?.[0]?.toUpperCase() || "U";
-
   return (
     <>
       <SiteHeader />
@@ -486,9 +485,12 @@ export function CandidateAccountClient({
               <div className="overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white shadow-2xs">
                 <div className="bg-gradient-to-r from-[#1E4FBF] to-[#306BD9] p-4 text-white lg:p-5">
                   <div className="flex items-center gap-3.5">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-white/80 bg-white/20 text-[17px] font-bold text-white backdrop-blur-xs lg:size-14 lg:text-[20px]">
-                      {userInitial}
-                    </span>
+                    <UserAvatar
+                      src={user?.avatar_url}
+                      name={user?.full_name}
+                      className="size-11 border-2 border-white/80 lg:size-14"
+                      fallbackClassName="bg-white/20 text-[17px] text-white backdrop-blur-xs lg:text-[20px]"
+                    />
                     <div className="min-w-0 flex-1">
                       <span className="inline-block rounded-full bg-[#FFBA00] px-2 py-0.5 text-[10px] font-bold text-[#222222]">
                         ỨNG VIÊN
@@ -662,10 +664,21 @@ export function CandidateAccountClient({
               {/* TAB 0: HỒ SƠ CÁ NHÂN (tự nhập và quản lý thủ công) */}
               {activeTab === "info" && user && (
                 <CandidateProfileTab
-                  user={{ full_name: user.full_name, phone: user.phone, email: user.email }}
+                  user={{
+                    full_name: user.full_name,
+                    phone: user.phone,
+                    email: user.email,
+                    avatar_url: user.avatar_url,
+                  }}
                   profile={candidateProfile}
                   cvProfiles={cvProfiles}
                   onRefresh={refreshAuth}
+                  onChangeAvatar={() => {
+                    setActiveTab("profile");
+                    router.replace("/ung-vien/tai-khoan?tab=profile", {
+                      scroll: false,
+                    });
+                  }}
                   onGoToCvTab={() => {
                     setActiveTab("cv");
                     router.replace("/ung-vien/tai-khoan?tab=cv", { scroll: false });
@@ -1411,6 +1424,17 @@ export function CandidateAccountClient({
                     Thông tin liên hệ của bạn được bảo mật và chỉ chia sẻ với
                     Nhà tuyển dụng khi bạn chủ động nộp hồ sơ ứng tuyển.
                   </p>
+
+                  <div className="mt-5 max-w-xl">
+                    <ImageUploadField
+                      kind="avatar"
+                      value={user?.avatar_url}
+                      displayName={user?.full_name}
+                      onUploaded={async () => {
+                        await refreshAuth();
+                      }}
+                    />
+                  </div>
 
                   <form
                     onSubmit={handleSaveProfile}
