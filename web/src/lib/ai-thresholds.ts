@@ -41,10 +41,3 @@ export const FIT_META: Record<FitLabel, FitMeta> = {
 };
 
 export const FIT_ORDER: FitLabel[] = ["Good Fit", "Potential Fit", "No Fit"];
-
-/** Suy ra nhãn từ điểm S khi chưa có nhãn từ mô hình. */
-export function fitFromScore(score: number): FitLabel {
-  if (score >= GOOD_THRESHOLD) return "Good Fit";
-  if (score >= POTENTIAL_THRESHOLD) return "Potential Fit";
-  return "No Fit";
-}

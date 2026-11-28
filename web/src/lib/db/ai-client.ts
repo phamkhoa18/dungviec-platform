@@ -7,7 +7,6 @@
 import { spawnSync } from "child_process";
 import path from "path";
 import fs from "fs";
-import type { ParsedCvData } from "./types";
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://127.0.0.1:8008";
 
@@ -71,24 +70,7 @@ export interface ParsedCvResult {
   extraction_method?: string;
   page_count?: number;
   processing_time_ms?: number;
-  extracted_full_name?: string | null;
-  extracted_email?: string | null;
-  extracted_phone?: string | null;
-  extracted_job_title?: string | null;
-  extracted_location?: string | null;
   extracted_skills: string[];
-  years_of_experience?: number;
-  total_experience_months?: number;
-  education_level?: string;
-  certifications?: string[];
-  candidate_info?: {
-    full_name: string | null;
-    email: string | null;
-    phone: string | null;
-    job_title: string | null;
-    location: string | null;
-  };
-  parsed_data?: ParsedCvData;
 }
 
 export interface AiFitEvaluationResult {

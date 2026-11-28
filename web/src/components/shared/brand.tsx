@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Zap, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -93,118 +92,6 @@ export function Mascot({
       }}
       className={cn("rounded-2xl object-contain select-none", className)}
     />
-  );
-}
-
-/**
- * Logo thương hiệu thực tế của các Công ty / Nhà tuyển dụng trên Đúng Việc
- */
-export function CompanyLogo({
-  src,
-  initials,
-  color,
-  className,
-}: {
-  slug?: string;
-  src?: string;
-  initials?: string;
-  color?: string;
-  partner?: boolean;
-  className?: string;
-}) {
-  const logoUrl = src;
-
-  return (
-    <span
-      className={cn(
-        "relative grid shrink-0 place-items-center overflow-hidden rounded-lg border border-[#E8E8E8] bg-white select-none",
-        className
-      )}
-    >
-      {logoUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={logoUrl}
-          alt={initials || "Logo công ty"}
-          className="size-full object-contain p-1"
-          loading="lazy"
-        />
-      ) : (
-        <span
-          className="grid size-full place-items-center text-xs font-bold text-white"
-          style={{ backgroundColor: color || "#2563eb" }}
-        >
-          {initials || "ĐV"}
-        </span>
-      )}
-    </span>
-  );
-}
-
-/**
- * Huy hiệu "Tuyển gấp" thiết kế theo đúng mã màu #F0325E của vieclamtot.com
- */
-export function UrgentJobBadge({ className }: { className?: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex h-[18px] shrink-0 items-center gap-0.5 rounded-[4px] bg-[#F0325E] px-1.5 text-[10.5px] font-bold leading-none text-white align-middle select-none",
-        className
-      )}
-    >
-      <Zap className="size-2.5 fill-[#FFBA00] text-[#FFBA00]" />
-      Tuyển gấp
-    </span>
-  );
-}
-
-/**
- * Huy hiệu "Đối Tác" xác thực theo đúng tông màu cam #FB7328 của vieclamtot.com
- */
-export function PartnerJobBadge({ className }: { className?: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex h-[18px] shrink-0 items-center gap-0.5 rounded-[4px] bg-[#FB7328] px-1.5 text-[10.5px] font-bold leading-none text-white align-middle select-none",
-        className
-      )}
-    >
-      <ShieldCheck className="size-2.5 text-white" />
-      Đối Tác
-    </span>
-  );
-}
-
-export function SectionHeading({
-  title,
-  href,
-  eyebrow,
-  className,
-}: {
-  title: string;
-  href?: string;
-  eyebrow?: string;
-  className?: string;
-}) {
-  return (
-    <div className={cn("mb-4 flex items-center justify-between gap-4", className)}>
-      <div>
-        {eyebrow && (
-          <p className="mb-1 text-xs font-semibold text-[#2563eb]">{eyebrow}</p>
-        )}
-        <h2 className="font-heading text-[20px] font-bold leading-7 text-[#222222]">
-          {title}
-        </h2>
-      </div>
-      {href && (
-        <Link
-          href={href}
-          className="shrink-0 text-sm font-semibold text-[#2563eb] hover:underline"
-        >
-          Xem tất cả →
-        </Link>
-      )}
-    </div>
   );
 }
 

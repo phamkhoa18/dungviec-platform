@@ -19,13 +19,7 @@ from services.layout_engine import (
     extract_docx_lines,
     extract_pdf_lines,
     lines_to_text,
-    normalize_text,
 )
-
-
-def normalize_vietnamese_text(text: str) -> str:
-    """Giữ tương thích ngược: chuẩn hoá Unicode NFC cho văn bản tiếng Việt."""
-    return normalize_text(text)
 
 
 def validate_cv_file(file_name: str, file_bytes: bytes) -> str:

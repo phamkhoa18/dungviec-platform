@@ -1,18 +1,11 @@
 /**
  * Tiện ích Hồ sơ Ứng viên dùng chung cho cả server (API) và client (giao diện)
- * - Tạo hồ sơ rỗng, chuẩn hoá dữ liệu đầu vào, tính % hoàn thiện
- * - Gộp & loại trùng danh sách (kỹ năng, kinh nghiệm, học vấn...)
- * - Sinh văn bản có cấu trúc đưa vào mô hình BAAI/bge-m3
+ * - Tạo hồ sơ rỗng, chuẩn hoá dữ liệu kinh nghiệm, tính % hoàn thiện hồ sơ
  */
 import type {
   CandidateProfileRecord,
-  CertificationItem,
-  EducationItem,
   ExperienceItem,
-  LanguageItem,
   ProfileLinks,
-  ProjectItem,
-  SkillItem,
 } from "@/lib/db/types";
 
 export const EMPTY_LINKS: ProfileLinks = {
@@ -21,18 +14,6 @@ export const EMPTY_LINKS: ProfileLinks = {
   portfolio: null,
   other: [],
 };
-
-export function foldKey(s: string | null | undefined): string {
-  return (s || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .replace(/[^a-z0-9+#./ ]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 export function newProfileShell(
   userId: number,
@@ -130,29 +111,6 @@ export function formatMonths(months: number): string {
   return m ? `${y} năm ${m} tháng` : `${y} năm`;
 }
 
-// ----------------------------------------------------------------- Khoá loại trùng
-export const itemKey = {
-  skill: (s: SkillItem) => foldKey(s.name),
-  experience: (e: ExperienceItem) =>
-    `${foldKey(e.company)}|${foldKey(e.position)}|${(e.start || "").slice(0, 4)}`,
-  education: (e: EducationItem) => `${foldKey(e.school)}|${foldKey(e.major)}`,
-  project: (p: ProjectItem) => foldKey(p.name),
-  certification: (c: CertificationItem) => `${foldKey(c.name)}|${foldKey(c.score)}`,
-  language: (l: LanguageItem) => foldKey(l.language),
-};
-
-export function mergeList<T>(current: T[], incoming: T[], keyFn: (x: T) => string): T[] {
-  const out = [...current];
-  const seen = new Set(current.map(keyFn));
-  for (const it of incoming) {
-    const k = keyFn(it);
-    if (!k || seen.has(k)) continue;
-    seen.add(k);
-    out.push(it);
-  }
-  return out;
-}
-
 // ----------------------------------------------------------------- % hoàn thiện
 export interface CompletenessResult {
   percent: number;
@@ -183,37 +141,4 @@ export function computeCompleteness(
     percent: Math.round((got / total) * 100),
     missing: checks.filter((c) => !c[0]).map((c) => c[1]),
   };
-}
-
-// ----------------------------------------------------------------- Văn bản cho BGE-M3
-export function buildProfileText(
-  profile: CandidateProfileRecord | null,
-  user: { full_name?: string | null } | null
-): string {
-  if (!profile) return "";
-  const parts: string[] = [];
-  if (user?.full_name) parts.push(user.full_name);
-  if (profile.headline) parts.push(profile.headline);
-  if (profile.summary) parts.push(`Summary: ${profile.summary}`);
-  const hard = profile.skills.filter((s) => s.type === "hard").map((s) => s.name);
-  if (hard.length) parts.push(`Skills: ${hard.join(", ")}`);
-  if (profile.total_experience_months)
-    parts.push(`Total experience: ${(profile.total_experience_months / 12).toFixed(1)} years`);
-  for (const e of profile.experiences) {
-    parts.push(
-      `Experience: ${e.position || ""} at ${e.company || ""} (${e.start || ""} - ${e.is_current ? "Present" : e.end || ""}). ${e.description.join(" ")}`
-    );
-  }
-  for (const ed of profile.educations) {
-    parts.push(`Education: ${ed.degree || ""} ${ed.major || ""} - ${ed.school || ""} (${ed.status || ""})`);
-  }
-  for (const p of profile.projects) {
-    parts.push(`Project: ${p.name}. ${p.description} Technologies: ${p.technologies.join(", ")}`);
-  }
-  if (profile.certifications.length) {
-    parts.push(
-      `Certifications: ${profile.certifications.map((c) => `${c.name} ${c.score || ""}`.trim()).join(", ")}`
-    );
-  }
-  return parts.join("\n");
 }
