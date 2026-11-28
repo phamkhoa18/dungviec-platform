@@ -25,7 +25,7 @@ export default async function PublicCompanyPage({
 }) {
   const { slug } = await params;
   await connection();
-  const data = listCompanyJobs(slug);
+  const data = await listCompanyJobs(slug);
   if (!data) notFound();
 
   const { company, jobs } = data;

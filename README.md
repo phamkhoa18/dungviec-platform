@@ -46,7 +46,7 @@
 | **Tên đề tài** | Xây dựng website hỗ trợ tuyển dụng ứng dụng AI trong phân tích CV và đánh giá mức độ phù hợp với vị trí tuyển dụng |
 | **Sinh viên thực hiện** | **Phạm Đăng Khoa** — MSSV: `24810114` |
 | **Giảng viên hướng dẫn** | **ThS. Đoàn Thanh Phong** |
-| **Phạm vi hệ thống** | 2 vai trò (`candidate`, `hr`) · 4 Use Case trọng tâm · 14 trang Next.js App Router · 34 API Route Handlers · 11 collection dữ liệu |
+| **Phạm vi hệ thống** | 2 vai trò (`candidate`, `hr`) · 4 Use Case trọng tâm · 15 trang Next.js App Router · 34 API Route Handlers · 11 collections MongoDB thật |
 | **Kho mã nguồn & Học liệu** | Tích hợp notebook huấn luyện Colab [`TRAIN_BGE_M3_BILINGUAL_COLAB.ipynb`](TRAIN_BGE_M3_BILINGUAL_COLAB.ipynb), bộ kiểm thử `dataset_200_cv_pdfs/`, tài liệu thiết kế tuần 1–6 & sơ đồ `.drawio` |
 
 ### Danh mục Use Case cốt lõi
@@ -125,7 +125,7 @@ flowchart LR
         API["34 Route Handlers (/api/*)<br/>HMAC Session · RBAC · Rate/Cooldown"]
         IMG["Image Optimizer (Sharp)<br/>Tự xoay EXIF · Resize · WebP"]
         SVC["External Services<br/>VietQR MST · Provinces v2 · SMTP OTP"]
-        STORE[("JSON Document Store<br/>database/mongodb_collections.json")]
+        STORE[("MongoDB thật (:27017)<br/>dungviec_ai_recruitment (11 Collections)")]
         FILES[("Private Storage (ngoài public/)<br/>storage/cvs/ & storage/media/")]
     end
 
@@ -315,9 +315,9 @@ stateDiagram-v2
 | **Frontend Framework** | `Next.js 16.4.2` (App Router + Turbopack), `React 19.3`, `TypeScript 5` | Server/Client Components, SSR, tối ưu routing và bundling |
 | **UI & Styling** | `Tailwind CSS 4`, `shadcn/ui` (Radix UI), `lucide-react`, `sonner`, Font `Inter` | Hệ thiết kế đồng nhất, Dark/Light tokens chuẩn doanh nghiệp |
 | **Quản lý trạng thái & Form** | `@tanstack/react-query 5`, `react-hook-form 7`, `zod 4`, `react-dropzone` | Cache client, validation schema chặt chẽ, kéo thả CV & ảnh |
-| **Backend & Xử lý Media** | Next.js Route Handlers, Node `crypto` (`scrypt`, `HMAC-SHA256`), `sharp 0.35.5`, `nodemailer` | API RESTful nội bộ, xác thực phiên, nén WebP server, gửi email SMTP |
+| **Backend & Xử lý Media** | Next.js Route Handlers, Driver chính thức `mongodb`, Node `crypto` (`scrypt`, `HMAC-SHA256`), `sharp 0.35.5`, `nodemailer` | API RESTful nội bộ, kết nối MongoDB thật kèm Index, xác thực phiên, nén WebP server, gửi email SMTP |
 | **AI & Xử lý tài liệu** | `Python 3.9+`, `PyTorch 2.2+`, `Transformers`, `FlagEmbedding (BAAI/bge-m3)`, `PyMuPDF`, `pdfplumber`, `pypdf`, `python-docx`, `OpenCV`, `Tesseract 5 OCR`, `RapidOCR` | Microservice AI (`:8008` / CLI), Layout Engine 2 cột, Hybrid Classifier |
-| **Dữ liệu & Dịch vụ ngoài** | Document store JSON (`database/mongodb_collections.json`), schema MongoDB/PostgreSQL, VietQR API, `provinces.open-api.vn` | Lưu trữ demo zero-setup, xác thực MST, chuẩn hóa địa giới hành chính 34 tỉnh/thành |
+| **Dữ liệu & Dịch vụ ngoài** | **MongoDB (`dungviec_ai_recruitment`)**, Seed snapshot (`database/mongodb_collections.json`), Schema SQL tương đương, VietQR API, `provinces.open-api.vn` | Cơ sở dữ liệu NoSQL thật kèm cơ chế tự seed & tạo index, xác thực MST, chuẩn hóa 34 tỉnh/thành |
 
 ---
 
@@ -327,12 +327,14 @@ stateDiagram-v2
 khoaluantotnghiep/
 ├── web/                                       # Ứng dụng Next.js (Frontend + Backend API)
 │   ├── src/
-│   │   ├── app/                               # 14 trang App Router & 34 Route Handlers (/api/*)
+│   ├── src/
+│   │   ├── app/                               # 15 trang App Router & 34 Route Handlers (/api/*)
 │   │   │   ├── page.tsx                       #   Trang chủ giới thiệu & tìm nhanh việc làm
 │   │   │   ├── viec-lam/  [slug]/             #   Tìm kiếm việc làm & chi tiết tin tuyển dụng
 │   │   │   ├── cong-ty/[slug]/                #   Trang thông tin doanh nghiệp công khai
 │   │   │   ├── dang-nhap/  dang-ky/           #   Đăng nhập & đăng ký (HR bắt buộc MST)
 │   │   │   ├── quen-mat-khau/                 #   Khôi phục mật khẩu bằng OTP 6 số qua Email
+│   │   │   ├── tai-khoan-demo/                #   Trang Danh bạ tài khoản kiểm thử (219 TK HR & Ứng viên)
 │   │   │   ├── ung-vien/                      #   Tài khoản & quản lý CV, theo dõi đơn ứng tuyển
 │   │   │   ├── nha-tuyen-dung/                #   Khu HR (Tổng quan, Tin, Ứng viên, Lịch PV, Công ty)
 │   │   │   └── api/                           #   34 endpoints REST API nội bộ
@@ -340,7 +342,7 @@ khoaluantotnghiep/
 │   │   ├── hooks/                             # Custom hooks: use-auth, use-provinces, use-tax-lookup, hr/use-hr-data
 │   │   └── lib/
 │   │       ├── auth/                          # password-reset.ts (OTP TTL, cooldown, attempts)
-│   │       ├── db/                            # store.ts, server-auth.ts, ai-client.ts, types.ts
+│   │       ├── db/                            # mongo-client.ts, store.ts (MongoDB thật), server-auth.ts, ai-client.ts, types.ts
 │   │       ├── files/                         # cv-storage.ts, media-specs.ts, media-storage.ts, image-optimizer.ts
 │   │       ├── hr/                            # hr-server.ts (RBAC, snapshot, upsertAiEvaluation), job-input.ts
 │   │       ├── profile/                       # cv-record.ts, profile-server.ts
@@ -379,6 +381,7 @@ khoaluantotnghiep/
 ## 🚀 Hướng dẫn cài đặt & Chạy thử nghiệm
 
 ### Yêu cầu môi trường
+- **MongoDB Community / Atlas** (`mongodb://127.0.0.1:27017` hoặc URI MongoDB Atlas) — trên macOS có thể chạy qua `brew services start mongodb-community`.
 - **Node.js ≥ 20** & `npm`
 - **Python 3.9+** (khuyến nghị Python 3.11 hoặc dùng virtualenv `.venv`)
 - *(Tùy chọn cho PDF scan)* Cài **Tesseract OCR** kèm gói ngôn ngữ `vie` và `eng` (`brew install tesseract tesseract-lang` trên macOS hoặc `apt install tesseract-ocr tesseract-ocr-vie` trên Ubuntu).
@@ -407,23 +410,28 @@ curl http://127.0.0.1:8008/api/v1/health
 ```
 > *Ghi chú: Nếu bạn chỉ chạy web ở chế độ demo nhanh mà chưa khởi động cổng `8008`, backend Next.js sẽ tự động fallback gọi `ai-service/cli.py` qua JSON stdin/stdout.*
 
-### Bước 3: Cấu hình & Chạy Website Next.js (`web/`)
+### Bước 3: Cấu hình MongoDB, Nạp dữ liệu & Chạy Website Next.js (`web/`)
 
 Mở terminal thứ 2:
 ```bash
 cd web
-cp .env.example .env.local     # Điền JWT_SECRET và cấu hình SMTP nếu dùng chức năng gửi OTP Gmail
+cp .env.example .env.local     # Điền JWT_SECRET, MONGODB_URI và cấu hình SMTP nếu dùng OTP Gmail
 npm install
-npm run dev                    # Truy cập http://localhost:3000
+npm run db:migrate             # Nạp dữ liệu mẫu & tạo Index vào MongoDB "dungviec_ai_recruitment"
+npm run dev                    # Truy cập http://localhost:3000 (và /tai-khoan-demo cho Hội đồng)
 ```
 
-Kiểm tra tình trạng kết nối Web ↔ AI: `curl http://localhost:3000/api/ai/status`
+> *Ghi chú: Kể cả khi chưa chạy `npm run db:migrate`, ở lần truy cập đầu tiên `store.ts` sẽ tự động kiểm tra MongoDB, tạo toàn bộ Index chuẩn và import dữ liệu mẫu từ `database/mongodb_collections.json` nếu DB đang trống.*
+
+Kiểm tra tình trạng kết nối Web ↔ AI ↔ MongoDB: `curl http://localhost:3000/api/ai/status`
 
 ### Bảng biến môi trường (`web/.env.example` & `ai-service/`)
 
 | Biến môi trường | Mặc định | Mô tả |
 |---|---|---|
 | `JWT_SECRET` | Khóa dev tích hợp | Chuỗi bí mật ký cookie phiên HMAC-SHA256 (**bắt buộc đổi khi deploy**) |
+| `MONGODB_URI` | `mongodb://127.0.0.1:27017` | Chuỗi kết nối MongoDB thật (Local Server hoặc MongoDB Atlas URI) |
+| `MONGODB_DB_NAME` | `dungviec_ai_recruitment` | Tên cơ sở dữ liệu MongoDB lưu trữ 11 collections + `_system` |
 | `AI_SERVICE_URL` | `http://127.0.0.1:8008` | Địa chỉ HTTP của Python AI Microservice |
 | `AI_SERVICE_HOST` / `AI_SERVICE_PORT` | `127.0.0.1` / `8008` | Host & cổng lắng nghe của `ai-service/main.py` |
 | `AI_PYTHON_BIN` | Tự dò `.venv` / `python3` | Đường dẫn Python ưu tiên khi gọi fallback `cli.py` |
@@ -441,9 +449,11 @@ npm run build        # Đóng gói & kiểm tra Next.js Production Build
 
 ---
 
-## 🔑 Tài khoản mẫu & Kho 200 CV Demo
+## 🔑 Tài khoản mẫu & Trang Danh bạ Kiểm thử
 
-Mật khẩu chung cho toàn bộ tài khoản mẫu trong [`database/mongodb_collections.json`](database/mongodb_collections.json): **`123456`**
+Mở trực tiếp trang **[`/tai-khoan-demo`](http://localhost:3000/tai-khoan-demo)** (gắn sẵn link ở Footer và trang Đăng nhập) để Giảng viên / Hội đồng xem toàn bộ **17 tài khoản HR** + **202 tài khoản Ứng viên** trực tiếp từ MongoDB kèm tìm kiếm, phân trang và **đăng nhập nhanh 1 chạm**.
+
+Mật khẩu chung cho các tài khoản mẫu trong MongoDB (**216/219** tài khoản): **`123456`**
 
 | Vai trò | Email | Họ tên / Công ty đại diện | Đặc điểm dữ liệu |
 |---|---|---|---|
@@ -494,14 +504,14 @@ Mật khẩu chung cho toàn bộ tài khoản mẫu trong [`database/mongodb_co
 
 ## 🗄 Cơ sở dữ liệu & Sơ đồ thiết kế
 
-### Thiết kế dữ liệu (6 Collection cốt lõi + 5 Collection nghiệp vụ mở rộng)
+### Thiết kế dữ liệu (6 Collection cốt lõi + 5 Collection nghiệp vụ mở rộng trên MongoDB)
 
-Schema định nghĩa đầy đủ cho **MongoDB** ([`database/schema_mongodb_baocao2.js`](database/schema_mongodb_baocao2.js)) và **PostgreSQL** ([`database/schema_postgres_baocao2.sql`](database/schema_postgres_baocao2.sql)). Ở chế độ chạy tiểu luận cục bộ, dữ liệu được lưu tại [`database/mongodb_collections.json`](database/mongodb_collections.json) (đang có **219** người dùng, **17** doanh nghiệp, **23** tin tuyển dụng, **202** hồ sơ CV và **201** đơn ứng tuyển kèm kết quả AI):
+Toàn bộ dữ liệu runtime được lưu trữ và truy vấn trực tiếp trên **MongoDB (`dungviec_ai_recruitment`)** với đối tượng `ObjectId` chuẩn cùng bộ Index định nghĩa tại [`database/schema_mongodb_baocao2.js`](database/schema_mongodb_baocao2.js) (kèm bản SQL tương đương tại [`database/schema_postgres_baocao2.sql`](database/schema_postgres_baocao2.sql) và file snapshot khởi tạo ban đầu [`database/mongodb_collections.json`](database/mongodb_collections.json)): **219** người dùng, **17** doanh nghiệp, **23** tin tuyển dụng, **202** hồ sơ CV và **201** đơn ứng tuyển kèm kết quả AI:
 
 | Collection | Nhóm | Trường trọng tâm |
 |---|---|---|
 | `users` | Cốt lõi | `email`, `password_hash` (`scrypt`), `role` (`candidate`/`hr`), `full_name`, `avatar_url`, `is_active` |
-| `companies` | Cốt lõi | `hr_user_id`, `company_name`, `slug`, `tax_code`, `address`, `tax_verified`, `logo_url`, `cover_url`, `benefits` |
+| `companies` | Cốt lõi | `hr_user_id`, `company_name`, `slug`, `tax_code`, `address`, `verified`, `logo_url`, `cover_url`, `benefits` |
 | `jobs` | Cốt lõi | `company_id`, `title`, `slug`, `jd_text`, `jd_hash`, `required_skills`, `salary_*`, `location`, `deadline`, `status` |
 | `cv_profiles` | Cốt lõi | `user_id`, `file_path`, `raw_text`, `extracted_skills`, `extraction_method`, `ocr_applied`, `two_column_detected`, `is_default` |
 | `applications` | Cốt lõi | `job_id`, `candidate_id`, `cv_profile_id`, `cv_snapshot`, `status`, `status_history`, `cover_letter`, `source` |
@@ -535,10 +545,10 @@ Schema định nghĩa đầy đủ cho **MongoDB** ([`database/schema_mongodb_ba
 
 ## ⚠️ Hạn chế hiện tại & Hướng phát triển
 
-1. **Lưu trữ JSON cục bộ khi trình diễn**: File `database/mongodb_collections.json` tối ưu cho cài đặt 1 chạm không cần Docker/MongoDB khi bảo vệ tiểu luận; tuy nhiên khi triển khai nhiều tiến trình ghi đồng thời ở quy mô production, cần chuyển hàm đọc/ghi trong `store.ts` sang **MongoDB** hoặc **PostgreSQL** theo các schema đã chuẩn bị sẵn.
+1. **Mô hình đồng bộ Collection giữa Request và MongoDB**: Hệ thống hiện đã kết nối trực tiếp MongoDB thật (`mongo-client.ts` + `store.ts` với cơ chế diff theo document và `bulkWrite` tuần tự), đáp ứng tốt tải tiểu luận và trình diễn nhiều luồng nghiệp vụ; ở quy mô hàng nghìn truy cập ghi đồng thời mỗi giây, có thể tách dần từng endpoint sang truy vấn aggregation/update trực tiếp từng collection hoặc MongoDB Replica Set Transaction.
 2. **Tài nguyên suy luận đầy đủ của `BAAI/bge-m3`**: Nạp trọn vẹn backbone đa ngôn ngữ `BAAI/bge-m3` yêu cầu ~2.3 GB weights + GPU/RAM lớn; ở môi trường nhẹ, AI Service vẫn sử dụng checkpoint `bge_m3_hybrid_head.pt` kết hợp không gian con & cấu trúc từ vựng song ngữ. Trong thực tế sản xuất, nên đóng gói `ai-service` thành container riêng có GPU/ONNX quantization kèm hàng đợi (Redis/Celery) để xử lý OCR và chấm điểm hàng loạt bất đồng bộ.
 3. **Độ phủ từ điển chuyên ngành**: Bộ taxonomy trong `ai-service/data/skills_taxonomy.json` và `fit_scorer.py` tối ưu tốt nhất cho CNTT, Dữ liệu, Kinh doanh, Marketing, Kế toán, Logistics và Xây dựng; với một số ngành đặc thù mới, độ chính xác có thể cải thiện thêm bằng cách thu thập và gán nhãn dữ liệu CV–JD tiếng Việt chuyên biệt cho ngành đó.
-4. **Bảo mật & Triển khai thực tế**: Hiện chức năng gửi email OTP yêu cầu cấu hình SMTP thật trong `.env.local`, và hệ thống có khuyến nghị nâng cấp phiên bản Next.js `16.4.2` lên bản vá mới hơn khi đưa lên môi trường Internet công khai.
+4. **Bảo mật & Triển khai thực tế**: Chức năng gửi email OTP yêu cầu cấu hình SMTP thật trong `.env.local`, và hệ thống có khuyến nghị nâng cấp phiên bản Next.js `16.4.2` lên bản vá mới hơn khi đưa lên môi trường Internet công khai.
 
 ---
 

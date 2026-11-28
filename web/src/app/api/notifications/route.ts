@@ -7,7 +7,7 @@ export async function GET(req: Request) {
   const session = await getSessionUser();
   if (!session) return NextResponse.json({ notifications: [], unread: 0 });
   const limit = Math.min(100, Math.max(1, Number(new URL(req.url).searchParams.get("limit") || 20)));
-  const db = readDb();
+  const db = await readDb();
   const mine = db.notifications.filter((n) => n.user_id === session.user.id).sort((a, b) => b.id - a.id);
   return NextResponse.json({
     notifications: mine.slice(0, limit),
@@ -21,7 +21,7 @@ export async function PATCH(req: Request) {
   if (!session) return NextResponse.json({ error: "Vui lòng đăng nhập." }, { status: 401 });
   const body = (await req.json().catch(() => ({}))) as { ids?: number[]; all?: boolean };
   const ids = new Set((body.ids || []).map(Number));
-  const db = readDb();
+  const db = await readDb();
   let changed = 0;
   for (const n of db.notifications) {
     if (n.user_id !== session.user.id || n.read) continue;
@@ -30,6 +30,6 @@ export async function PATCH(req: Request) {
       changed += 1;
     }
   }
-  if (changed) writeDb(db);
+  if (changed) await writeDb(db);
   return NextResponse.json({ status: "ok", updated: changed });
 }

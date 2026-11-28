@@ -1,19 +1,29 @@
 /**
- * Tầng lưu trữ Cơ sở dữ liệu 06 Bảng / Collections (Chuẩn Báo cáo số 2 & Báo cáo số 3):
- * - Lưu trữ bền vững trên đĩa tại: /database/mongodb_collections.json
- * - Đảm bảo toàn vẹn khóa chính (id SERIAL + _id ObjectId), khóa ngoại và các quy tắc:
- *   + QT-01: Kiểm tra tệp CV (.pdf / .docx, <= 5.0 MB)
- *   + QT-02: Ràng buộc UNIQUE(job_id, candidate_id) trong bảng applications
- *   + QT-03: Kiểm soát thời hạn deadline & trạng thái active/closed của tin tuyển dụng
- *   + QT-04: Công thức điểm S = 100 * (prob_good + 0.5 * prob_potential)
- *   + QT-05: Phân quyền dữ liệu (HR chỉ quản lý công ty/tin/ứng viên của công ty mình; Ứng viên chỉ quản lý hồ sơ của mình)
- *   + QT-06: Xử lý ngoại lệ suy luận AI (pending_evaluation / ocr_required)
+ * Tầng lưu trữ Cơ sở dữ liệu 100% MongoDB thật (`dungviec_ai_recruitment` — Chuẩn Báo cáo số 2 & 3):
+ * - Đọc/ghi trực tiếp tới các MongoDB Collections (`users`, `companies`, `jobs`, `cv_profiles`,
+ *   `applications`, `ai_evaluations` cùng các collection mở rộng).
+ * - Khi DB mới trống hoàn toàn, tự động nạp dữ liệu khởi tạo từ `/database/mongodb_collections.json`
+ *   (hoặc seed mặc định) và tạo đầy đủ Index chuẩn.
+ * - Đảm bảo toàn vẹn khóa chính (`id` + `_id` BSON ObjectId), khóa ngoại và các quy tắc `QT-01` → `QT-07`.
  */
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import type { AnyBulkWriteOperation, Document } from "mongodb";
 import { CATALOG_VERSION, importStaticCatalog } from "@/lib/jobs/static-catalog";
 import { normalizeStatus } from "@/lib/recruitment/status";
+import {
+  COLLECTION_KEYS,
+  ensureMongoIndexes,
+  fromMongoDoc,
+  getMongoDb,
+  MONGODB_DB_NAME,
+  MONGODB_URI,
+  SYSTEM_COLLECTION,
+  toBsonId,
+  toMongoDoc,
+  type CollectionKey,
+} from "./mongo-client";
 import type {
   AiEvaluationRecord,
   ApplicationNoteRecord,
@@ -33,9 +43,11 @@ import type {
 } from "./types";
 
 const DB_DIR = path.resolve(process.cwd(), "..", "database");
-const DB_FILE = path.join(DB_DIR, "mongodb_collections.json");
+const SEED_JSON_FILE = path.join(DB_DIR, "mongodb_collections.json");
 const SESSION_SECRET =
   process.env.JWT_SECRET || "dungviec_tlcn_24810114_secret_key_2026";
+
+export { MONGODB_DB_NAME, MONGODB_URI };
 
 export function generateObjectId(seedHex?: string): string {
   if (seedHex && /^[0-9a-f]{24}$/i.test(seedHex)) {
@@ -717,8 +729,8 @@ export function computeJdHash(job: Pick<JobRecord, "title" | "jd_text" | "requir
   return crypto.createHash("sha1").update(basis).digest("hex").slice(0, 16);
 }
 
-/** Bổ sung các collection mới cho file DB cũ (migration nhẹ, không mất dữ liệu). */
-function migrateDb(db: DatabaseDocument): DatabaseDocument {
+/** Bổ sung các collection mới & schema migration trong bộ nhớ (không ghi file JSON). */
+function migrateDbInMemory(db: DatabaseDocument): { db: DatabaseDocument; changed: boolean } {
   let changed = false;
   for (const key of ["candidate_profiles", "interviews", "notifications", "application_notes", "password_resets"] as const) {
     if (!Array.isArray(db[key])) {
@@ -751,7 +763,6 @@ function migrateDb(db: DatabaseDocument): DatabaseDocument {
           });
         }
       }
-      // Ghi chú cũ (1 chuỗi) -> collection application_notes
       if (app.hr_notes && !db.application_notes.some((n) => n.application_id === app.id)) {
         const job = db.jobs.find((j) => j.id === app.job_id);
         const author = db.users.find((u) => u.id === job?.hr_user_id);
@@ -785,7 +796,7 @@ function migrateDb(db: DatabaseDocument): DatabaseDocument {
     changed = true;
   }
 
-  // Schema v3: chuyển tệp CV cũ từ public/uploads sang kho riêng (không truy cập công khai)
+  // Schema v3: đảm bảo file_url chuẩn bảo mật
   if ((db.meta.schema_version || 0) < 3) {
     const storageDir = path.join(process.cwd(), "storage", "cvs");
     for (const cv of db.cv_profiles) {
@@ -818,46 +829,270 @@ function migrateDb(db: DatabaseDocument): DatabaseDocument {
     changed = true;
   }
 
-  if (changed) {
+  return { db, changed };
+}
+
+interface SystemDoc {
+  _id: string;
+  values: Record<string, unknown>;
+}
+
+interface DbSnapshot {
+  collections: Map<CollectionKey, Map<number, string>>;
+  counters: string;
+  meta: string;
+}
+
+const dbSnapshots = new WeakMap<DatabaseDocument, DbSnapshot>();
+
+function buildSnapshot(db: DatabaseDocument): DbSnapshot {
+  const collections = new Map<CollectionKey, Map<number, string>>();
+  for (const key of COLLECTION_KEYS) {
+    const map = new Map<number, string>();
+    const rows = (db[key] || []) as Array<{ id: number }>;
+    for (const row of rows) {
+      map.set(row.id, JSON.stringify(row));
+    }
+    collections.set(key, map);
+  }
+  return {
+    collections,
+    counters: JSON.stringify(db.counters || {}),
+    meta: JSON.stringify(db.meta || {}),
+  };
+}
+
+function loadSeedDocument(): DatabaseDocument {
+  if (fs.existsSync(SEED_JSON_FILE)) {
     try {
-      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), "utf-8");
+      const raw = fs.readFileSync(SEED_JSON_FILE, "utf-8");
+      const parsed = JSON.parse(raw) as DatabaseDocument;
+      return migrateDbInMemory(parsed).db;
     } catch {
-      // Ghi lại lần sau
+      // Fallback sang bộ seed mặc định trong code nếu file JSON seed bị hỏng
     }
   }
+  return migrateDbInMemory(buildInitialDatabase()).db;
+}
+
+declare global {
+  var __dungviecMongoInitPromise: Promise<void> | undefined;
+}
+
+let writeQueue: Promise<void> = Promise.resolve();
+
+function enqueueWrite(task: () => Promise<void>): Promise<void> {
+  const run = writeQueue.then(task, task);
+  writeQueue = run.catch(() => {});
+  return run;
+}
+
+async function seedMongoFromInitial(): Promise<void> {
+  const mdb = await getMongoDb();
+  const initial = loadSeedDocument();
+
+  await Promise.all(
+    COLLECTION_KEYS.map(async (key) => {
+      const rows = (initial[key] || []) as Array<{ _id?: string; id: number }>;
+      if (rows.length === 0) return;
+      const docs = rows.map((r) => toMongoDoc(r));
+      await mdb.collection(key).insertMany(docs, { ordered: false }).catch((err) => {
+        // Bỏ qua trùng nếu 2 worker cùng khởi tạo song song
+        if (err && typeof err === "object" && "code" in err && err.code === 11000) return;
+        throw err;
+      });
+    })
+  );
+
+  const sysColl = mdb.collection<SystemDoc>(SYSTEM_COLLECTION);
+  await sysColl.updateOne(
+    { _id: "counters" },
+    { $set: { values: initial.counters as unknown as Record<string, unknown> } },
+    { upsert: true }
+  );
+  await sysColl.updateOne(
+    { _id: "meta" },
+    { $set: { values: (initial.meta || {}) as Record<string, unknown> } },
+    { upsert: true }
+  );
+}
+
+async function ensureMongoInitialized(): Promise<void> {
+  if (!globalThis.__dungviecMongoInitPromise) {
+    globalThis.__dungviecMongoInitPromise = (async () => {
+      const mdb = await getMongoDb();
+      await ensureMongoIndexes(mdb);
+
+      const userCount = await mdb.collection("users").estimatedDocumentCount();
+      if (userCount === 0) {
+        await seedMongoFromInitial();
+        return;
+      }
+
+      // Kiểm tra phiên bản schema/catalog nếu nâng cấp trên DB đang tồn tại
+      const metaDoc = await mdb.collection<SystemDoc>(SYSTEM_COLLECTION).findOne({ _id: "meta" });
+      const meta = (metaDoc?.values || {}) as { schema_version?: number; catalog_version?: number };
+      if ((meta.schema_version || 0) < 3 || (meta.catalog_version || 0) < CATALOG_VERSION) {
+        const current = await fetchRawDocumentFromMongo();
+        const { changed } = migrateDbInMemory(current);
+        if (changed) {
+          await writeDbInternal(current);
+        }
+      }
+    })().catch((err) => {
+      globalThis.__dungviecMongoInitPromise = undefined;
+      throw err;
+    });
+  }
+  return globalThis.__dungviecMongoInitPromise;
+}
+
+async function fetchRawDocumentFromMongo(): Promise<DatabaseDocument> {
+  const mdb = await getMongoDb();
+  const sysColl = mdb.collection<SystemDoc>(SYSTEM_COLLECTION);
+
+  const [collResults, sysDocs] = await Promise.all([
+    Promise.all(
+      COLLECTION_KEYS.map((key) =>
+        mdb.collection(key).find({}).sort({ id: 1 }).toArray()
+      )
+    ),
+    sysColl.find({ _id: { $in: ["counters", "meta"] } }).toArray(),
+  ]);
+
+  const docMap = new Map<string, unknown[]>();
+  COLLECTION_KEYS.forEach((key, idx) => {
+    docMap.set(
+      key,
+      collResults[idx].map((raw) => fromMongoDoc(raw))
+    );
+  });
+
+  const countersDoc = sysDocs.find((d) => d._id === "counters");
+  const metaDoc = sysDocs.find((d) => d._id === "meta");
+
+  const db = {
+    counters: (countersDoc?.values || {}) as DatabaseDocument["counters"],
+    meta: (metaDoc?.values || {}) as DatabaseDocument["meta"],
+    users: (docMap.get("users") || []) as UserRecord[],
+    companies: (docMap.get("companies") || []) as CompanyRecord[],
+    jobs: (docMap.get("jobs") || []) as JobRecord[],
+    cv_profiles: (docMap.get("cv_profiles") || []) as CvProfileRecord[],
+    applications: (docMap.get("applications") || []) as ApplicationRecord[],
+    ai_evaluations: (docMap.get("ai_evaluations") || []) as AiEvaluationRecord[],
+    candidate_profiles: (docMap.get("candidate_profiles") || []) as CandidateProfileRecord[],
+    interviews: (docMap.get("interviews") || []) as InterviewRecord[],
+    application_notes: (docMap.get("application_notes") || []) as ApplicationNoteRecord[],
+    notifications: (docMap.get("notifications") || []) as NotificationRecord[],
+    password_resets: (docMap.get("password_resets") || []) as PasswordResetRecord[],
+  } as DatabaseDocument;
+
+  for (const key of COLLECTION_KEYS) {
+    if (typeof db.counters[key] !== "number") {
+      const rows = db[key] as Array<{ id: number }>;
+      db.counters[key] = rows.reduce((mx, r) => Math.max(mx, r.id || 0), 0);
+    }
+  }
+
   return db;
 }
 
-export function readDb(): DatabaseDocument {
-  if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
+async function writeDbInternal(db: DatabaseDocument): Promise<void> {
+  const mdb = await getMongoDb();
+  const prevSnap = dbSnapshots.get(db);
+
+  await Promise.all(
+    COLLECTION_KEYS.map(async (key) => {
+      const rows = (db[key] || []) as Array<{ _id?: string; id: number }>;
+      const prevMap = prevSnap?.collections.get(key);
+      const ops: AnyBulkWriteOperation<Document>[] = [];
+      const currentIds = new Set<number>();
+
+      for (const row of rows) {
+        currentIds.add(row.id);
+        const serialized = JSON.stringify(row);
+        if (!prevMap || prevMap.get(row.id) !== serialized) {
+          const bsonDoc = toMongoDoc(row);
+          ops.push({
+            replaceOne: {
+              filter: { _id: toBsonId(row._id) },
+              replacement: bsonDoc,
+              upsert: true,
+            },
+          });
+        }
+      }
+
+      if (prevMap) {
+        const deletedIds: number[] = [];
+        for (const oldId of prevMap.keys()) {
+          if (!currentIds.has(oldId)) {
+            deletedIds.push(oldId);
+          }
+        }
+        if (deletedIds.length > 0) {
+          ops.push({
+            deleteMany: { filter: { id: { $in: deletedIds } } },
+          });
+        }
+      } else {
+        ops.push({
+          deleteMany: { filter: { id: { $nin: Array.from(currentIds) } } },
+        });
+      }
+
+      if (ops.length > 0) {
+        await mdb.collection(key).bulkWrite(ops, { ordered: false });
+      }
+    })
+  );
+
+  const sysColl = mdb.collection<SystemDoc>(SYSTEM_COLLECTION);
+  const countersSerialized = JSON.stringify(db.counters || {});
+  if (!prevSnap || prevSnap.counters !== countersSerialized) {
+    const maxFields: Record<string, number> = {};
+    for (const [k, v] of Object.entries(db.counters || {})) {
+      if (typeof v === "number") {
+        maxFields[`values.${k}`] = v;
+      }
+    }
+    if (Object.keys(maxFields).length > 0) {
+      await sysColl.updateOne(
+        { _id: "counters" },
+        { $max: maxFields },
+        { upsert: true }
+      );
+    }
   }
-  if (!fs.existsSync(DB_FILE)) {
-    const initial = buildInitialDatabase();
-    fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), "utf-8");
-    return migrateDb(initial);
+
+  const metaSerialized = JSON.stringify(db.meta || {});
+  if (!prevSnap || prevSnap.meta !== metaSerialized) {
+    await sysColl.updateOne(
+      { _id: "meta" },
+      { $set: { values: (db.meta || {}) as Record<string, unknown> } },
+      { upsert: true }
+    );
   }
-  try {
-    const raw = fs.readFileSync(DB_FILE, "utf-8");
-    return migrateDb(JSON.parse(raw) as DatabaseDocument);
-  } catch {
-    const initial = buildInitialDatabase();
-    fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), "utf-8");
-    return initial;
-  }
+
+  dbSnapshots.set(db, buildSnapshot(db));
 }
 
-export function writeDb(db: DatabaseDocument): void {
-  if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
-  }
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), "utf-8");
+export async function readDb(): Promise<DatabaseDocument> {
+  await ensureMongoInitialized();
+  const db = await fetchRawDocumentFromMongo();
+  dbSnapshots.set(db, buildSnapshot(db));
+  return db;
+}
+
+export async function writeDb(db: DatabaseDocument): Promise<void> {
+  await ensureMongoInitialized();
+  await enqueueWrite(() => writeDbInternal(db));
 }
 
 /**
  * Tự động kiểm tra Quy tắc QT-03: Tin tuyển dụng quá hạn deadline tự động chuyển sang 'closed'
  */
-export function enforceJobDeadlines(db: DatabaseDocument): boolean {
+export async function enforceJobDeadlines(db: DatabaseDocument): Promise<boolean> {
   // Ngày theo giờ Việt Nam (UTC+7) để tin không bị đóng sớm/muộn 7 tiếng
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
   let changed = false;
@@ -870,7 +1105,7 @@ export function enforceJobDeadlines(db: DatabaseDocument): boolean {
     }
   }
   if (changed) {
-    writeDb(db);
+    await writeDb(db);
   }
   return changed;
 }
@@ -889,9 +1124,9 @@ export function sanitizeUser(user: UserRecord) {
   };
 }
 
-export function getUserWithContext(userId: number) {
-  const db = readDb();
-  enforceJobDeadlines(db);
+export async function getUserWithContext(userId: number) {
+  const db = await readDb();
+  await enforceJobDeadlines(db);
   const user = db.users.find((u) => u.id === userId);
   if (!user) return null;
 

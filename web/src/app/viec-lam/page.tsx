@@ -11,7 +11,8 @@ import { listPublicJobs } from "@/lib/jobs/public-jobs";
 /** Đọc tin đang tuyển từ cơ sở dữ liệu tại thời điểm truy cập (tin HR vừa đăng hiện ngay). */
 async function LiveJobsExplorer() {
   await connection();
-  return <JobsExplorer jobs={listPublicJobs()} />;
+  const jobs = await listPublicJobs();
+  return <JobsExplorer jobs={jobs} />;
 }
 
 export const metadata = {

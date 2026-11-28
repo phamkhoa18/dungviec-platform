@@ -9,8 +9,8 @@ type Ctx = { params: Promise<{ id: string }> };
 /** GET /api/jobs/[id] — Công khai nếu đang tuyển/đã đóng; bản nháp/lưu trữ chỉ HR sở hữu xem được. */
 export async function GET(_req: Request, context: Ctx) {
   const { id } = await context.params;
-  const db = readDb();
-  enforceJobDeadlines(db);
+  const db = await readDb();
+  await enforceJobDeadlines(db);
   const job = db.jobs.find((j) => String(j.id) === id || j._id === id || j.slug === id);
   if (!job) return jsonError("Không tìm thấy tin tuyển dụng.", 404);
   const company = db.companies.find((c) => c.id === job.company_id) || null;
@@ -52,7 +52,7 @@ export async function PUT(req: Request, context: Ctx) {
     const oldHash = job.jd_hash;
     job.jd_hash = computeJdHash(job);
     job.updated_at = now;
-    writeDb(db);
+    await writeDb(db);
     const stats = jobStats(db, job);
     return NextResponse.json({
       status: "ok",
@@ -87,10 +87,10 @@ export async function DELETE(_req: Request, context: Ctx) {
     job.status = "archived";
     job.closed_at = job.closed_at || new Date().toISOString();
     job.updated_at = new Date().toISOString();
-    writeDb(db);
+    await writeDb(db);
     return NextResponse.json({ status: "ok", archived: true, message: `Tin đã có ${appCount} hồ sơ nên được chuyển vào Lưu trữ.` });
   }
   db.jobs.splice(idx, 1);
-  writeDb(db);
+  await writeDb(db);
   return NextResponse.json({ status: "ok", archived: false, message: "Đã xoá tin tuyển dụng." });
 }

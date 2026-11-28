@@ -26,7 +26,7 @@ import { JobViewTracker } from "@/components/job/job-view-tracker";
 export async function generateMetadata({ params }: PageProps<"/viec-lam/[slug]">) {
   const { slug } = await params;
   await connection();
-  const found = getPublicJob(slug);
+  const found = await getPublicJob(slug);
   return {
     title: found ? `${found.job.title} - ${found.job.companyName || "Đúng Việc"}` : "Tin tuyển dụng — Đúng Việc",
   };
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps<"/viec-lam/[slug]">
 export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[slug]">) {
   const { slug } = await params;
   await connection();
-  const found = getPublicJob(slug);
+  const found = await getPublicJob(slug);
   if (!found) notFound();
   const { job, open, related: relatedJobs, record } = found;
 

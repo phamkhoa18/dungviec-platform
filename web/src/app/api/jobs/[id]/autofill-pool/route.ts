@@ -309,7 +309,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
     });
   }
 
-  writeDb(db);
+  await writeDb(db);
 
   const afterInfo = getPoolCandidates(db, job.id);
   return NextResponse.json({
@@ -366,7 +366,7 @@ export async function DELETE(_req: Request, context: { params: Promise<{ id: str
   db.application_notes = db.application_notes.filter((n) => !targetIds.has(n.application_id));
   db.interviews = db.interviews.filter((iv) => !targetIds.has(iv.application_id));
 
-  writeDb(db);
+  await writeDb(db);
 
   return NextResponse.json({
     status: "ok",

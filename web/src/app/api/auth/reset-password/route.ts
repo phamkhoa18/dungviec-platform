@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const db = readDb();
+    const db = await readDb();
     const rec = findLatestUnusedReset(db, email);
     if (!rec || !rec.reset_token_hash || !rec.reset_token_expires_at) {
       return NextResponse.json(
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     const nowIso = new Date(nowMs).toISOString();
     if (new Date(rec.reset_token_expires_at).getTime() < nowMs) {
       rec.used_at = nowIso;
-      writeDb(db);
+      await writeDb(db);
       return NextResponse.json(
         { error: "Phiên đặt lại mật khẩu đã hết hạn. Vui lòng thực hiện lại từ đầu." },
         { status: 400 }
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
       link: user.role === "hr" ? "/nha-tuyen-dung/tong-quan" : "/ung-vien/tai-khoan",
     });
 
-    writeDb(db);
+    await writeDb(db);
 
     try {
       await sendPasswordResetSuccessEmail({

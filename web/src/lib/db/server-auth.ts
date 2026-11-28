@@ -13,7 +13,7 @@ export async function getSessionUser() {
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   const payload = verifySessionToken(token);
   if (!payload) return null;
-  const ctx = getUserWithContext(payload.userId);
+  const ctx = await getUserWithContext(payload.userId);
   if (!ctx) return null;
   return {
     session: payload,

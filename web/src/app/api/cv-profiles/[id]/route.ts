@@ -13,7 +13,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   }
   const { id } = await context.params;
   const body = (await req.json().catch(() => ({}))) as { is_default?: boolean; cv_title?: string };
-  const db = readDb();
+  const db = await readDb();
   const cv = db.cv_profiles.find(
     (c) => (String(c.id) === id || c._id === id) && c.user_id === sessionCtx.user.id && !c.archived
   );
@@ -29,6 +29,6 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     cv.cv_title = body.cv_title.trim().slice(0, 120);
   }
   cv.updated_at = new Date().toISOString();
-  writeDb(db);
+  await writeDb(db);
   return NextResponse.json({ status: "ok", cv_profile: cv });
 }

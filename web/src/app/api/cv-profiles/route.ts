@@ -28,7 +28,7 @@ export async function GET() {
       { status: 403 }
     );
   }
-  const db = readDb();
+  const db = await readDb();
   const list = db.cv_profiles
     .filter((cv) => cv.user_id === sessionCtx.user.id && !cv.archived)
     .sort((a, b) => b.id - a.id);
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
     // Lưu tệp vật lý NGOÀI thư mục public; xem/tải qua /api/files/cv/[id] có kiểm tra quyền
     const storedPath = fileBuffer ? saveCvFile(fileBuffer, fileName).file_path : "";
 
-    const db = readDb();
+    const db = await readDb();
     const now = new Date().toISOString();
     const nextId = (db.counters.cv_profiles || db.cv_profiles.length) + 1;
 
@@ -142,7 +142,7 @@ export async function POST(req: Request) {
 
     db.counters.cv_profiles = nextId;
     db.cv_profiles.push(newCv);
-    writeDb(db);
+    await writeDb(db);
 
     return NextResponse.json({
       status: "ok",
@@ -184,7 +184,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Thiếu mã hồ sơ CV." }, { status: 400 });
   }
 
-  const db = readDb();
+  const db = await readDb();
   const idx = db.cv_profiles.findIndex(
     (c) =>
       (String(c.id) === id || c._id === id) && c.user_id === sessionCtx.user.id
@@ -220,7 +220,7 @@ export async function DELETE(req: Request) {
       .sort((a, b) => b.id - a.id);
     if (remaining[0] && !remaining.some((c) => c.is_default)) remaining[0].is_default = true;
   }
-  writeDb(db);
+  await writeDb(db);
 
   return NextResponse.json({
     status: "ok",

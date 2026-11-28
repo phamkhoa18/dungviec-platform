@@ -49,8 +49,8 @@ export async function GET(req: Request) {
   const page = Math.max(1, Number(searchParams.get("page") || 1));
   const limit = Math.min(200, Math.max(0, Number(searchParams.get("limit") || 0)));
 
-  const db = readDb();
-  enforceJobDeadlines(db);
+  const db = await readDb();
+  await enforceJobDeadlines(db);
 
   let apps = [...db.applications];
   if (role === "candidate") {
@@ -198,8 +198,8 @@ export async function POST(req: Request) {
       coverLetter = String(body.cover_letter || "").trim().slice(0, 3000);
     }
 
-    const db = readDb();
-    enforceJobDeadlines(db);
+    const db = await readDb();
+    await enforceJobDeadlines(db);
 
     const job = db.jobs.find((j) => String(j.id) === jobIdOrSlug || j._id === jobIdOrSlug || j.slug === jobIdOrSlug);
     if (!job) {
@@ -303,7 +303,7 @@ export async function POST(req: Request) {
       });
     }
     job.jd_hash = job.jd_hash || computeJdHash(job);
-    writeDb(db);
+    await writeDb(db);
 
     // Bước 2 (UC-03): chấm điểm BGE-M3. Lỗi bất khả kháng -> pending_evaluation (QT-06)
     let aiRecord: AiEvaluationRecord | null = null;
@@ -335,7 +335,7 @@ export async function POST(req: Request) {
       db.counters.ai_evaluations = nextEvalId;
       db.ai_evaluations.push(aiRecord);
     }
-    writeDb(db);
+    await writeDb(db);
 
     return NextResponse.json({
       status: "ok",

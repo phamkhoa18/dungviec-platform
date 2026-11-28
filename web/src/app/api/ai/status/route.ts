@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
 import { callPythonModelInfo } from "@/lib/db/ai-client";
-import { readDb } from "@/lib/db/store";
+import { MONGODB_DB_NAME, readDb } from "@/lib/db/store";
 
 export async function GET() {
   try {
     const modelInfo = await callPythonModelInfo();
-    const db = readDb();
+    const db = await readDb();
 
     return NextResponse.json({
       status: "ok",
       ai_service: modelInfo,
       database_stats: {
-        engine: "MongoDB Document Store (06 Collections chuẩn Báo cáo 2)",
+        engine: `MongoDB (${MONGODB_DB_NAME})`,
+        database_name: MONGODB_DB_NAME,
         collections: {
           users: db.users.length,
           companies: db.companies.length,
@@ -19,6 +20,11 @@ export async function GET() {
           cv_profiles: db.cv_profiles.length,
           applications: db.applications.length,
           ai_evaluations: db.ai_evaluations.length,
+          candidate_profiles: db.candidate_profiles.length,
+          interviews: db.interviews.length,
+          application_notes: db.application_notes.length,
+          notifications: db.notifications.length,
+          password_resets: db.password_resets.length,
         },
       },
     });

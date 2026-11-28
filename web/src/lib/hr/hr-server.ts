@@ -40,7 +40,7 @@ export async function requireHr(): Promise<
   if (session.user.role !== "hr") {
     return { ok: false, response: jsonError("Chức năng này chỉ dành cho Nhà tuyển dụng.", 403) };
   }
-  const db = readDb();
+  const db = await readDb();
   const company = db.companies.find((c) => c.hr_user_id === session.user.id) || null;
   return { ok: true, session, db, company };
 }

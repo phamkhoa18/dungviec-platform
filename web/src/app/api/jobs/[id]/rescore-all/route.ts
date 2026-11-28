@@ -34,7 +34,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
       failed += 1;
     }
   }
-  if (ok) writeDb(db);
+  if (ok) await writeDb(db);
   return NextResponse.json({
     status: "ok",
     message: targets.length

@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const db = readDb();
+    const db = await readDb();
     const rec = findLatestUnusedReset(db, email);
     if (!rec) {
       return NextResponse.json(
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
     if (new Date(rec.expires_at).getTime() < nowMs) {
       rec.used_at = nowIso;
-      writeDb(db);
+      await writeDb(db);
       return NextResponse.json(
         { error: "Mã xác minh đã hết hạn. Vui lòng yêu cầu gửi lại mã mới." },
         { status: 400 }
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 
     if (rec.attempts >= rec.max_attempts) {
       rec.used_at = nowIso;
-      writeDb(db);
+      await writeDb(db);
       return NextResponse.json(
         { error: "Bạn đã nhập sai quá số lần quy định. Vui lòng yêu cầu gửi mã mới." },
         { status: 429 }
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
       if (remaining === 0) {
         rec.used_at = nowIso;
       }
-      writeDb(db);
+      await writeDb(db);
       if (remaining === 0) {
         return NextResponse.json(
           { error: "Bạn đã nhập sai mã 5 lần. Mã hiện tại đã bị hủy, vui lòng gửi lại mã mới." },
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     const resetToken = crypto.randomBytes(32).toString("hex");
     rec.reset_token_hash = hashVerificationSecret(resetToken, `reset:${email}`);
     rec.reset_token_expires_at = new Date(nowMs + RESET_TOKEN_TTL_MS).toISOString();
-    writeDb(db);
+    await writeDb(db);
 
     return NextResponse.json({
       status: "ok",

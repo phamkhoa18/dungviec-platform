@@ -30,7 +30,7 @@ export async function GET(_req: Request, context: Ctx) {
   const session = await getSessionUser();
   if (!session) return jsonError("Vui lòng đăng nhập.", 401);
   const { id } = await context.params;
-  const db = readDb();
+  const db = await readDb();
 
   if (session.user.role === "candidate") {
     const app = db.applications.find((a) => (String(a.id) === id || a._id === id) && a.candidate_id === session.user.id);
@@ -67,7 +67,7 @@ export async function GET(_req: Request, context: Ctx) {
       body: "Hồ sơ của bạn đã được nhà tuyển dụng mở xem.",
       link: "/ung-vien/tai-khoan?tab=applications",
     });
-    writeDb(db);
+    await writeDb(db);
   }
 
   const candidate = db.users.find((u) => u.id === app.candidate_id);
@@ -108,7 +108,7 @@ export async function PATCH(req: Request, context: Ctx) {
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
 
   if (session.user.role === "candidate") {
-    const db = readDb();
+    const db = await readDb();
     const app = db.applications.find((a) => (String(a.id) === id || a._id === id) && a.candidate_id === session.user.id);
     if (!app) return jsonError("Không tìm thấy đơn ứng tuyển.", 404);
     const job = db.jobs.find((j) => j.id === app.job_id);
@@ -124,7 +124,7 @@ export async function PATCH(req: Request, context: Ctx) {
       iv.status = "cancelled";
       iv.updated_at = new Date().toISOString();
     }
-    writeDb(db);
+    await writeDb(db);
     return NextResponse.json({ status: "ok", message: "Đã rút hồ sơ ứng tuyển.", application: app });
   }
 
@@ -186,7 +186,7 @@ export async function PATCH(req: Request, context: Ctx) {
   }
   if (changed) {
     app.updated_at = new Date().toISOString();
-    writeDb(db);
+    await writeDb(db);
   }
   return NextResponse.json({ status: "ok", message: "Đã cập nhật hồ sơ.", application: { ...app, status: normalizeStatus(app.status) } });
 }
@@ -201,7 +201,7 @@ export async function POST(_req: Request, context: Ctx) {
   if ("error" in found) return found.error;
   try {
     const ev = await scoreApplication(db, found.app, found.job);
-    writeDb(db);
+    await writeDb(db);
     const fitVi =
       ev.predicted_label === "Good Fit"
         ? "Rất phù hợp"

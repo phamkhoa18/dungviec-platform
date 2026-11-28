@@ -13,9 +13,10 @@ import { listPublicJobs } from "@/lib/jobs/public-jobs";
 /** 6 tin mới nhất đọc trực tiếp từ cơ sở dữ liệu (gồm tin HR vừa đăng). */
 async function NewestJobs() {
   await connection();
+  const jobs = await listPublicJobs();
   return (
     <>
-      {listPublicJobs()
+      {jobs
         .slice(0, 6)
         .map((job) => (
           <JobCardCompact key={job.slug} job={job} />

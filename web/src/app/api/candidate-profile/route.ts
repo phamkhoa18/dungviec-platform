@@ -15,12 +15,12 @@ export async function GET() {
   if (!sessionCtx || sessionCtx.user.role !== "candidate") {
     return NextResponse.json({ error: "Vui lòng đăng nhập tài khoản Ứng viên." }, { status: 401 });
   }
-  const db = readDb();
+  const db = await readDb();
   const user = db.users.find((u) => u.id === sessionCtx.user.id);
   if (!user) return NextResponse.json({ error: "Không tìm thấy tài khoản." }, { status: 404 });
   const existed = db.candidate_profiles.some((p) => p.user_id === user.id);
   const profile = getOrCreateProfile(db, user);
-  if (!existed) writeDb(db);
+  if (!existed) await writeDb(db);
   return NextResponse.json({ candidate_profile: profile });
 }
 
@@ -35,7 +35,7 @@ export async function PUT(req: Request) {
   }
   try {
     const body = (await req.json()) as Record<string, unknown>;
-    const db = readDb();
+    const db = await readDb();
     const user = db.users.find((u) => u.id === sessionCtx.user.id);
     if (!user) return NextResponse.json({ error: "Không tìm thấy tài khoản." }, { status: 404 });
     const profile = getOrCreateProfile(db, user);
@@ -77,7 +77,7 @@ export async function PUT(req: Request) {
     }
     finalizeProfile(profile);
     user.updated_at = profile.updated_at;
-    writeDb(db);
+    await writeDb(db);
 
     await setSessionCookie({
       userId: user.id,

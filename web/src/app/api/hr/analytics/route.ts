@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   const auth = await requireHr();
   if (!auth.ok) return auth.response;
   const { db, session, company } = auth;
-  enforceJobDeadlines(db);
+  await enforceJobDeadlines(db);
   const days = Math.min(90, Math.max(7, Number(new URL(req.url).searchParams.get("days") || 30)));
 
   const jobs = db.jobs.filter((j) => ownsJob(j, session.user.id, company));

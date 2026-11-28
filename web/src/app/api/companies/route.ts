@@ -15,7 +15,7 @@ const strList = (v: unknown, max = 12) =>
   Array.isArray(v) ? v.map((x) => String(x).trim().slice(0, 120)).filter(Boolean).slice(0, max) : undefined;
 
 export async function GET() {
-  const db = readDb();
+  const db = await readDb();
   const sessionCtx = await getSessionUser();
   const myCompany =
     sessionCtx?.user.role === "hr"
@@ -85,7 +85,7 @@ export async function PUT(req: Request) {
       );
     }
 
-    const db = readDb();
+    const db = await readDb();
     const now = new Date().toISOString();
     let company = db.companies.find(
       (c) => c.hr_user_id === sessionCtx.user.id
@@ -136,7 +136,7 @@ export async function PUT(req: Request) {
       if (!company.slug) company.slug = `${slugifyVietnamese(company.company_name)}-${company.id}`;
       company.updated_at = now;
 
-      writeDb(db);
+      await writeDb(db);
       if (logoProvided && prevLogo && prevLogo !== company.logo_url) {
         deleteMediaByUrl(prevLogo);
       }
@@ -150,7 +150,7 @@ export async function PUT(req: Request) {
       });
     }
 
-    writeDb(db);
+    await writeDb(db);
     return NextResponse.json({
       status: "ok",
       message: "Đã cập nhật hồ sơ doanh nghiệp thành công!",

@@ -39,7 +39,7 @@ export async function PUT(req: Request) {
 
   try {
     const body = await req.json();
-    const db = readDb();
+    const db = await readDb();
     const user = db.users.find((u) => u.id === sessionCtx.user.id);
     if (!user) {
       return NextResponse.json(
@@ -91,7 +91,7 @@ export async function PUT(req: Request) {
     }
     user.updated_at = new Date().toISOString();
 
-    writeDb(db);
+    await writeDb(db);
     if (prevAvatarToDelete) deleteMediaByUrl(prevAvatarToDelete);
 
     await setSessionCookie({
@@ -102,7 +102,7 @@ export async function PUT(req: Request) {
       fullName: user.full_name,
     });
 
-    const updated = getUserWithContext(user.id);
+    const updated = await getUserWithContext(user.id);
     return NextResponse.json({
       status: "ok",
       message: "Đã cập nhật thông tin tài khoản.",

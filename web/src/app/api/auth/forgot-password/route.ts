@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const db = readDb();
+    const db = await readDb();
     const user = db.users.find((u) => u.email.toLowerCase() === email);
     if (!user) {
       return NextResponse.json({
@@ -96,7 +96,7 @@ export async function POST(req: Request) {
 
     db.counters.password_resets = nextId;
     db.password_resets.push(record);
-    writeDb(db);
+    await writeDb(db);
 
     return NextResponse.json({
       status: "ok",

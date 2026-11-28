@@ -385,15 +385,27 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           </form>
 
           {!onCompanyStep && (
-            <p className="mt-5 text-center text-[13.5px] text-[#666666]">
-              {isLogin ? "Chưa có tài khoản Đúng Việc?" : "Đã có tài khoản?"}{" "}
-              <Link
-                href={isLogin ? `/dang-ky?role=${role}` : `/dang-nhap?role=${role}`}
-                className="font-bold text-[#306BD9] hover:underline"
-              >
-                {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
-              </Link>
-            </p>
+            <div className="mt-5 space-y-2 text-center">
+              <p className="text-[13.5px] text-[#666666]">
+                {isLogin ? "Chưa có tài khoản Đúng Việc?" : "Đã có tài khoản?"}{" "}
+                <Link
+                  href={isLogin ? `/dang-ky?role=${role}` : `/dang-nhap?role=${role}`}
+                  className="font-bold text-[#306BD9] hover:underline"
+                >
+                  {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
+                </Link>
+              </p>
+              {isLogin && (
+                <p>
+                  <Link
+                    href="/tai-khoan-demo"
+                    className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#306BD9] hover:underline"
+                  >
+                    Xem danh bạ tài khoản demo (HR &amp; Ứng viên) →
+                  </Link>
+                </p>
+              )}
+            </div>
           )}
     </AuthLayoutShell>
   );

@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const db = readDb();
+    const db = await readDb();
     const existing = db.users.find((u) => u.email.toLowerCase() === email);
     if (existing) {
       return NextResponse.json(
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
       db.companies.push(newCompany);
     }
 
-    writeDb(db);
+    await writeDb(db);
 
     await setSessionCookie({
       userId: newUser.id,
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
       fullName: newUser.full_name,
     });
 
-    const ctx = getUserWithContext(newUser.id);
+    const ctx = await getUserWithContext(newUser.id);
     return NextResponse.json({
       status: "ok",
       message:

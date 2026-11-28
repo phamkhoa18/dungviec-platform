@@ -12,7 +12,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
   const session = await getSessionUser();
   if (!session) return new Response("Vui lòng đăng nhập.", { status: 401 });
   const { id } = await context.params;
-  const db = readDb();
+  const db = await readDb();
   const cv = db.cv_profiles.find((c) => String(c.id) === id);
   if (!cv) return new Response("Không tìm thấy CV.", { status: 404 });
 

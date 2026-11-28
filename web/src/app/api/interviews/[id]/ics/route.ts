@@ -8,7 +8,7 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
   const session = await getSessionUser();
   if (!session) return new Response("Vui lòng đăng nhập.", { status: 401 });
   const { id } = await context.params;
-  const db = readDb();
+  const db = await readDb();
   const iv = db.interviews.find((x) => String(x.id) === id);
   if (!iv) return new Response("Không tìm thấy.", { status: 404 });
   const job = db.jobs.find((j) => j.id === iv.job_id);

@@ -21,7 +21,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   const session = await getSessionUser();
   if (!session) return jsonError("Vui lòng đăng nhập.", 401);
   const { id } = await context.params;
-  const db = readDb();
+  const db = await readDb();
   const iv = db.interviews.find((x) => String(x.id) === id);
   if (!iv) return jsonError("Không tìm thấy lịch phỏng vấn.", 404);
   const job = db.jobs.find((j) => j.id === iv.job_id);
@@ -45,7 +45,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       body: `${job?.title || ""} — ${formatVnDateTime(iv.scheduled_at)}${iv.candidate_note ? `. Ghi chú: ${iv.candidate_note}` : ""}`,
       link: `/nha-tuyen-dung/ung-vien?appId=${iv.application_id}`,
     });
-    writeDb(db);
+    await writeDb(db);
     return NextResponse.json({ status: "ok", message: "Đã gửi phản hồi tới nhà tuyển dụng.", interview: iv });
   }
 
@@ -102,6 +102,6 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       link: "/ung-vien/tai-khoan?tab=applications",
     });
   }
-  writeDb(db);
+  await writeDb(db);
   return NextResponse.json({ status: "ok", message: "Đã cập nhật lịch phỏng vấn.", interview: iv });
 }

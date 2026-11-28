@@ -134,9 +134,9 @@ export function isPubliclyOpen(job: JobRecord): boolean {
 }
 
 /** Danh sách tin đang tuyển, mới nhất trước. */
-export function listPublicJobs(): Job[] {
-  const db = readDb();
-  enforceJobDeadlines(db);
+export async function listPublicJobs(): Promise<Job[]> {
+  const db = await readDb();
+  await enforceJobDeadlines(db);
   return db.jobs
     .filter(isPubliclyOpen)
     .sort((a, b) => (b.published_at || b.created_at).localeCompare(a.published_at || a.created_at))
@@ -144,9 +144,11 @@ export function listPublicJobs(): Job[] {
 }
 
 /** Tin theo slug (kể cả đã đóng — để hiển thị thông báo hết hạn). Bản nháp/lưu trữ không công khai. */
-export function getPublicJob(slug: string): { job: Job; record: JobRecord; open: boolean; related: Job[] } | null {
-  const db = readDb();
-  enforceJobDeadlines(db);
+export async function getPublicJob(
+  slug: string
+): Promise<{ job: Job; record: JobRecord; open: boolean; related: Job[] } | null> {
+  const db = await readDb();
+  await enforceJobDeadlines(db);
   const record = db.jobs.find((j) => j.slug === slug || String(j.id) === slug);
   if (!record || record.status === "draft" || record.status === "archived") return null;
   const company = db.companies.find((c) => c.id === record.company_id);
@@ -162,9 +164,9 @@ export function getPublicJob(slug: string): { job: Job; record: JobRecord; open:
   return { job, record, open, related };
 }
 
-export function listCompanyJobs(companySlug: string) {
-  const db = readDb();
-  enforceJobDeadlines(db);
+export async function listCompanyJobs(companySlug: string) {
+  const db = await readDb();
+  await enforceJobDeadlines(db);
   const company = db.companies.find(
     (c) =>
       c.slug === companySlug ||

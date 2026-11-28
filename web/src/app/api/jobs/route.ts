@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     const auth = await requireHr();
     if (!auth.ok) return auth.response;
     const { db, session, company } = auth;
-    enforceJobDeadlines(db);
+    await enforceJobDeadlines(db);
     let jobs = db.jobs.filter((j) => ownsJob(j, session.user.id, company));
     if (statusFilter && statusFilter !== "all") jobs = jobs.filter((j) => j.status === statusFilter);
     return NextResponse.json({
@@ -36,8 +36,8 @@ export async function GET(req: Request) {
     });
   }
 
-  const db = readDb();
-  enforceJobDeadlines(db);
+  const db = await readDb();
+  await enforceJobDeadlines(db);
   const q = (searchParams.get("q") || "").toLowerCase().trim();
   const category = searchParams.get("category");
   const city = (searchParams.get("city") || "").toLowerCase();
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
     newJob.jd_hash = computeJdHash(newJob);
     db.counters.jobs = nextJobId;
     db.jobs.push(newJob);
-    writeDb(db);
+    await writeDb(db);
     return NextResponse.json({
       status: "ok",
       message: newJob.status === "draft" ? "Đã lưu bản nháp tin tuyển dụng." : "Đã đăng tin tuyển dụng mới thành công!",

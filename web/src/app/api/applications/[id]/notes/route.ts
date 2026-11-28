@@ -40,7 +40,7 @@ export async function POST(req: Request, context: Ctx) {
     created_at: new Date().toISOString(),
   };
   db.application_notes.push(note);
-  writeDb(db);
+  await writeDb(db);
   return NextResponse.json({ status: "ok", note });
 }
 
@@ -58,6 +58,6 @@ export async function DELETE(req: Request, context: Ctx) {
   );
   if (idx === -1) return jsonError("Không tìm thấy ghi chú của bạn.", 404);
   db.application_notes.splice(idx, 1);
-  writeDb(db);
+  await writeDb(db);
   return NextResponse.json({ status: "ok" });
 }

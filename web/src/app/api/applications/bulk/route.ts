@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     });
     updated.push(found.app.id);
   }
-  if (updated.length) writeDb(db);
+  if (updated.length) await writeDb(db);
   return NextResponse.json({
     status: "ok",
     message: `Đã cập nhật ${updated.length} hồ sơ${skipped.length ? `, bỏ qua ${skipped.length}` : ""}.`,

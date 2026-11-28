@@ -87,7 +87,7 @@ export async function POST(req: Request) {
 
     const optimized = await optimizeUploadedImage(kindRaw, buffer, detected);
 
-    const db = readDb();
+    const db = await readDb();
     const now = new Date().toISOString();
 
     if (kindRaw === "avatar") {
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
       );
       user.avatar_url = url;
       user.updated_at = now;
-      writeDb(db);
+      await writeDb(db);
       if (prevUrl && prevUrl !== url) deleteMediaByUrl(prevUrl);
 
       return NextResponse.json({
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
       company.cover_url = url;
     }
     company.updated_at = now;
-    writeDb(db);
+    await writeDb(db);
     if (prevUrl && prevUrl !== url) deleteMediaByUrl(prevUrl);
 
     const baseLabel =
@@ -210,7 +210,7 @@ export async function DELETE(req: Request) {
     );
   }
 
-  const db = readDb();
+  const db = await readDb();
   const now = new Date().toISOString();
 
   if (kindRaw === "avatar") {
@@ -221,7 +221,7 @@ export async function DELETE(req: Request) {
     const prevUrl = user.avatar_url;
     user.avatar_url = null;
     user.updated_at = now;
-    writeDb(db);
+    await writeDb(db);
     deleteMediaByUrl(prevUrl);
     return NextResponse.json({
       status: "ok",
@@ -241,7 +241,7 @@ export async function DELETE(req: Request) {
     company.cover_url = null;
   }
   company.updated_at = now;
-  writeDb(db);
+  await writeDb(db);
   deleteMediaByUrl(prevUrl);
 
   return NextResponse.json({

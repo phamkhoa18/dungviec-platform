@@ -16,7 +16,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
     return NextResponse.json({ error: "Chức năng chỉ dành cho Ứng viên." }, { status: 403 });
   }
   const { id } = await context.params;
-  const db = readDb();
+  const db = await readDb();
   const cv = db.cv_profiles.find(
     (c) => (String(c.id) === id || c._id === id) && c.user_id === sessionCtx.user.id
   );
@@ -35,7 +35,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
       fileBuffer: fs.readFileSync(diskPath),
     });
     Object.assign(cv, cvFieldsFromParsed(parsed), { updated_at: new Date().toISOString() });
-    writeDb(db);
+    await writeDb(db);
     return NextResponse.json({
       status: "ok",
       message: parsed.ocr_required

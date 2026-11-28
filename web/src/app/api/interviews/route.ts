@@ -20,7 +20,7 @@ export async function GET(req: Request) {
   const session = await getSessionUser();
   if (!session) return jsonError("Vui lòng đăng nhập.", 401);
   const sp = new URL(req.url).searchParams;
-  const db = readDb();
+  const db = await readDb();
   let list = db.interviews;
   if (session.user.role === "hr") {
     const company = db.companies.find((c) => c.hr_user_id === session.user.id) || null;
@@ -113,6 +113,6 @@ export async function POST(req: Request) {
     }). Vui lòng xác nhận.`,
     link: "/ung-vien/tai-khoan?tab=applications",
   });
-  writeDb(db);
+  await writeDb(db);
   return NextResponse.json({ status: "ok", message: "Đã gửi lời mời phỏng vấn tới ứng viên.", interview: iv });
 }

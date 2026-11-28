@@ -39,7 +39,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   copy.jd_hash = computeJdHash(copy);
   db.counters.jobs = nextId;
   db.jobs.push(copy);
-  writeDb(db);
+  await writeDb(db);
   return NextResponse.json({
     status: "ok",
     message: "Đã nhân bản tin thành bản nháp.",
