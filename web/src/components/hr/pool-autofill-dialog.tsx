@@ -216,7 +216,7 @@ export function PoolAutofillDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[580px]">
         <DialogHeader className="shrink-0 border-b border-[#F1F5F9] px-6 py-4 pr-12">
-          <DialogTitle className="flex items-center gap-2 text-[17px] font-extrabold text-[#111111]">
+          <DialogTitle className="flex items-center gap-2 text-[17px] font-bold text-[#111111]">
             <span className="grid size-8 place-items-center rounded-xl bg-[#EBF2FF] text-[#306BD9]">
               <DatabaseZap className="size-4" />
             </span>
@@ -452,7 +452,7 @@ export function PoolAutofillDialog({
                           >
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[#EBF2FF] text-[11px] font-extrabold text-[#306BD9]">
+                                <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[#EBF2FF] text-[11px] font-bold text-[#306BD9]">
                                   {idx + 1}
                                 </span>
                                 <p className="truncate text-[12.5px] font-bold text-[#111111]">
@@ -470,7 +470,7 @@ export function PoolAutofillDialog({
                                 )}
                               </p>
                             </div>
-                            <span className="shrink-0 text-[15px] font-extrabold text-[#306BD9] tabular-nums">
+                            <span className="shrink-0 text-[15px] font-bold text-[#306BD9] tabular-nums">
                               {m.matchScore.toFixed(1)}
                             </span>
                           </div>

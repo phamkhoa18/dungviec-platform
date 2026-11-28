@@ -54,7 +54,7 @@ function KpiCard({
           </span>
         </div>
         <div className="my-2 flex items-baseline gap-2">
-          <p className="text-[30px] leading-none font-extrabold tracking-tight text-[#111111] tabular-nums">
+          <p className="text-[30px] leading-none font-bold tracking-tight text-[#111111] tabular-nums">
             {value}
           </p>
           {badge && (
@@ -222,7 +222,7 @@ export default function HrOverviewPage() {
             <Panel className="p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h2 className="flex items-center gap-1.5 text-[15px] font-extrabold">
+                  <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
                     <Filter className="size-4 text-[#306BD9]" />
                     Phễu chuyển đổi tuyển dụng
                   </h2>
@@ -263,7 +263,7 @@ export default function HrOverviewPage() {
                           <span className="font-semibold text-[#334155]">
                             {idx + 1}. {step.label}
                           </span>
-                          <span className="font-extrabold text-[#1E3A8A] tabular-nums">
+                          <span className="font-bold text-[#1E3A8A] tabular-nums">
                             {rateLabel}
                           </span>
                         </div>
@@ -351,7 +351,7 @@ export default function HrOverviewPage() {
               <div>
                 <div className="mb-4 flex items-center justify-between">
                   <div>
-                    <h2 className="flex items-center gap-1.5 text-[15px] font-extrabold">
+                    <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
                       <TrendingUp className="size-4 text-[#306BD9]" />
                       Xu hướng nộp hồ sơ ({days} ngày qua)
                     </h2>
@@ -409,7 +409,7 @@ export default function HrOverviewPage() {
               {/* Lịch phỏng vấn sắp tới */}
               <div className="mt-4 border-t border-[#F0F2F6] pt-4">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-[13px] font-extrabold text-[#222222]">
+                  <span className="flex items-center gap-1.5 text-[13px] font-bold text-[#222222]">
                     <CalendarClock className="size-4 text-[#6D28D9]" />
                     Lịch phỏng vấn sắp tới (
                     {data.upcoming_interviews.length})
@@ -465,7 +465,7 @@ export default function HrOverviewPage() {
             <Panel className="overflow-hidden">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F0F2F6] px-4 py-3.5 sm:px-5 sm:py-4">
                 <div className="min-w-0">
-                  <h2 className="text-[15px] font-extrabold">
+                  <h2 className="text-[15px] font-bold">
                     Hiệu quả theo từng tin tuyển dụng
                   </h2>
                   <p className="text-[12px] text-[#777777]">
@@ -504,7 +504,7 @@ export default function HrOverviewPage() {
                                 {j.title}
                               </Link>
                               {j.new_count > 0 && (
-                                <span className="mt-1 inline-block whitespace-nowrap rounded-full bg-[#FEE2E2] px-2 py-0.5 text-[10px] font-extrabold text-[#DC2626]">
+                                <span className="mt-1 inline-block whitespace-nowrap rounded-full bg-[#FEE2E2] px-2 py-0.5 text-[10px] font-bold text-[#DC2626]">
                                   +{j.new_count} mới
                                 </span>
                               )}
@@ -538,7 +538,7 @@ export default function HrOverviewPage() {
                             </div>
                             <div>
                               <p className="text-[#64748B]">Điểm TB</p>
-                              <p className="font-extrabold text-[#1E3A8A]">{j.avg_ai_score ?? "—"}</p>
+                              <p className="font-bold text-[#1E3A8A]">{j.avg_ai_score ?? "—"}</p>
                             </div>
                           </div>
                         </div>
@@ -573,7 +573,7 @@ export default function HrOverviewPage() {
                                   {j.title}
                                 </Link>
                                 {j.new_count > 0 && (
-                                  <span className="ml-1.5 inline-block whitespace-nowrap rounded-full bg-[#FEE2E2] px-1.5 py-0.2 text-[10px] font-extrabold text-[#DC2626]">
+                                  <span className="ml-1.5 inline-block whitespace-nowrap rounded-full bg-[#FEE2E2] px-1.5 py-0.2 text-[10px] font-bold text-[#DC2626]">
                                     +{j.new_count} mới
                                   </span>
                                 )}
@@ -596,7 +596,7 @@ export default function HrOverviewPage() {
                               <td className="px-2.5 py-3 text-center font-bold text-[#15803D]">
                                 {j.good_fit_count}
                               </td>
-                              <td className="px-2.5 py-3 text-center font-extrabold text-[#1E3A8A]">
+                              <td className="px-2.5 py-3 text-center font-bold text-[#1E3A8A]">
                                 {j.avg_ai_score ?? "—"}
                               </td>
                               <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -621,7 +621,7 @@ export default function HrOverviewPage() {
 
             {/* Hoạt động gần đây */}
             <Panel className="p-5">
-              <h2 className="flex items-center gap-1.5 text-[15px] font-extrabold">
+              <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
                 <Activity className="size-4 text-[#306BD9]" />
                 Hoạt động tuyển dụng gần đây
               </h2>

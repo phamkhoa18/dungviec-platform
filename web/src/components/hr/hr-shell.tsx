@@ -112,7 +112,7 @@ export function HrShell({ children }: { children: React.ReactNode }) {
                     aria-label="Menu tài khoản"
                     className="h-9 gap-2 rounded-full border-[#D8E5FF] bg-[#F5F9FF] pr-2.5 pl-1.5 text-[#222222] hover:border-[#306BD9] hover:bg-[#F5F9FF]"
                   >
-                    <span className="grid size-6.5 place-items-center rounded-full bg-[#306BD9] text-[12px] font-extrabold text-white">
+                    <span className="grid size-6.5 place-items-center rounded-full bg-[#306BD9] text-[12px] font-bold text-white">
                       {initial}
                     </span>
                     <span className="hidden max-w-[150px] truncate text-[12.5px] font-bold sm:block">
@@ -189,7 +189,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[26px]">{title}</h1>
+        <h1 className="text-[22px] font-bold tracking-tight sm:text-[26px]">{title}</h1>
         {subtitle && <p className="mt-1 text-[14px] text-[#666666]">{subtitle}</p>}
       </div>
       {actions}

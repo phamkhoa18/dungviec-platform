@@ -120,7 +120,7 @@ export function SiteHeader({ transparent }: { transparent?: boolean }) {
                     aria-label="Menu tài khoản"
                     className="h-9 gap-2 rounded-full border-[#D8E5FF] bg-[#F5F9FF] pr-2.5 pl-1.5 text-[#222222] shadow-2xs hover:border-[#306BD9] hover:bg-[#EBF2FF]"
                   >
-                    <span className="grid size-6.5 place-items-center rounded-full bg-gradient-to-br from-[#306BD9] to-[#1D4ED8] text-[12px] font-extrabold text-white">
+                    <span className="grid size-6.5 place-items-center rounded-full bg-gradient-to-br from-[#306BD9] to-[#1D4ED8] text-[12px] font-bold text-white">
                       {userInitial}
                     </span>
                     <div className="hidden text-left leading-tight sm:block">

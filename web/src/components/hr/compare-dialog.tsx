@@ -73,7 +73,7 @@ export function CompareDialog({
                     <div className="border-b border-[#E2E8F0] pb-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <h3 className="truncate text-[16px] font-extrabold text-[#111111]">
+                          <h3 className="truncate text-[16px] font-bold text-[#111111]">
                             {app.candidate?.full_name ?? "Ứng viên"}
                           </h3>
                           <p className="truncate text-[12px] text-[#64748B]">
@@ -116,7 +116,7 @@ export function CompareDialog({
                         </div>
                       </div>
                       <span
-                        className="text-[28px] leading-none font-extrabold tabular-nums"
+                        className="text-[28px] leading-none font-bold tabular-nums"
                         style={{ color: scoreColor }}
                       >
                         {ev ? Math.round(ev.match_score) : "—"}
@@ -129,7 +129,7 @@ export function CompareDialog({
                         <p className="text-[11px] text-[#64748B]">
                           P(Rất phù hợp)
                         </p>
-                        <p className="mt-0.5 font-extrabold text-[#15803D] tabular-nums">
+                        <p className="mt-0.5 font-bold text-[#15803D] tabular-nums">
                           {ev ? `${Math.round((ev.prob_good ?? 0) * 100)}%` : "—"}
                         </p>
                       </div>
@@ -137,7 +137,7 @@ export function CompareDialog({
                         <p className="text-[11px] text-[#64748B]">
                           P(Tiềm năng)
                         </p>
-                        <p className="mt-0.5 font-extrabold text-[#B45309] tabular-nums">
+                        <p className="mt-0.5 font-bold text-[#B45309] tabular-nums">
                           {ev ? `${Math.round((ev.prob_potential ?? 0) * 100)}%` : "—"}
                         </p>
                       </div>

@@ -105,7 +105,7 @@ function SectionCard({
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <Icon className="size-4.5 text-[#306BD9]" />
-          <h2 className="text-[15px] font-extrabold text-[#222222]">{title}</h2>
+          <h2 className="text-[15px] font-bold text-[#222222]">{title}</h2>
           <SourceBadge source={source} cvProfiles={cvProfiles} />
         </div>
         {!editing ? (
@@ -234,7 +234,7 @@ export function CandidateProfileTab({
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[11px] font-bold text-[#306BD9]">
               <UserRound className="size-3" /> Hồ sơ ứng viên
             </span>
-            <h1 className="mt-1.5 text-[21px] font-extrabold text-[#222222]">{user.full_name}</h1>
+            <h1 className="mt-1.5 text-[21px] font-bold text-[#222222]">{user.full_name}</h1>
             <p className="text-[14px] font-semibold text-[#306BD9]">{p?.headline || "Chưa có chức danh"}</p>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-[#555555]">
               {p?.city && (
@@ -263,7 +263,7 @@ export function CandidateProfileTab({
 
           <div className="flex flex-col justify-between rounded-[14px] border border-[#DCE7FB] bg-gradient-to-br from-[#F5F9FF] to-white p-4">
             <div>
-              <p className="flex items-center gap-1.5 text-[13px] font-extrabold text-[#1E3A8A]">
+              <p className="flex items-center gap-1.5 text-[13px] font-bold text-[#1E3A8A]">
                 <FileText className="size-4 text-[#306BD9]" /> CV dùng để AI chấm điểm
               </p>
               <p className="mt-1 text-[12px] leading-relaxed text-[#475569]">
@@ -491,7 +491,7 @@ export function CandidateProfileTab({
           {(p?.experiences || []).map((e, i) => (
             <li key={i}>
               <span className="absolute -left-[7px] mt-1.5 size-3 rounded-full border-2 border-white bg-[#306BD9]" />
-              <p className="text-[13.5px] font-extrabold text-[#222222]">{e.position || "Vị trí chưa rõ"}</p>
+              <p className="text-[13.5px] font-bold text-[#222222]">{e.position || "Vị trí chưa rõ"}</p>
               <p className="text-[12.5px] font-semibold text-[#306BD9]">{e.company}</p>
               <p className="text-[11.5px] text-[#64748B]"><CalendarDays className="mr-1 inline size-3" />{formatPeriod(e.start, e.end, e.is_current)}</p>
               {e.description.length > 0 && (
@@ -553,7 +553,7 @@ export function CandidateProfileTab({
         <div className="space-y-3">
           {(p?.educations || []).map((e, i) => (
             <div key={i}>
-              <p className="text-[13.5px] font-extrabold text-[#222222]">{e.school}</p>
+              <p className="text-[13.5px] font-bold text-[#222222]">{e.school}</p>
               <p className="text-[12.5px] text-[#334155]">{[e.degree, e.major].filter(Boolean).join(" · ")}</p>
               <p className="text-[11.5px] text-[#64748B]">{[formatPeriod(e.start, e.end), e.gpa && `GPA ${e.gpa}`, e.status].filter(Boolean).join(" · ")}</p>
             </div>
@@ -595,7 +595,7 @@ export function CandidateProfileTab({
         <div className="space-y-3">
           {(p?.projects || []).map((x, i) => (
             <div key={i}>
-              <p className="text-[13.5px] font-extrabold text-[#222222]">{x.name}{x.role && <span className="font-semibold text-[#64748B]"> · {x.role}</span>}</p>
+              <p className="text-[13.5px] font-bold text-[#222222]">{x.name}{x.role && <span className="font-semibold text-[#64748B]"> · {x.role}</span>}</p>
               {x.description && <p className="text-[12.5px] text-[#334155]">{x.description}</p>}
               {x.technologies.length > 0 && <p className="text-[11.5px] font-semibold text-[#306BD9]">{x.technologies.join(" · ")}</p>}
             </div>

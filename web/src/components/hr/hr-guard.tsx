@@ -47,7 +47,7 @@ export function HrGuard({ children }: { children: React.ReactNode }) {
           <span className="mx-auto grid size-12 place-items-center rounded-full bg-[#FEF2F2] text-[#DC2626]">
             <ShieldAlert className="size-6" />
           </span>
-          <h1 className="mt-4 text-[20px] font-extrabold">Khu vực dành cho nhà tuyển dụng</h1>
+          <h1 className="mt-4 text-[20px] font-bold">Khu vực dành cho nhà tuyển dụng</h1>
           <p className="mt-2 text-[14px] text-[#666666]">
             Tài khoản của bạn là ứng viên nên không truy cập được trang này.
           </p>

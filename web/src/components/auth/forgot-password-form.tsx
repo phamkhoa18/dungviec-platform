@@ -207,7 +207,7 @@ export function ForgotPasswordForm() {
             <KeyRound className="size-5" />
           )}
         </div>
-        <h1 className="text-[22px] font-extrabold tracking-tight">{heading}</h1>
+        <h1 className="text-[22px] font-bold tracking-tight">{heading}</h1>
         <p className="mt-1 text-[13.5px] text-[#666666]">{subtitle}</p>
       </div>
 

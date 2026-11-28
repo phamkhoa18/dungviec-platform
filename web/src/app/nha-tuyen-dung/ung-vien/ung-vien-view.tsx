@@ -151,7 +151,7 @@ function ListRow({
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="truncate text-[13.5px] font-extrabold text-[#111111]">
+            <p className="truncate text-[13.5px] font-bold text-[#111111]">
               {app.candidate?.full_name ?? "Ứng viên"}
             </p>
             {app.is_new && (
@@ -186,7 +186,7 @@ function ListRow({
         </div>
         <div className="shrink-0 text-right">
           <p
-            className="text-[20px] leading-none font-extrabold tabular-nums"
+            className="text-[20px] leading-none font-bold tabular-nums"
             style={{ color }}
           >
             {scored ? Math.round(ev.match_score) : "—"}
@@ -607,11 +607,11 @@ function CandidatesViewContent({
                 <div className="mb-3 flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
                     <span className={cn("size-2.5 rounded-full", colMeta.dot)} />
-                    <h3 className="text-[13px] font-extrabold text-[#222222]">
+                    <h3 className="text-[13px] font-bold text-[#222222]">
                       {colMeta.label}
                     </h3>
                   </div>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold text-[#475569] shadow-2xs">
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#475569] shadow-2xs">
                     {items.length}
                   </span>
                 </div>
@@ -636,7 +636,7 @@ function CandidatesViewContent({
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <p className="truncate text-[13px] font-extrabold text-[#111111]">
+                              <p className="truncate text-[13px] font-bold text-[#111111]">
                                 {app.candidate?.full_name ?? "Ứng viên"}
                               </p>
                               <p className="truncate text-[11px] text-[#64748B]">
@@ -645,7 +645,7 @@ function CandidatesViewContent({
                             </div>
                             {ev && (
                               <span
-                                className="inline-flex items-center gap-0.5 rounded-lg bg-[#F8FAFC] px-2 py-0.5 text-[12px] font-extrabold tabular-nums"
+                                className="inline-flex items-center gap-0.5 rounded-lg bg-[#F8FAFC] px-2 py-0.5 text-[12px] font-bold tabular-nums"
                                 style={{
                                   color: FIT_META[ev.predicted_label].color,
                                 }}
@@ -693,7 +693,7 @@ function CandidatesViewContent({
         <div className="grid min-w-0 grid-cols-1 items-start gap-5 lg:grid-cols-[370px_minmax(0,1fr)]">
           <Panel className="overflow-hidden lg:sticky lg:top-20">
             <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-[#F0F2F6] px-4 py-3">
-              <h2 className="text-[13.5px] font-extrabold">
+              <h2 className="text-[13.5px] font-bold">
                 Xếp hạng ứng viên ({visible.length})
               </h2>
               <span className="text-[11px] text-[#64748B]">
@@ -752,7 +752,7 @@ function CandidatesViewContent({
       <Dialog open={bulkRejectOpen} onOpenChange={setBulkRejectOpen}>
         <DialogContent className="rounded-2xl sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[17px] font-extrabold text-[#B91C1C]">
+            <DialogTitle className="text-[17px] font-bold text-[#B91C1C]">
               Từ chối hàng loạt ({checkedIds.length} hồ sơ)
             </DialogTitle>
             <DialogDescription className="text-[12.5px]">

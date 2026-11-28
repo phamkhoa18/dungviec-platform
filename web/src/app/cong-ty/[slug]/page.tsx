@@ -41,7 +41,7 @@ export default async function PublicCompanyPage({
           <div className="mx-auto max-w-[1140px] px-4 pb-6">
             <div className="-mt-10 flex flex-wrap items-end justify-between gap-4 sm:-mt-12">
               <div className="flex flex-wrap items-end gap-4">
-                <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-2xl border-4 border-white bg-white text-[28px] font-extrabold text-[#306BD9] shadow-md sm:size-24">
+                <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-2xl border-4 border-white bg-white text-[28px] font-bold text-[#306BD9] shadow-md sm:size-24">
                   {company.logo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -56,7 +56,7 @@ export default async function PublicCompanyPage({
 
                 <div className="pt-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-[20px] font-extrabold text-[#222222] sm:text-[24px]">
+                    <h1 className="text-[20px] font-bold text-[#222222] sm:text-[24px]">
                       {company.company_name}
                     </h1>
                     {company.verified && (
@@ -97,7 +97,7 @@ export default async function PublicCompanyPage({
               </div>
 
               <div className="rounded-xl bg-[#EBF2FF] px-4 py-2.5 text-center">
-                <p className="text-[20px] leading-none font-extrabold text-[#306BD9]">
+                <p className="text-[20px] leading-none font-bold text-[#306BD9]">
                   {jobs.length}
                 </p>
                 <p className="mt-1 text-[11.5px] font-semibold text-[#1E3A8A]">
@@ -112,7 +112,7 @@ export default async function PublicCompanyPage({
           {/* Cột trái: Giới thiệu + Danh sách việc làm */}
           <div className="min-w-0 space-y-6">
             <section className="rounded-2xl border border-[#E2E8F0] bg-white p-5 sm:p-6">
-              <h2 className="text-[17px] font-extrabold text-[#222222]">
+              <h2 className="text-[17px] font-bold text-[#222222]">
                 Giới thiệu doanh nghiệp
               </h2>
               <p className="mt-2.5 whitespace-pre-line text-[14px] leading-relaxed text-[#444444]">
@@ -123,7 +123,7 @@ export default async function PublicCompanyPage({
 
             <section className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="flex items-center gap-2 text-[17px] font-extrabold text-[#222222]">
+                <h2 className="flex items-center gap-2 text-[17px] font-bold text-[#222222]">
                   <Briefcase className="size-5 text-[#306BD9]" />
                   Vị trí đang tuyển dụng ({jobs.length})
                 </h2>
@@ -152,7 +152,7 @@ export default async function PublicCompanyPage({
           {/* Cột phải: Địa chỉ + Phúc lợi */}
           <aside className="space-y-5">
             <section className="rounded-2xl border border-[#E2E8F0] bg-white p-5">
-              <h3 className="text-[15px] font-extrabold text-[#222222]">
+              <h3 className="text-[15px] font-bold text-[#222222]">
                 Thông tin liên hệ &amp; Địa điểm
               </h3>
               <div className="mt-3 space-y-3 text-[13.5px] text-[#444444]">
@@ -178,7 +178,7 @@ export default async function PublicCompanyPage({
 
             {company.benefits && company.benefits.length > 0 && (
               <section className="rounded-2xl border border-[#E2E8F0] bg-white p-5">
-                <h3 className="flex items-center gap-1.5 text-[15px] font-extrabold text-[#222222]">
+                <h3 className="flex items-center gap-1.5 text-[15px] font-bold text-[#222222]">
                   <Gift className="size-4 text-[#306BD9]" />
                   Phúc lợi &amp; Đãi ngộ
                 </h3>

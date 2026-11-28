@@ -191,7 +191,7 @@ function AiTab({ app }: { app: EnrichedApplication }) {
     <Panel className="p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
+          <h3 className="flex items-center gap-2 text-[15px] font-bold">
             <Sparkles className="size-4 text-[#306BD9]" />
             Kết quả phân tích mức độ phù hợp
           </h3>
@@ -337,7 +337,7 @@ function AiTab({ app }: { app: EnrichedApplication }) {
 
             {ev.explanation && (
               <div className="rounded-xl border border-[#DCE7F9] bg-[#F5F9FF] p-4 text-[13px] leading-relaxed text-[#1E3A8A]">
-                <p className="mb-1 text-[11.5px] font-extrabold uppercase tracking-wider text-[#306BD9]">
+                <p className="mb-1 text-[11.5px] font-bold uppercase tracking-wider text-[#306BD9]">
                   Nhận xét tự động từ hệ thống AI
                 </p>
                 {ev.explanation}
@@ -411,7 +411,7 @@ function StructuredProfileTab({
     <div className="space-y-4">
       <Panel className="p-5">
         <div className="border-b border-[#F0F2F6] pb-3">
-          <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
+          <h3 className="flex items-center gap-2 text-[15px] font-bold">
             <FileText className="size-4 text-[#306BD9]" />
             Nội dung hồ sơ
           </h3>
@@ -449,7 +449,7 @@ function CvViewerTab({ app }: { app: EnrichedApplication }) {
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F0F2F6] px-5 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <FileText className="size-4 shrink-0 text-[#306BD9]" />
-          <span className="truncate text-[14px] font-extrabold">
+          <span className="truncate text-[14px] font-bold">
             {cv.file_name}
           </span>
           <span className="rounded bg-[#EBF2FF] px-2 py-0.5 text-[10.5px] font-bold uppercase text-[#306BD9]">
@@ -557,7 +557,7 @@ function InterviewsTab({
     <Panel className="p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
+          <h3 className="flex items-center gap-2 text-[15px] font-bold">
             <CalendarClock className="size-4 text-[#306BD9]" />
             Lịch phỏng vấn &amp; Phiếu đánh giá ({interviews.length})
           </h3>
@@ -603,7 +603,7 @@ function InterviewsTab({
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[14px] font-extrabold text-[#1E3A8A]">
+                    <span className="text-[14px] font-bold text-[#1E3A8A]">
                       {formatDateTime(iv.scheduled_at)}
                     </span>
                     <span className="text-[#64748B]">
@@ -693,7 +693,7 @@ function InterviewsTab({
                 {iv.feedback && (
                   <div className="mt-3 rounded-xl border border-[#BBF7D0] bg-white p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-extrabold text-[#15803D]">
+                      <span className="font-bold text-[#15803D]">
                         Phiếu đánh giá phỏng vấn · Tổng điểm:{" "}
                         {iv.feedback.overall}/5 sao
                       </span>
@@ -760,7 +760,7 @@ function ActivityNotesTab({ app }: { app: EnrichedApplication }) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Panel className="p-5">
-        <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
+        <h3 className="flex items-center gap-2 text-[15px] font-bold">
           <MessageSquarePlus className="size-4 text-[#306BD9]" />
           Ghi chú nội bộ Nhà tuyển dụng ({notes.length})
         </h3>
@@ -822,7 +822,7 @@ function ActivityNotesTab({ app }: { app: EnrichedApplication }) {
       </Panel>
 
       <Panel className="p-5">
-        <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
+        <h3 className="flex items-center gap-2 text-[15px] font-bold">
           <History className="size-4 text-[#306BD9]" />
           Lịch sử xử lý hồ sơ
         </h3>
@@ -974,7 +974,7 @@ export function ApplicantDetail({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="break-words text-[18px] font-extrabold text-[#111111] sm:text-[20px]">
+              <h2 className="break-words text-[18px] font-bold text-[#111111] sm:text-[20px]">
                 {c?.full_name ??
                   app.cv_snapshot?.parsed_data?.personal?.full_name ??
                   "Ứng viên"}
@@ -1218,7 +1218,7 @@ export function ApplicantDetail({
               {"count" in t && t.count > 0 && (
                 <span
                   className={cn(
-                    "rounded-full px-1.5 py-0.1 text-[10.5px] font-extrabold",
+                    "rounded-full px-1.5 py-0.1 text-[10.5px] font-bold",
                     active
                       ? "bg-white/20 text-white"
                       : "bg-[#EBF2FF] text-[#306BD9]"
@@ -1228,7 +1228,7 @@ export function ApplicantDetail({
                 </span>
               )}
               {"badge" in t && t.badge && (
-                <span className="rounded-full bg-[#F59E0B] px-1.5 py-0.1 text-[10px] font-extrabold text-white">
+                <span className="rounded-full bg-[#F59E0B] px-1.5 py-0.1 text-[10px] font-bold text-white">
                   {t.badge}
                 </span>
               )}
@@ -1285,7 +1285,7 @@ export function ApplicantDetail({
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent className="rounded-2xl sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[17px] font-extrabold text-[#B91C1C]">
+            <DialogTitle className="text-[17px] font-bold text-[#B91C1C]">
               Xác nhận từ chối hồ sơ ứng tuyển
             </DialogTitle>
             <DialogDescription className="text-[12.5px]">

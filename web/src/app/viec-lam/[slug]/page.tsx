@@ -148,7 +148,7 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
                       className="size-full object-contain p-1.5"
                     />
                   ) : (
-                    <span className="grid size-full place-items-center bg-[#EBF2FF] text-2xl font-extrabold text-[#306BD9]">
+                    <span className="grid size-full place-items-center bg-[#EBF2FF] text-2xl font-bold text-[#306BD9]">
                       {companyDisplayName.trim()[0]?.toUpperCase() || "Đ"}
                     </span>
                   )}
@@ -171,7 +171,7 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
                     {companyDisplayName}
                   </p>
 
-                  <p className="mt-2.5 text-[20px] font-extrabold text-[#F0325E]">
+                  <p className="mt-2.5 text-[20px] font-bold text-[#F0325E]">
                     {job.salary}
                   </p>
                 </div>
@@ -301,7 +301,7 @@ export default async function JobDetailPage({ params }: PageProps<"/viec-lam/[sl
                       className="size-full object-contain"
                     />
                   ) : (
-                    <span className="grid size-full place-items-center rounded bg-[#EBF2FF] text-lg font-extrabold text-[#306BD9]">
+                    <span className="grid size-full place-items-center rounded bg-[#EBF2FF] text-lg font-bold text-[#306BD9]">
                       {companyDisplayName.trim()[0]?.toUpperCase() || "Đ"}
                     </span>
                   )}

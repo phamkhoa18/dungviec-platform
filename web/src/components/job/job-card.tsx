@@ -34,7 +34,7 @@ export function JobCard({ job, className }: { job: Job; className?: string }) {
             loading="lazy"
           />
         ) : (
-          <span className="grid size-full place-items-center bg-[#EBF2FF] text-lg font-extrabold text-[#306BD9]">
+          <span className="grid size-full place-items-center bg-[#EBF2FF] text-lg font-bold text-[#306BD9]">
             {initial}
           </span>
         )}

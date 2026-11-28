@@ -225,7 +225,7 @@ export default function HrInterviewsPage() {
             );
             return (
               <div key={dateKey} className="space-y-2.5">
-                <h2 className="flex items-center gap-2 text-[14px] font-extrabold text-[#1E3A8A]">
+                <h2 className="flex items-center gap-2 text-[14px] font-bold text-[#1E3A8A]">
                   <CalendarClock className="size-4 text-[#306BD9]" />
                   <span className="capitalize">{niceDate}</span>
                   <span className="rounded-full bg-[#EBF2FF] px-2 py-0.5 text-[11px] font-bold text-[#306BD9]">
@@ -256,7 +256,7 @@ export default function HrInterviewsPage() {
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div className="flex items-start gap-4">
                             <div className="flex w-20 shrink-0 flex-col items-center justify-center rounded-xl bg-[#EBF2FF] py-2.5 text-center">
-                              <span className="text-[16px] font-extrabold text-[#306BD9] tabular-nums">
+                              <span className="text-[16px] font-bold text-[#306BD9] tabular-nums">
                                 {timeStr}
                               </span>
                               <span className="text-[11px] font-semibold text-[#64748B]">
@@ -268,7 +268,7 @@ export default function HrInterviewsPage() {
                               <div className="flex flex-wrap items-center gap-2">
                                 <Link
                                   href={`/nha-tuyen-dung/ung-vien?appId=${iv.application_id}`}
-                                  className="text-[15.5px] font-extrabold text-[#111111] hover:text-[#306BD9]"
+                                  className="text-[15.5px] font-bold text-[#111111] hover:text-[#306BD9]"
                                 >
                                   {iv.candidate_name}
                                 </Link>

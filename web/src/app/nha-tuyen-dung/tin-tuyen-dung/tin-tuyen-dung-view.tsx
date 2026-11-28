@@ -425,7 +425,7 @@ export default function HrJobsPage() {
                         <div className="flex flex-wrap items-center gap-1.5">
                           <Link
                             href={`/nha-tuyen-dung/ung-vien?jobId=${job.id}`}
-                            className="font-extrabold leading-snug text-[#111111] hover:text-[#306BD9]"
+                            className="font-bold leading-snug text-[#111111] hover:text-[#306BD9]"
                           >
                             {job.title}
                           </Link>
@@ -476,13 +476,13 @@ export default function HrJobsPage() {
                         <Users className="size-3.5" />
                         {job.applications_count} CV
                         {job.new_count > 0 && (
-                          <span className="rounded-full bg-[#EF4444] px-1.5 py-0.2 text-[10px] font-extrabold text-white">
+                          <span className="rounded-full bg-[#EF4444] px-1.5 py-0.2 text-[10px] font-bold text-white">
                             +{job.new_count}
                           </span>
                         )}
                       </Link>
                       {job.avg_ai_score != null && (
-                        <span className="inline-flex items-center gap-1 font-extrabold text-[#1E3A8A]">
+                        <span className="inline-flex items-center gap-1 font-bold text-[#1E3A8A]">
                           <Sparkles className="size-3 text-[#306BD9]" />
                           TB {job.avg_ai_score}
                         </span>
@@ -555,7 +555,7 @@ export default function HrJobsPage() {
                           <div className="flex flex-wrap items-center gap-1.5">
                             <Link
                               href={`/nha-tuyen-dung/ung-vien?jobId=${job.id}`}
-                              className="font-extrabold text-[#111111] hover:text-[#306BD9]"
+                              className="font-bold text-[#111111] hover:text-[#306BD9]"
                             >
                               {job.title}
                             </Link>
@@ -624,7 +624,7 @@ export default function HrJobsPage() {
                             <Users className="size-3.5" />
                             <span>{job.applications_count}</span>
                             {job.new_count > 0 && (
-                              <span className="rounded-full bg-[#EF4444] px-1.5 py-0.1 text-[10px] font-extrabold text-white">
+                              <span className="rounded-full bg-[#EF4444] px-1.5 py-0.1 text-[10px] font-bold text-white">
                                 +{job.new_count} mới
                               </span>
                             )}
@@ -653,7 +653,7 @@ export default function HrJobsPage() {
 
                         <td className="px-3 py-3.5 text-center">
                           {job.avg_ai_score != null ? (
-                            <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8FAFC] px-2.5 py-1 text-[13px] font-extrabold text-[#1E3A8A]">
+                            <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8FAFC] px-2.5 py-1 text-[13px] font-bold text-[#1E3A8A]">
                               <Sparkles className="size-3.5 text-[#306BD9]" />
                               {job.avg_ai_score}
                             </span>
@@ -715,7 +715,7 @@ export default function HrJobsPage() {
       >
         <DialogContent className="rounded-2xl sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-[17px] font-extrabold">
+            <DialogTitle className="flex items-center gap-2 text-[17px] font-bold">
               <AlertTriangle className="size-5 text-[#D97706]" />
               Chọn hạn nộp mới để mở lại tin
             </DialogTitle>
@@ -762,7 +762,7 @@ export default function HrJobsPage() {
       >
         <DialogContent className="rounded-2xl sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-[17px] font-extrabold">
+            <DialogTitle className="flex items-center gap-2 text-[17px] font-bold">
               {confirmDeleteJob && confirmDeleteJob.applications_count > 0 ? (
                 <>
                   <Archive className="size-5 text-[#D97706]" />

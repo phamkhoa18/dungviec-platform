@@ -57,7 +57,7 @@ export default function HomePage() {
           <SiteHeader transparent />
 
           <div className="relative mx-auto flex max-w-[1160px] flex-col items-center gap-2 px-4 pt-6 pb-2 text-center">
-            <h1 className="text-[24px] font-extrabold tracking-tight text-white sm:text-[30px]">
+            <h1 className="text-[24px] font-bold tracking-tight text-white sm:text-[30px]">
               Tuyển dụng thông minh với AI phân tích CV
             </h1>
             <p className="max-w-[640px] text-[14px] text-white/85 sm:text-[15px]">

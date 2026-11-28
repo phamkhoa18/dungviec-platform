@@ -126,7 +126,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
         >
           <Bell className="size-4" />
           {unread > 0 && (
-            <span className="absolute -top-1 -right-1 grid min-w-[18px] place-items-center rounded-full bg-[#EF4444] px-1 py-0.2 text-[10px] font-extrabold text-white shadow-xs">
+            <span className="absolute -top-1 -right-1 grid min-w-[18px] place-items-center rounded-full bg-[#EF4444] px-1 py-0.2 text-[10px] font-bold text-white shadow-xs">
               {unread > 99 ? "99+" : unread}
             </span>
           )}
@@ -139,7 +139,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
       >
         <div className="flex items-center justify-between border-b border-[#EBEBEB] px-4 py-3">
           <div className="flex items-center gap-2">
-            <p className="text-[14px] font-extrabold text-[#222222]">
+            <p className="text-[14px] font-bold text-[#222222]">
               Thông báo
             </p>
             {unread > 0 && (
@@ -191,7 +191,7 @@ export function NotificationBell({ light }: { light?: boolean }) {
                     <p
                       className={cn(
                         "text-[12.5px] leading-snug text-[#222222]",
-                        !n.read ? "font-extrabold" : "font-semibold"
+                        !n.read ? "font-bold" : "font-semibold"
                       )}
                     >
                       {n.title}

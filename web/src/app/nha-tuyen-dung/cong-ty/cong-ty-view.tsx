@@ -143,7 +143,7 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
       <div className="space-y-4">
         <Panel className="h-fit p-5">
           <div className="mb-4 flex items-center justify-between gap-2">
-            <h2 className="text-[15px] font-extrabold">Thông tin pháp lý</h2>
+            <h2 className="text-[15px] font-bold">Thông tin pháp lý</h2>
             {company.verified && (
               <span className="inline-flex items-center gap-1 rounded-full bg-[#F0FDF4] px-2.5 py-1 text-[12px] font-bold text-[#15803D] ring-1 ring-[#BBF7D0]">
                 <BadgeCheck className="size-3.5" />
@@ -192,7 +192,7 @@ function CompanyForm({ company }: { company: CompanyRecord }) {
       </div>
 
       <Panel className="p-5">
-        <h2 className="mb-4 text-[15px] font-extrabold">
+        <h2 className="mb-4 text-[15px] font-bold">
           Hồ sơ thương hiệu tuyển dụng
         </h2>
         <form onSubmit={onSubmit} noValidate className="space-y-4">

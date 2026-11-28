@@ -145,7 +145,7 @@ export function InterviewDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-2xl sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-[18px] font-extrabold">
+          <DialogTitle className="flex items-center gap-2 text-[18px] font-bold">
             <CalendarClock className="size-5 text-[#306BD9]" />
             {existingInterview
               ? "Đổi lịch phỏng vấn"
@@ -425,7 +425,7 @@ export function InterviewFeedbackDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-2xl sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-[17px] font-extrabold">
+          <DialogTitle className="flex items-center gap-2 text-[17px] font-bold">
             <CheckCircle2 className="size-5 text-[#16A34A]" />
             Phiếu đánh giá phỏng vấn (Scorecard)
           </DialogTitle>

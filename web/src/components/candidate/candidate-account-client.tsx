@@ -409,7 +409,7 @@ export function CandidateAccountClient({
             <div className="mx-auto grid size-14 place-items-center rounded-full bg-[#FEF2F2] text-[#DC2626]">
               <AlertTriangle className="size-7" />
             </div>
-            <h1 className="mt-4 text-[20px] font-extrabold text-[#222222]">
+            <h1 className="mt-4 text-[20px] font-bold text-[#222222]">
               Khu vực dành cho Ứng viên
             </h1>
             <p className="mt-2 text-[13.5px] text-[#666666]">
@@ -444,7 +444,7 @@ export function CandidateAccountClient({
             <div className="mx-auto grid size-14 place-items-center rounded-full bg-[#EBF2FF] text-[#306BD9]">
               <UserRound className="size-7" />
             </div>
-            <h1 className="mt-4 text-[20px] font-extrabold text-[#222222]">
+            <h1 className="mt-4 text-[20px] font-bold text-[#222222]">
               Đăng nhập để quản lý hồ sơ của bạn
             </h1>
             <p className="mt-2 text-[13.5px] text-[#666666]">
@@ -486,14 +486,14 @@ export function CandidateAccountClient({
               <div className="overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white shadow-2xs">
                 <div className="bg-gradient-to-r from-[#1E4FBF] to-[#306BD9] p-4 text-white lg:p-5">
                   <div className="flex items-center gap-3.5">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-white/80 bg-white/20 text-[17px] font-extrabold text-white backdrop-blur-xs lg:size-14 lg:text-[20px]">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-white/80 bg-white/20 text-[17px] font-bold text-white backdrop-blur-xs lg:size-14 lg:text-[20px]">
                       {userInitial}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <span className="inline-block rounded-full bg-[#FFBA00] px-2 py-0.5 text-[10px] font-extrabold text-[#222222]">
+                      <span className="inline-block rounded-full bg-[#FFBA00] px-2 py-0.5 text-[10px] font-bold text-[#222222]">
                         ỨNG VIÊN
                       </span>
-                      <h2 className="mt-1 truncate text-[15px] font-extrabold lg:text-[16px]">
+                      <h2 className="mt-1 truncate text-[15px] font-bold lg:text-[16px]">
                         {user?.full_name || "Đang tải..."}
                       </h2>
                       <p className="truncate text-[11.5px] text-white/85 lg:text-[12px]">
@@ -506,13 +506,13 @@ export function CandidateAccountClient({
                 {/* Thống kê nhanh (ẩn trên mobile để nội dung tab hiển thị ngay trên màn hình đầu) */}
                 <div className="hidden grid-cols-2 divide-x divide-[#EBEBEB] border-b border-[#EBEBEB] bg-[#F8FAFC] py-3 text-center lg:grid">
                   <div>
-                    <p className="text-[16px] font-extrabold text-[#306BD9]">
+                    <p className="text-[16px] font-bold text-[#306BD9]">
                       {cvProfiles.length}
                     </p>
                     <p className="text-[11px] text-[#666666]">Hồ sơ CV</p>
                   </div>
                   <div>
-                    <p className="text-[16px] font-extrabold text-[#222222]">
+                    <p className="text-[16px] font-bold text-[#222222]">
                       {applications.length}
                     </p>
                     <p className="text-[11px] text-[#666666]">Đã ứng tuyển</p>
@@ -553,7 +553,7 @@ export function CandidateAccountClient({
                         <span>{item.label}</span>
                         {item.badge !== undefined && (
                           <span
-                            className={`rounded-full px-1.5 py-0.2 text-[10px] font-extrabold ${
+                            className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
                               active ? "bg-[#306BD9] text-white" : "bg-white text-[#475569]"
                             }`}
                           >
@@ -683,7 +683,7 @@ export function CandidateAccountClient({
                           <Sparkles className="size-3" />
                           Đọc CV đa tầng · PyMuPDF 2-Cột &amp; OCR Việt–Anh
                         </Badge>
-                        <h1 className="text-[19px] font-extrabold text-[#222222] sm:text-[21px]">
+                        <h1 className="text-[19px] font-bold text-[#222222] sm:text-[21px]">
                           Tải lên hồ sơ CV của bạn
                         </h1>
                         <p className="mt-0.5 text-[13px] text-[#666666]">
@@ -789,7 +789,7 @@ export function CandidateAccountClient({
 
                   <section className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-[16px] font-extrabold text-[#222222]">
+                      <h2 className="text-[16px] font-bold text-[#222222]">
                         Hồ sơ CV của tôi ({cvProfiles.length})
                       </h2>
                       <Link
@@ -824,7 +824,7 @@ export function CandidateAccountClient({
                           >
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <div className="flex min-w-0 flex-1 items-start gap-3.5">
-                                <div className="grid size-11 shrink-0 place-items-center rounded-[12px] bg-[#EBF2FF] text-[12px] font-extrabold uppercase text-[#306BD9]">
+                                <div className="grid size-11 shrink-0 place-items-center rounded-[12px] bg-[#EBF2FF] text-[12px] font-bold uppercase text-[#306BD9]">
                                   {cv.file_type || "PDF"}
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -869,7 +869,7 @@ export function CandidateAccountClient({
                                     </div>
                                   ) : (
                                     <div className="flex flex-wrap items-center gap-2">
-                                      <h3 className="text-[15px] font-extrabold text-[#222222]">
+                                      <h3 className="text-[15px] font-bold text-[#222222]">
                                         {cv.cv_title}
                                       </h3>
                                       {cv.is_default && (
@@ -1067,7 +1067,7 @@ export function CandidateAccountClient({
               {activeTab === "applications" && (
                 <section className="space-y-4">
                   <div className="rounded-[16px] border border-[#E2E8F0] bg-white p-5 shadow-2xs sm:p-6">
-                    <h1 className="text-[19px] font-extrabold text-[#222222] sm:text-[21px]">
+                    <h1 className="text-[19px] font-bold text-[#222222] sm:text-[21px]">
                       Việc làm đã ứng tuyển
                     </h1>
                     <p className="mt-0.5 text-[13px] text-[#666666]">
@@ -1133,7 +1133,7 @@ export function CandidateAccountClient({
 
                               <Link
                                 href={`/viec-lam/${app.job?.slug || app.job_id}`}
-                                className="mt-2 block text-[17px] font-extrabold text-[#222222] hover:text-[#306BD9]"
+                                className="mt-2 block text-[17px] font-bold text-[#222222] hover:text-[#306BD9]"
                               >
                                 {app.job?.title || "Vị trí tuyển dụng"}
                               </Link>
@@ -1226,7 +1226,7 @@ export function CandidateAccountClient({
                           {/* Danh sách lịch phỏng vấn */}
                           {interviews.length > 0 && (
                             <div className="mt-4 space-y-2.5 border-t border-[#EBEBEB] pt-4">
-                              <p className="flex items-center gap-1.5 text-[12.5px] font-extrabold text-[#1E3A8A]">
+                              <p className="flex items-center gap-1.5 text-[12.5px] font-bold text-[#1E3A8A]">
                                 <CalendarClock className="size-4 text-[#306BD9]" />
                                 Lịch phỏng vấn từ Nhà tuyển dụng ({interviews.length})
                               </p>
@@ -1271,7 +1271,7 @@ export function CandidateAccountClient({
                                   >
                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                       <div className="flex flex-wrap items-center gap-2">
-                                        <span className="font-extrabold text-[#1E3A8A]">
+                                        <span className="font-bold text-[#1E3A8A]">
                                           {new Date(iv.scheduled_at).toLocaleString("vi-VN", {
                                             dateStyle: "short",
                                             timeStyle: "short",
@@ -1404,7 +1404,7 @@ export function CandidateAccountClient({
               {/* TAB 3: CÀI ĐẶT TÀI KHOẢN */}
               {activeTab === "profile" && (
                 <section className="rounded-[16px] border border-[#E2E8F0] bg-white p-5 shadow-2xs sm:p-6">
-                  <h1 className="text-[19px] font-extrabold text-[#222222]">
+                  <h1 className="text-[19px] font-bold text-[#222222]">
                     Cài đặt thông tin cá nhân
                   </h1>
                   <p className="mt-0.5 text-[13px] text-[#666666]">
@@ -1486,7 +1486,7 @@ export function CandidateAccountClient({
       >
         <DialogContent className="flex max-h-[90vh] max-w-[95vw] flex-col gap-0 overflow-hidden rounded-[16px] p-0 sm:max-w-3xl">
           <DialogHeader className="shrink-0 border-b border-[#E2E8F0] px-6 py-4 pr-12">
-            <DialogTitle className="text-[17px] font-extrabold text-[#222222]">
+            <DialogTitle className="break-words text-[17px] font-bold text-[#222222]">
               {previewCv?.cv_title}
             </DialogTitle>
             <DialogDescription className="text-[12.5px] text-[#666666]">
@@ -1625,7 +1625,7 @@ export function CandidateAccountClient({
       >
         <DialogContent className="rounded-[16px] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-[17px] font-extrabold text-[#222222]">
+            <DialogTitle className="flex items-center gap-2 text-[17px] font-bold text-[#222222]">
               <Trash2 className="size-5 text-[#DC2626]" />
               Xóa hồ sơ CV?
             </DialogTitle>
@@ -1664,7 +1664,7 @@ export function CandidateAccountClient({
       >
         <DialogContent className="rounded-[16px] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[17px] font-extrabold text-[#222222]">
+            <DialogTitle className="text-[17px] font-bold text-[#222222]">
               {rescheduleModal?.mode === "reschedule_requested"
                 ? "Xin đổi lịch phỏng vấn"
                 : "Từ chối lời mời phỏng vấn"}

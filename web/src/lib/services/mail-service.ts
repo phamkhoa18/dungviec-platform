@@ -61,7 +61,7 @@ function wrapEmailLayout(title: string, contentHtml: string): string {
 <body style="margin:0;padding:24px;background:#F4F6FA;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#222222;">
   <div style="max-width:520px;margin:0 auto;background:#FFFFFF;border-radius:16px;overflow:hidden;border:1px solid #E5EAF2;">
     <div style="background:#306BD9;padding:20px 24px;color:#FFFFFF;">
-      <div style="font-size:18px;font-weight:800;letter-spacing:-0.2px;">Đúng Việc</div>
+      <div style="font-size:18px;font-weight:700;letter-spacing:-0.2px;">Đúng Việc</div>
       <div style="font-size:12.5px;opacity:0.9;margin-top:2px;">${escapeHtml(title)}</div>
     </div>
     <div style="padding:24px;font-size:14.5px;line-height:1.6;color:#333333;">
@@ -92,7 +92,7 @@ export async function sendPasswordResetOtpEmail(params: {
       <p style="margin:0 0 12px;">Xin chào <strong>${safeName}</strong>,</p>
       <p style="margin:0 0 16px;">Chúng tôi nhận được yêu cầu khôi phục mật khẩu cho tài khoản <strong>${escapeHtml(params.to)}</strong>. Vui lòng nhập mã xác minh dưới đây:</p>
       <div style="margin:18px 0;padding:16px;background:#F2F6FC;border:1px dashed #306BD9;border-radius:12px;text-align:center;">
-        <span style="font-size:30px;font-weight:800;letter-spacing:8px;color:#306BD9;font-family:monospace;">${safeOtp}</span>
+        <span style="font-size:30px;font-weight:700;letter-spacing:8px;color:#306BD9;font-family:monospace;">${safeOtp}</span>
       </div>
       <p style="margin:0 0 8px;font-size:13.5px;color:#555555;">Mã có hiệu lực trong <strong>${mins} phút</strong> và chỉ dùng được một lần.</p>
       <p style="margin:0;font-size:13px;color:#777777;">Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email — mật khẩu hiện tại của bạn vẫn an toàn.</p>

@@ -97,11 +97,11 @@ function FormSection({
   return (
     <section className="rounded-xl border border-[#E6ECF5] bg-[#FAFBFD] p-4">
       <div className="mb-3.5 flex items-center gap-2.5">
-        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#306BD9] text-[11.5px] font-extrabold text-white">
+        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#306BD9] text-[11.5px] font-bold text-white">
           {step}
         </span>
         <div>
-          <h3 className="text-[13.5px] font-extrabold text-[#111827]">{title}</h3>
+          <h3 className="text-[13.5px] font-bold text-[#111827]">{title}</h3>
           {hint && <p className="text-[11.5px] text-[#64748B]">{hint}</p>}
         </div>
       </div>
@@ -1273,7 +1273,7 @@ export function JobFormDialog({
       <DialogContent className="flex max-h-[92vh] max-w-[95vw] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[820px]">
         <DialogHeader className="shrink-0 border-b border-[#EBEBEB] bg-white px-6 py-4 pr-14 text-left shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
           <div className="flex flex-wrap items-center gap-2">
-            <DialogTitle className="text-[19px] font-extrabold text-[#111827]">
+            <DialogTitle className="text-[19px] font-bold text-[#111827]">
               {job ? "Chỉnh sửa tin tuyển dụng" : "Đăng tin tuyển dụng mới"}
             </DialogTitle>
             {stMeta && (

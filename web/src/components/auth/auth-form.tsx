@@ -180,7 +180,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     <AuthLayoutShell>
           {/* Tiêu đề */}
           <div className="text-center">
-            <h1 className="text-[22px] font-extrabold tracking-tight">{title}</h1>
+            <h1 className="text-[22px] font-bold tracking-tight">{title}</h1>
             <p className="mt-1 text-[13.5px] text-[#666666]">{subtitle}</p>
           </div>
 
