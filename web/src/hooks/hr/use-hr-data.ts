@@ -338,3 +338,88 @@ export function useMarkNotificationsRead() {
     onSuccess: () => qc.invalidateQueries({ queryKey: hrKeys.notifications }),
   });
 }
+
+// ------------------------------------------------------------------ Demo Auto-nộp từ kho 200 CV
+export interface PoolAutofillStatus {
+  poolTotal: number;
+  alreadyApplied: number;
+  availableCount: number;
+  demoCount: number;
+  job: {
+    id: number;
+    title: string;
+    status: JobStatus;
+    required_skills: string[];
+  };
+}
+
+export interface PoolMatchItem {
+  applicationId: number;
+  candidateName: string;
+  fileName: string;
+  matchScore: number;
+  predictedLabel: "Good Fit" | "Potential Fit" | "No Fit";
+  matchedSkills: string[];
+  processedTimeMs: number;
+  evaluationStatus: "completed" | "pending_evaluation" | "ocr_required";
+}
+
+export interface PoolAutofillBatchResponse {
+  status: "ok";
+  added: number;
+  scored: number;
+  failed: number;
+  remaining: number;
+  poolTotal: number;
+  alreadyApplied: number;
+  demoCount: number;
+  batchSummary: {
+    goodFit: number;
+    potentialFit: number;
+    noFit: number;
+    totalScore: number;
+    totalMs: number;
+    results: PoolMatchItem[];
+  };
+}
+
+export function usePoolAutofillStatus(jobId: number | null, enabled = false) {
+  return useQuery({
+    queryKey: ["hr", "autofill-pool", jobId ?? 0],
+    enabled: !!jobId && enabled,
+    staleTime: 0,
+    queryFn: () => request<PoolAutofillStatus>(`/api/jobs/${jobId}/autofill-pool`),
+  });
+}
+
+export async function runPoolAutofillBatch(
+  jobId: number,
+  body: {
+    count: number;
+    mode: "ordered" | "random";
+    runAi: boolean;
+    notifySummary?: boolean;
+    prevAdded?: number;
+    prevGoodFit?: number;
+  }
+) {
+  return request<PoolAutofillBatchResponse>(`/api/jobs/${jobId}/autofill-pool`, jsonInit("POST", body));
+}
+
+export function useClearPoolAutofill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (jobId: number) =>
+      request<{ status: "ok"; deleted: number; message: string }>(`/api/jobs/${jobId}/autofill-pool`, {
+        method: "DELETE",
+      }),
+    onSuccess: (_data, jobId) => {
+      qc.setQueryData<EnrichedApplication[]>(hrKeys.applications, (old) =>
+        old ? old.filter((a) => !(a.job_id === jobId && a.source === "demo_pool_200")) : old
+      );
+      qc.removeQueries({ queryKey: ["hr", "application"] });
+      invalidateAll(qc);
+      qc.invalidateQueries({ queryKey: ["hr", "autofill-pool", jobId] });
+    },
+  });
+}

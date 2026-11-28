@@ -6,7 +6,7 @@
  * - Bản chụp CV khi nộp đơn, ẩn trường riêng tư của công ty
  */
 import { NextResponse } from "next/server";
-import { callPythonEvaluateFit } from "@/lib/db/ai-client";
+import { callPythonEvaluateFit, type AiFitEvaluationResult } from "@/lib/db/ai-client";
 import { getSessionUser } from "@/lib/db/server-auth";
 import {
   computeJdHash,
@@ -174,20 +174,15 @@ export function jobTextForScoring(job: JobRecord): string {
   return [job.title, job.jd_text, job.requirements !== job.jd_text ? job.requirements : ""].filter(Boolean).join("\n");
 }
 
-/** Chạy mô hình BGE-M3 cho 1 đơn; giữ lịch sử điểm cũ. Không ghi DB (người gọi tự writeDb). */
-export async function scoreApplication(
+/** Lưu / cập nhật kết quả đánh giá AI vào db (giữ lịch sử điểm cũ, không ghi file). */
+export function upsertAiEvaluation(
   db: DatabaseDocument,
   app: ApplicationRecord,
-  job: JobRecord
-): Promise<AiEvaluationRecord> {
-  const cv = cvTextForApplication(db, app);
-  if (!cv) throw new Error("Không tìm thấy nội dung CV của đơn ứng tuyển.");
+  job: JobRecord,
+  res: AiFitEvaluationResult | null,
+  ocrRequired = false
+): AiEvaluationRecord {
   job.jd_hash = job.jd_hash || computeJdHash(job);
-  const res = await callPythonEvaluateFit({
-    cvText: cv.text,
-    jdText: jobTextForScoring(job),
-    requiredSkills: job.required_skills || [],
-  });
   const now = new Date().toISOString();
   let ev = db.ai_evaluations.find((e) => e.application_id === app.id);
   if (ev) {
@@ -208,6 +203,28 @@ export async function scoreApplication(
     } as AiEvaluationRecord;
     db.ai_evaluations.push(ev);
   }
+
+  if (!res) {
+    Object.assign(ev, {
+      model_name: "AI Đúng Việc",
+      model_version: "pending",
+      match_score: 0,
+      predicted_label: "No Fit" as const,
+      prob_good: 0,
+      prob_potential: 0,
+      prob_no_fit: 1,
+      probabilities: { no_fit: 1, potential_fit: 0, good_fit: 0 },
+      matched_skills: [],
+      missing_skills: job.required_skills || [],
+      explanation: "Đang chờ chấm điểm AI (AI Service tạm bận hoặc chưa phản hồi).",
+      processed_time_ms: 0,
+      evaluation_status: "pending_evaluation" as const,
+      jd_hash: job.jd_hash,
+      created_at: now,
+    });
+    return ev;
+  }
+
   Object.assign(ev, {
     model_name: res.model_name,
     model_version: res.model_version,
@@ -221,11 +238,28 @@ export async function scoreApplication(
     missing_skills: res.missing_skills,
     explanation: res.explanation,
     processed_time_ms: res.processed_time_ms,
-    evaluation_status: cv.ocrRequired ? "ocr_required" : "completed",
+    evaluation_status: ocrRequired ? "ocr_required" : "completed",
     jd_hash: job.jd_hash,
     created_at: now,
   });
   return ev;
+}
+
+/** Chạy mô hình BGE-M3 cho 1 đơn; giữ lịch sử điểm cũ. Không ghi DB (người gọi tự writeDb). */
+export async function scoreApplication(
+  db: DatabaseDocument,
+  app: ApplicationRecord,
+  job: JobRecord
+): Promise<AiEvaluationRecord> {
+  const cv = cvTextForApplication(db, app);
+  if (!cv) throw new Error("Không tìm thấy nội dung CV của đơn ứng tuyển.");
+  job.jd_hash = job.jd_hash || computeJdHash(job);
+  const res = await callPythonEvaluateFit({
+    cvText: cv.text,
+    jdText: jobTextForScoring(job),
+    requiredSkills: job.required_skills || [],
+  });
+  return upsertAiEvaluation(db, app, job, res, cv.ocrRequired);
 }
 
 /** Trường công ty được phép hiển thị công khai (ẩn MST, tài khoản HR). */

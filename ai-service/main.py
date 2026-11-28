@@ -2,8 +2,9 @@
 Python AI Microservice tách riêng (Port 8008) — Phục vụ Tiểu luận Tốt nghiệp:
 - Endpoint 1: GET  /api/v1/health       -> Kiểm tra trạng thái AI Engine & thư mục best_cvjd_model (bge_m3_hybrid_head.pt)
 - Endpoint 2: GET  /api/v1/model-info   -> Thông số thực nghiệm BAAI/bge-m3 Song ngữ từ Báo cáo Tuần 3
-- Endpoint 3: POST /api/v1/parse-cv     -> Đọc file CV thật (.pdf / .docx) & bóc tách thực thể kỹ năng/kinh nghiệm
-- Endpoint 4: POST /api/v1/evaluate-fit -> Chấm điểm CV - JD Song ngữ Việt - Anh bằng BAAI/bge-m3 Hybrid (2048 tokens)
+- Endpoint 3: POST /api/v1/parse-cv           -> Đọc file CV thật (.pdf / .docx) & bóc tách thực thể kỹ năng/kinh nghiệm
+- Endpoint 4: POST /api/v1/evaluate-fit       -> Chấm điểm CV - JD Song ngữ Việt - Anh bằng BAAI/bge-m3 Hybrid (2048 tokens)
+- Endpoint 5: POST /api/v1/evaluate-fit-batch -> Chấm điểm hàng loạt theo lô cho tối đa 50 CV trên cùng một JD (tái dùng vector JD)
 """
 from __future__ import annotations
 
@@ -21,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from config import MODEL_EXPERIMENT_METADATA  # noqa: E402
 from services.cv_parser import parse_cv_file  # noqa: E402
-from services.entity_extractor import extract_cv_entities  # noqa: E402
+from services.entity_extractor import extract_skills_from_text  # noqa: E402
 from services.fit_scorer import scorer_instance  # noqa: E402
 
 
@@ -44,8 +45,8 @@ def handle_model_info() -> Dict[str, Any]:
 def handle_parse_cv_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     Nhận file_name + file_base64 (hoặc raw_text) của tệp CV .pdf/.docx thật,
-    kiểm tra QT-01, bóc tách văn bản thuần (PyMuPDF 2-Col + OpenCV/Tesseract OCR)
-    và trích xuất Họ tên, Email, SĐT, Vị trí, Kỹ năng, Kinh nghiệm, Học vấn, Chứng chỉ.
+    kiểm tra QT-01, đọc văn bản thuần theo đúng thứ tự cột (PyMuPDF 2-Col + OCR lai vie+eng / DOCX)
+    và nhận diện các kỹ năng chuyên môn từ từ điển taxonomy phục vụ so khớp CV-JD.
     """
     file_name = str(payload.get("file_name") or "cv.pdf")
     file_b64 = payload.get("file_base64")
@@ -58,7 +59,6 @@ def handle_parse_cv_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
             raise ValueError("QT-01: Dữ liệu tệp base64 không hợp lệ.") from exc
         parsed = parse_cv_file(file_name, file_bytes)
         raw_text = parsed["raw_text"]
-        lines = parsed["lines"]
         ocr_required = parsed["ocr_required"]
         ocr_applied = parsed.get("ocr_applied", False)
         two_column_detected = parsed.get("two_column_detected", False)
@@ -69,7 +69,6 @@ def handle_parse_cv_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         file_size_bytes = parsed["file_size_bytes"]
     elif raw_text_input is not None:
         raw_text = str(raw_text_input).strip()
-        lines = None
         ocr_required = len(raw_text) < 30
         ocr_applied = False
         two_column_detected = False
@@ -81,16 +80,9 @@ def handle_parse_cv_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     else:
         raise ValueError("Thiếu dữ liệu tệp CV (file_base64 hoặc raw_text).")
 
-    t_struct = time.perf_counter()
-    entities = extract_cv_entities(raw_text, lines=lines, file_name=file_name)
-    processing_time_ms = round(processing_time_ms + (time.perf_counter() - t_struct) * 1000, 1)
-    entities["parsed_data"]["layout"] = {
-        "extraction_method": extraction_method,
-        "two_column_detected": two_column_detected,
-        "ocr_applied": ocr_applied,
-        "page_count": page_count,
-        "processing_time_ms": processing_time_ms,
-    }
+    t_skill = time.perf_counter()
+    skills = extract_skills_from_text(raw_text)
+    processing_time_ms = round(processing_time_ms + (time.perf_counter() - t_skill) * 1000, 1)
     return {
         "status": "ok",
         "file_name": file_name,
@@ -103,7 +95,7 @@ def handle_parse_cv_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         "extraction_method": extraction_method,
         "page_count": page_count,
         "processing_time_ms": processing_time_ms,
-        **entities,
+        "extracted_skills": skills,
     }
 
 
@@ -125,6 +117,36 @@ def handle_evaluate_fit_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def handle_evaluate_fit_batch_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    jd_text = str(payload.get("jd_text") or "")
+    required_skills = payload.get("required_skills") or []
+    if isinstance(required_skills, str):
+        required_skills = [s.strip() for s in required_skills.split(",") if s.strip()]
+    items = payload.get("items")
+    if not isinstance(items, list) or len(items) == 0:
+        raise ValueError("Danh sách hồ sơ cần chấm điểm không được trống.")
+    if len(items) > 50:
+        raise ValueError("Mỗi lô chấm điểm tối đa 50 hồ sơ.")
+
+    results = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        item_id = item.get("id")
+        cv_text = str(item.get("cv_text") or "")
+        ev = scorer_instance.evaluate_cv_jd(
+            cv_text=cv_text,
+            jd_text=jd_text,
+            required_skills=required_skills,
+        )
+        results.append({"id": item_id, "evaluation": ev})
+
+    return {
+        "status": "ok",
+        "results": results,
+    }
+
+
 # ------------------------------------------------------------------------------
 # Hỗ trợ khởi chạy qua FastAPI (nếu đã cài đặt) hoặc ThreadingHTTPServer chuẩn
 # ------------------------------------------------------------------------------
@@ -132,7 +154,7 @@ try:
     from fastapi import FastAPI, HTTPException, UploadFile, File  # type: ignore
     from fastapi.middleware.cors import CORSMiddleware  # type: ignore
     from pydantic import BaseModel  # type: ignore
-    from typing import List, Optional
+    from typing import List, Optional, Union
 
     app = FastAPI(
         title="Đúng Việc — Python AI Service (BAAI/bge-m3 Bilingual CV-JD Matcher)",
@@ -154,6 +176,15 @@ try:
         cv_text: str
         jd_text: str
         required_skills: Optional[List[str]] = None
+
+    class EvaluateFitBatchItem(BaseModel):
+        id: Union[int, str]
+        cv_text: str
+
+    class EvaluateFitBatchRequest(BaseModel):
+        jd_text: str
+        required_skills: Optional[List[str]] = None
+        items: List[EvaluateFitBatchItem]
 
     @app.get("/api/v1/health")
     def api_health():
@@ -180,6 +211,15 @@ try:
             raise HTTPException(status_code=400, detail=str(exc))
         except Exception as exc:
             raise HTTPException(status_code=500, detail=f"Lỗi chấm điểm AI: {exc}")
+
+    @app.post("/api/v1/evaluate-fit-batch")
+    def api_evaluate_fit_batch(body: EvaluateFitBatchRequest):
+        try:
+            return handle_evaluate_fit_batch_payload(body.model_dump())
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"Lỗi chấm điểm AI theo lô: {exc}")
 
     HAS_FASTAPI = True
 except Exception:
@@ -226,6 +266,9 @@ class AIServiceHTTPHandler(BaseHTTPRequestHandler):
                 self._send_json(200, res)
             elif path == "/api/v1/evaluate-fit":
                 res = handle_evaluate_fit_payload(payload)
+                self._send_json(200, res)
+            elif path == "/api/v1/evaluate-fit-batch":
+                res = handle_evaluate_fit_batch_payload(payload)
                 self._send_json(200, res)
             else:
                 self._send_json(404, {"status": "error", "detail": f"Không tìm thấy endpoint {path}"})

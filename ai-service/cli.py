@@ -15,6 +15,7 @@ from main import (  # noqa: E402
     handle_model_info,
     handle_parse_cv_payload,
     handle_evaluate_fit_payload,
+    handle_evaluate_fit_batch_payload,
 )
 
 
@@ -37,6 +38,8 @@ def main() -> None:
             res = handle_parse_cv_payload(payload)
         elif action == "evaluate-fit":
             res = handle_evaluate_fit_payload(payload)
+        elif action == "evaluate-fit-batch":
+            res = handle_evaluate_fit_batch_payload(payload)
         else:
             res = {"status": "error", "detail": f"Action không hợp lệ: {action}"}
         print(json.dumps(res, ensure_ascii=False))

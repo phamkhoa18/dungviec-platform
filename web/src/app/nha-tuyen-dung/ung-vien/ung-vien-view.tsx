@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   CheckSquare,
+  DatabaseZap,
   Download,
   Kanban,
   LayoutList,
@@ -17,6 +18,7 @@ import {
 import { PageHeader } from "@/components/hr/hr-shell";
 import { ApplicantDetail } from "@/components/hr/applicant-detail";
 import { CompareDialog } from "@/components/hr/compare-dialog";
+import { PoolAutofillDialog } from "@/components/hr/pool-autofill-dialog";
 import {
   EmptyState,
   ErrorState,
@@ -37,6 +39,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -213,11 +221,21 @@ function CandidatesViewContent({
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
 
   const [selectedId, setSelectedId] = useState<number | null>(initialAppId);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [checkedIds, setCheckedIds] = useState<number[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
   const [bulkRejectReason, setBulkRejectReason] = useState<string>(
     REJECTION_REASONS[0]
+  );
+  const [autofillOpen, setAutofillOpen] = useState(false);
+
+  const selectedJob = useMemo(
+    () =>
+      jobId === "all"
+        ? null
+        : (jobsQ.data ?? []).find((j) => String(j.id) === jobId) ?? null,
+    [jobId, jobsQ.data]
   );
 
   const visible = useMemo(() => {
@@ -358,6 +376,20 @@ function CandidatesViewContent({
                 Xuất CSV
               </a>
             </Button>
+
+            {selectedJob &&
+              (selectedJob.status === "active" ||
+                selectedJob.status === "draft") && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setAutofillOpen(true)}
+                  className="h-9 gap-1.5 rounded-full border-[#BFDBFE] bg-[#F5F9FF] px-4 text-[12.5px] font-bold text-[#306BD9] hover:border-[#306BD9] hover:bg-[#EBF2FF] hover:text-[#306BD9]"
+                >
+                  <DatabaseZap className="size-3.5" />
+                  Nạp từ 200 CV
+                </Button>
+              )}
           </div>
         }
       />
@@ -489,8 +521,8 @@ function CandidatesViewContent({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-[#64748B]">Sắp xếp:</span>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="shrink-0 text-[#64748B]">Sắp xếp:</span>
             {(
               [
                 { id: "score_desc", label: "Điểm AI cao nhất" },
@@ -505,7 +537,7 @@ function CandidatesViewContent({
                 size="xs"
                 onClick={() => setSortBy(opt.id)}
                 className={cn(
-                  "h-6.5 rounded-full px-2.5 text-[12px] font-bold",
+                  "h-7 shrink-0 rounded-full px-2.5 text-[12px] font-bold whitespace-nowrap",
                   sortBy === opt.id
                     ? "bg-[#EBF2FF] text-[#306BD9] hover:bg-[#EBF2FF] hover:text-[#306BD9]"
                     : "text-[#64748B] hover:bg-transparent hover:text-[#222222]"
@@ -543,6 +575,20 @@ function CandidatesViewContent({
                 ? "Khi ứng viên nộp CV, AI sẽ phân tích và xếp hạng tại đây."
                 : "Hãy thử bỏ bớt điều kiện lọc hoặc từ khóa tìm kiếm."
             }
+            action={
+              selectedJob &&
+              (selectedJob.status === "active" ||
+                selectedJob.status === "draft") ? (
+                <Button
+                  type="button"
+                  onClick={() => setAutofillOpen(true)}
+                  className="h-10 gap-1.5 rounded-full bg-[#306BD9] px-5 text-[13.5px] font-bold text-white hover:bg-[#2458BD]"
+                >
+                  <DatabaseZap className="size-4" />
+                  Tự động nạp từ 200 CV &amp; Chấm AI
+                </Button>
+              ) : undefined
+            }
           />
         </Panel>
       ) : viewMode === "kanban" ? (
@@ -570,7 +616,7 @@ function CandidatesViewContent({
                   </span>
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="max-h-[65vh] space-y-2.5 overflow-y-auto pr-0.5">
                   {items.length === 0 ? (
                     <div className="rounded-xl border border-dashed border-[#CBD5E1] py-8 text-center text-[11.5px] text-[#94A3B8]">
                       Trống
@@ -584,6 +630,7 @@ function CandidatesViewContent({
                           onClick={() => {
                             setSelectedId(app.id);
                             setViewMode("list");
+                            setMobileDetailOpen(true);
                           }}
                           className="cursor-pointer rounded-xl border border-[#E2E8F0] bg-white p-3 shadow-2xs transition-all hover:-translate-y-0.5 hover:border-[#306BD9] hover:shadow-md"
                         >
@@ -643,9 +690,9 @@ function CandidatesViewContent({
         </div>
       ) : (
         /* CHẾ ĐỘ DANH SÁCH + CHI TIẾT 360° */
-        <div className="grid items-start gap-5 lg:grid-cols-[370px_minmax(0,1fr)]">
+        <div className="grid min-w-0 grid-cols-1 items-start gap-5 lg:grid-cols-[370px_minmax(0,1fr)]">
           <Panel className="overflow-hidden lg:sticky lg:top-20">
-            <div className="flex items-center justify-between border-b border-[#F0F2F6] px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-[#F0F2F6] px-4 py-3">
               <h2 className="text-[13.5px] font-extrabold">
                 Xếp hạng ứng viên ({visible.length})
               </h2>
@@ -653,7 +700,7 @@ function CandidatesViewContent({
                 Tích chọn 2–3 UV để so sánh
               </span>
             </div>
-            <div className="max-h-[calc(100vh-14rem)] divide-y divide-[#F0F2F6] overflow-y-auto">
+            <div className="max-h-[70vh] divide-y divide-[#F0F2F6] overflow-y-auto lg:max-h-[calc(100vh-14rem)]">
               {visible.map((a, i) => (
                 <ListRow
                   key={a.id}
@@ -662,15 +709,35 @@ function CandidatesViewContent({
                   selected={selected?.id === a.id}
                   checked={checkedIds.includes(a.id)}
                   onToggleCheck={() => toggleCheck(a.id)}
-                  onSelect={() => setSelectedId(a.id)}
+                  onSelect={() => {
+                    setSelectedId(a.id);
+                    setMobileDetailOpen(true);
+                  }}
                 />
               ))}
             </div>
           </Panel>
 
-          {selected && <ApplicantDetail key={selected.id} app={selected} />}
+          <div className="hidden min-w-0 lg:block">
+            {selected && <ApplicantDetail key={selected.id} app={selected} />}
+          </div>
         </div>
       )}
+
+      {/* Drawer xem Chi tiết 360° cho màn hình nhỏ (< 1200px) */}
+      <Sheet open={mobileDetailOpen} onOpenChange={setMobileDetailOpen}>
+        <SheetContent
+          side="right"
+          className="w-full max-w-full overflow-y-auto bg-[#F4F6FA] p-4 sm:max-w-xl lg:hidden"
+        >
+          <SheetHeader className="mb-3 p-0 pr-8 text-left">
+            <SheetTitle className="text-[16px] font-bold">
+              Hồ sơ chi tiết ứng viên
+            </SheetTitle>
+          </SheetHeader>
+          {selected && <ApplicantDetail key={selected.id} app={selected} />}
+        </SheetContent>
+      </Sheet>
 
       <CompareDialog
         open={compareOpen}
@@ -742,6 +809,16 @@ function CandidatesViewContent({
           </div>
         </DialogContent>
       </Dialog>
+
+      <PoolAutofillDialog
+        job={selectedJob}
+        open={autofillOpen}
+        onOpenChange={setAutofillOpen}
+        onCleared={() => {
+          setSelectedId(null);
+          setCheckedIds([]);
+        }}
+      />
     </>
   );
 }

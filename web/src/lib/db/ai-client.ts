@@ -77,9 +77,9 @@ export interface ParsedCvResult {
   extracted_job_title?: string | null;
   extracted_location?: string | null;
   extracted_skills: string[];
-  years_of_experience: number;
-  total_experience_months: number;
-  education_level: string;
+  years_of_experience?: number;
+  total_experience_months?: number;
+  education_level?: string;
   certifications?: string[];
   candidate_info?: {
     full_name: string | null;
@@ -192,6 +192,103 @@ export async function callPythonEvaluateFit(params: {
   } catch {
     const res = callPythonCli("evaluate-fit", payload);
     return res.evaluation as AiFitEvaluationResult;
+  }
+}
+
+export interface BatchFitItemInput {
+  id: number;
+  cvText: string;
+}
+
+export interface BatchFitItemOutput {
+  id: number;
+  evaluation: AiFitEvaluationResult | null;
+  error?: string;
+}
+
+/**
+ * Chấm điểm hàng loạt theo lô cho nhiều CV trên cùng một JD (tối đa 50 CV/lô).
+ * - Ưu tiên /api/v1/evaluate-fit-batch (nhanh nhất, giữ JD embedding trong cache).
+ * - Nếu tiến trình AI trên cổng 8008 chưa restart nên trả 404, tự động chuyển sang
+ *   chạy song song từng sóng nhỏ tới /api/v1/evaluate-fit trên chính máy chủ đó.
+ * - Nếu cổng 8008 tắt hoàn toàn -> fallback sang CLI evaluate-fit-batch.
+ */
+export async function callPythonEvaluateFitBatch(params: {
+  jdText: string;
+  requiredSkills: string[];
+  items: BatchFitItemInput[];
+}): Promise<BatchFitItemOutput[]> {
+  if (params.items.length === 0) return [];
+  const payload = {
+    jd_text: params.jdText,
+    required_skills: params.requiredSkills,
+    items: params.items.map((it) => ({ id: it.id, cv_text: it.cvText })),
+  };
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 45_000);
+    const res = await fetch(`${AI_SERVICE_URL}/api/v1/evaluate-fit-batch`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+      cache: "no-store",
+    });
+    clearTimeout(timer);
+
+    if (res.status === 404) {
+      const out: BatchFitItemOutput[] = [];
+      for (let i = 0; i < params.items.length; i += 4) {
+        const wave = params.items.slice(i, i + 4);
+        const settled = await Promise.all(
+          wave.map(async (item): Promise<BatchFitItemOutput> => {
+            try {
+              const ev = await callPythonEvaluateFit({
+                cvText: item.cvText,
+                jdText: params.jdText,
+                requiredSkills: params.requiredSkills,
+              });
+              return { id: item.id, evaluation: ev };
+            } catch (e) {
+              return {
+                id: item.id,
+                evaluation: null,
+                error: e instanceof Error ? e.message : "Lỗi chấm điểm AI",
+              };
+            }
+          })
+        );
+        out.push(...settled);
+      }
+      return out;
+    }
+
+    const data = await res.json();
+    if (!res.ok || data.status === "error" || !Array.isArray(data.results)) {
+      throw new Error(data.detail || "Lỗi chấm điểm AI theo lô.");
+    }
+    return data.results.map((r: { id: number | string; evaluation: AiFitEvaluationResult }) => ({
+      id: Number(r.id),
+      evaluation: r.evaluation ?? null,
+    }));
+  } catch {
+    try {
+      const cliRes = callPythonCli("evaluate-fit-batch", payload);
+      if (Array.isArray(cliRes.results)) {
+        return cliRes.results.map((r: { id: number | string; evaluation: AiFitEvaluationResult }) => ({
+          id: Number(r.id),
+          evaluation: r.evaluation ?? null,
+        }));
+      }
+    } catch {
+      // Fallback sang pending_evaluation ở tầng caller
+    }
+    return params.items.map((it) => ({
+      id: it.id,
+      evaluation: null,
+      error: "AI Service tạm thời không phản hồi.",
+    }));
   }
 }
 
