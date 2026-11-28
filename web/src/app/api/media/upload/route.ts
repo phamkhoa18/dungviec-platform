@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/db/server-auth";
 import { readDb, sanitizeUser, writeDb } from "@/lib/db/store";
 import {
+  InvalidImageDataError,
+  optimizeUploadedImage,
+} from "@/lib/files/image-optimizer";
+import { formatMediaSize } from "@/lib/files/media-specs";
+import {
   deleteMediaByUrl,
   detectImageType,
   isMediaKind,
@@ -80,6 +85,8 @@ export async function POST(req: Request) {
       );
     }
 
+    const optimized = await optimizeUploadedImage(kindRaw, buffer, detected);
+
     const db = readDb();
     const now = new Date().toISOString();
 
@@ -92,7 +99,12 @@ export async function POST(req: Request) {
         );
       }
       const prevUrl = user.avatar_url;
-      const { url } = saveMediaFile(kindRaw, buffer, detected.ext, file.name);
+      const { url } = saveMediaFile(
+        kindRaw,
+        optimized.buffer,
+        optimized.ext,
+        file.name
+      );
       user.avatar_url = url;
       user.updated_at = now;
       writeDb(db);
@@ -101,7 +113,16 @@ export async function POST(req: Request) {
       return NextResponse.json({
         status: "ok",
         url,
-        message: "Đã cập nhật ảnh đại diện thành công.",
+        bytes: optimized.finalBytes,
+        originalBytes: optimized.originalBytes,
+        savedPercent: optimized.savedPercent,
+        width: optimized.width,
+        height: optimized.height,
+        format: optimized.ext.toUpperCase(),
+        message:
+          optimized.savedPercent >= 10
+            ? `Đã cập nhật ảnh đại diện · Tối ưu ${formatMediaSize(optimized.originalBytes)} → ${formatMediaSize(optimized.finalBytes)}`
+            : "Đã cập nhật ảnh đại diện thành công.",
         user: sanitizeUser(user),
       });
     }
@@ -116,7 +137,12 @@ export async function POST(req: Request) {
 
     const prevUrl =
       kindRaw === "company_logo" ? company.logo_url : company.cover_url;
-    const { url } = saveMediaFile(kindRaw, buffer, detected.ext, file.name);
+    const { url } = saveMediaFile(
+      kindRaw,
+      optimized.buffer,
+      optimized.ext,
+      file.name
+    );
     if (kindRaw === "company_logo") {
       company.logo_url = url;
     } else {
@@ -126,16 +152,27 @@ export async function POST(req: Request) {
     writeDb(db);
     if (prevUrl && prevUrl !== url) deleteMediaByUrl(prevUrl);
 
+    const baseLabel =
+      kindRaw === "company_logo" ? "logo công ty" : "ảnh bìa công ty";
     return NextResponse.json({
       status: "ok",
       url,
+      bytes: optimized.finalBytes,
+      originalBytes: optimized.originalBytes,
+      savedPercent: optimized.savedPercent,
+      width: optimized.width,
+      height: optimized.height,
+      format: optimized.ext.toUpperCase(),
       message:
-        kindRaw === "company_logo"
-          ? "Đã cập nhật logo công ty thành công."
-          : "Đã cập nhật ảnh bìa công ty thành công.",
+        optimized.savedPercent >= 10
+          ? `Đã cập nhật ${baseLabel} · Tối ưu ${formatMediaSize(optimized.originalBytes)} → ${formatMediaSize(optimized.finalBytes)}`
+          : `Đã cập nhật ${baseLabel} thành công.`,
       company,
     });
   } catch (err) {
+    if (err instanceof InvalidImageDataError) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
     return NextResponse.json(
       {
         error:

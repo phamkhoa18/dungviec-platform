@@ -7,8 +7,9 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import { MEDIA_SPECS, type MediaKind } from "./media-specs";
 
-export type MediaKind = "avatar" | "company_logo" | "company_cover";
+export type { MediaKind };
 
 export const MEDIA_STORAGE_DIR = path.join(process.cwd(), "storage", "media");
 
@@ -22,22 +23,22 @@ export const MEDIA_LIMITS: Record<
   }
 > = {
   avatar: {
-    maxBytes: 2 * 1024 * 1024,
-    maxLabel: "2.0 MB",
-    label: "Ảnh đại diện",
-    recommendedRatio: "1:1 (khuyên dùng từ 256×256px)",
+    maxBytes: MEDIA_SPECS.avatar.maxInputBytes,
+    maxLabel: MEDIA_SPECS.avatar.maxInputLabel,
+    label: MEDIA_SPECS.avatar.label,
+    recommendedRatio: MEDIA_SPECS.avatar.recommendedRatio,
   },
   company_logo: {
-    maxBytes: 2 * 1024 * 1024,
-    maxLabel: "2.0 MB",
-    label: "Logo công ty",
-    recommendedRatio: "1:1 nền trắng/trong suốt (từ 256×256px)",
+    maxBytes: MEDIA_SPECS.company_logo.maxInputBytes,
+    maxLabel: MEDIA_SPECS.company_logo.maxInputLabel,
+    label: MEDIA_SPECS.company_logo.label,
+    recommendedRatio: MEDIA_SPECS.company_logo.recommendedRatio,
   },
   company_cover: {
-    maxBytes: 3 * 1024 * 1024,
-    maxLabel: "3.0 MB",
-    label: "Ảnh bìa công ty",
-    recommendedRatio: "16:4.8 (khuyên dùng 1200×360px)",
+    maxBytes: MEDIA_SPECS.company_cover.maxInputBytes,
+    maxLabel: MEDIA_SPECS.company_cover.maxInputLabel,
+    label: MEDIA_SPECS.company_cover.label,
+    recommendedRatio: MEDIA_SPECS.company_cover.recommendedRatio,
   },
 };
 
