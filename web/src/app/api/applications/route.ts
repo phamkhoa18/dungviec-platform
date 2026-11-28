@@ -240,7 +240,7 @@ export async function POST(req: Request) {
         id: nextCvId,
         user_id: sessionCtx.user.id,
         user_object_id: sessionCtx.user._id,
-        cv_title: parsed.extracted_job_title ? `CV ${parsed.extracted_job_title}` : fileName.replace(/\.(pdf|docx)$/i, ""),
+        cv_title: fileName.replace(/\.(pdf|docx)$/i, "") || "CV ứng tuyển",
         file_path,
         file_url: cvFileUrl(nextCvId),
         file_name: fileName,

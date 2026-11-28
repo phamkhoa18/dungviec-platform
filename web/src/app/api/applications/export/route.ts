@@ -36,7 +36,7 @@ export async function GET(req: Request) {
         (ev?.matched_skills || []).join(", "),
         (ev?.missing_skills || []).join(", "),
         prof?.total_experience_months ? (prof.total_experience_months / 12).toFixed(1) : pd?.years_of_experience ?? "",
-        pd?.highest_education || app.cv_snapshot?.education_level || "",
+        prof?.educations?.[0]?.degree || pd?.highest_education || app.cv_snapshot?.education_level || "",
         app.rating || "",
         app.rejection_reason || "",
       ];

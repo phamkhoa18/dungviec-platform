@@ -173,6 +173,7 @@ export interface ApplicationRecord {
   rating?: number | null; // 1–5 sao do HR đánh giá
   tags?: string[];
   cv_snapshot?: CvSnapshot | null; // Bản chụp CV tại thời điểm nộp đơn
+  source?: "candidate" | "demo_pool_200"; // Phân biệt đơn ứng viên tự nộp và đơn nạp thử từ kho 200 CV
   applied_at: string;
   updated_at: string;
 }

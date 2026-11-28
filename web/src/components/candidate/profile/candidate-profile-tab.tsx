@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
+  ArrowRight,
   Award,
   Briefcase,
   CalendarDays,
@@ -16,10 +17,8 @@ import {
   Pencil,
   Phone,
   Plus,
-  RefreshCw,
   Sparkles,
   Trash2,
-  UploadCloud,
   UserRound,
   X,
 } from "lucide-react";
@@ -142,19 +141,14 @@ export function CandidateProfileTab({
   profile,
   cvProfiles,
   onRefresh,
-  onQuickUpload,
-  uploading,
-  onOpenReview,
+  onGoToCvTab,
 }: {
   user: UserLite;
   profile: CandidateProfileRecord | null;
   cvProfiles: CvProfileRecord[];
   onRefresh: () => Promise<void>;
-  onQuickUpload: (file: File) => void;
-  uploading: boolean;
-  onOpenReview: (cv: CvProfileRecord) => void;
+  onGoToCvTab: () => void;
 }) {
-  const fileRef = useRef<HTMLInputElement | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -267,33 +261,35 @@ export function CandidateProfileTab({
             </div>
           </div>
 
-          <div className="rounded-[14px] border border-dashed border-[#93C5FD] bg-gradient-to-br from-[#EFF6FF] to-white p-4">
-            <p className="flex items-center gap-1.5 text-[13px] font-extrabold text-[#1E3A8A]">
-              <Sparkles className="size-4" /> Điền nhanh bằng CV
-            </p>
-            <p className="mt-1 text-[11.5px] leading-relaxed text-[#475569]">
-              Tải CV (PDF 1–2 cột, bản scan hoặc Word). Hệ thống bóc tách và cho bạn duyệt từng thông tin trước khi cập nhật.
-            </p>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) onQuickUpload(f);
-                e.target.value = "";
-              }}
-            />
-            <Button type="button" disabled={uploading} onClick={() => fileRef.current?.click()} className="mt-3 h-9 w-full rounded-lg bg-[#306BD9] text-[12.5px] font-bold text-white hover:bg-[#2456B6]">
-              {uploading ? <Loader2 className="size-4 animate-spin" /> : <UploadCloud className="size-4" />}
-              {uploading ? "Đang bóc tách CV..." : "Tải CV lên"}
+          <div className="flex flex-col justify-between rounded-[14px] border border-[#DCE7FB] bg-gradient-to-br from-[#F5F9FF] to-white p-4">
+            <div>
+              <p className="flex items-center gap-1.5 text-[13px] font-extrabold text-[#1E3A8A]">
+                <FileText className="size-4 text-[#306BD9]" /> CV dùng để AI chấm điểm
+              </p>
+              <p className="mt-1 text-[12px] leading-relaxed text-[#475569]">
+                Thông tin hồ sơ bên dưới do bạn tự nhập &amp; quản lý thủ công. Khi ứng tuyển, hệ thống dùng tệp CV gốc (.pdf/.docx) để AI so khớp độ phù hợp với JD.
+              </p>
+              {defaultCv ? (
+                <div className="mt-2.5 rounded-xl border border-[#DCE7FB] bg-white px-3 py-2 text-[12px]">
+                  <p className="truncate font-bold text-[#111111]">{defaultCv.cv_title}</p>
+                  <p className="truncate text-[11px] text-[#64748B]">
+                    {defaultCv.file_name} · {defaultCv.extracted_skills?.length || 0} kỹ năng
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-2.5 text-[12px] font-medium text-[#B45309]">
+                  Chưa có CV nào được tải lên.
+                </p>
+              )}
+            </div>
+            <Button
+              type="button"
+              onClick={onGoToCvTab}
+              className="mt-3 h-9 w-full rounded-lg bg-[#306BD9] text-[12.5px] font-bold text-white hover:bg-[#2456B6]"
+            >
+              Quản lý hồ sơ CV
+              <ArrowRight className="size-3.5" />
             </Button>
-            {defaultCv && (
-              <Button type="button" variant="outline" onClick={() => onOpenReview(defaultCv)} className="mt-2 h-9 w-full rounded-lg text-[12px] font-bold">
-                <RefreshCw className="size-3.5" /> Đồng bộ lại từ CV chính
-              </Button>
-            )}
           </div>
         </div>
       </section>

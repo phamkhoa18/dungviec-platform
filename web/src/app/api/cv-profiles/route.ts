@@ -123,9 +123,7 @@ export async function POST(req: Request) {
       (c) => c.user_id === sessionCtx.user.id && !c.archived
     );
 
-    const autoTitle = parsed.extracted_job_title
-      ? `CV ${parsed.extracted_job_title}`
-      : `${fileName.replace(/\.(pdf|docx)$/i, "")} — ${sessionCtx.user.full_name}`;
+    const autoTitle = fileName.replace(/\.(pdf|docx)$/i, "") || `CV — ${sessionCtx.user.full_name}`;
 
     const newCv: CvProfileRecord = {
       _id: generateObjectId(),
@@ -150,7 +148,7 @@ export async function POST(req: Request) {
       status: "ok",
       message: parsed.ocr_required
         ? "Đã lưu tệp CV, nhưng tệp không có đủ văn bản để nhận diện."
-        : "Đã lưu CV và bóc tách thông tin. Hãy xem lại để cập nhật vào hồ sơ.",
+        : "Đã tải lên và đọc nội dung CV sẵn sàng cho AI chấm điểm.",
       cv_profile: newCv,
     });
   } catch (err) {

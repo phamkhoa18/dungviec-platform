@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import {
   FileText,
@@ -14,15 +15,12 @@ import {
   Eye,
   Trash2,
   LogOut,
-  GraduationCap,
-  Briefcase,
   ExternalLink,
   AlertTriangle,
   Loader2,
   UserRound,
   RefreshCw,
   Star,
-  ListChecks,
   IdCard,
   CalendarClock,
   Video,
@@ -31,12 +29,15 @@ import {
   Undo2,
   Check,
   X,
+  Pencil,
 } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -46,7 +47,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { CandidateProfileTab } from "@/components/candidate/profile/candidate-profile-tab";
-import { CvReviewDialog, extractionLabel } from "@/components/candidate/profile/cv-review-dialog";
+import { extractionLabel } from "@/lib/profile/cv-record";
 import {
   CANDIDATE_CAN_WITHDRAW,
   normalizeStatus,
@@ -86,21 +87,27 @@ export function CandidateAccountClient({
   const searchParams = useSearchParams();
   const { user, cvProfiles, candidateProfile, isLoading, refreshAuth, logout } = useAuth();
 
-  const tabParam = searchParams.get("tab") as
-    | "cv"
-    | "applications"
-    | "profile"
-    | null;
+  const rawTab = searchParams.get("tab");
+  const normalizeTab = (
+    raw: string | null | undefined
+  ): "info" | "cv" | "applications" | "profile" => {
+    if (raw === "interviews") return "applications";
+    if (raw === "info" || raw === "cv" || raw === "applications" || raw === "profile") {
+      return raw;
+    }
+    return defaultTab;
+  };
   const [activeTab, setActiveTab] = useState<
     "info" | "cv" | "applications" | "profile"
-  >(tabParam || defaultTab);
+  >(normalizeTab(rawTab));
 
   useEffect(() => {
-    if (tabParam && ["info", "cv", "applications", "profile"].includes(tabParam)) {
+    if (rawTab) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setActiveTab(tabParam);
+      setActiveTab(normalizeTab(rawTab));
     }
-  }, [tabParam]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawTab]);
 
   const [applications, setApplications] = useState<EnrichedApplication[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
@@ -129,11 +136,30 @@ export function CandidateAccountClient({
     }
   }, [user, isLoading, fetchCandidateApplications]);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [cvTitleInput, setCvTitleInput] = useState("");
   const [uploadingCv, setUploadingCv] = useState(false);
   const [previewCv, setPreviewCv] = useState<CvProfileRecord | null>(null);
+  const [renamingCv, setRenamingCv] = useState<{ id: number; title: string } | null>(null);
+  const [confirmDeleteCv, setConfirmDeleteCv] = useState<CvProfileRecord | null>(null);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    multiple: false,
+    accept: {
+      "application/pdf": [".pdf"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+    },
+    maxSize: 5 * 1024 * 1024,
+    onDropAccepted: (files) => setSelectedFile(files[0] ?? null),
+    onDropRejected: (rejs) => {
+      const code = rejs[0]?.errors?.[0]?.code;
+      toast.error(
+        code === "file-too-large"
+          ? "Dung lượng CV tối đa 5 MB."
+          : "Chỉ hỗ trợ tệp .pdf hoặc .docx."
+      );
+    },
+  });
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -148,9 +174,6 @@ export function CandidateAccountClient({
     }
   }, [user]);
 
-  // Hộp thoại "Xem lại thông tin từ CV" (mở ngay sau khi tải CV hoặc khi bấm "Cập nhật vào hồ sơ")
-  const [reviewCv, setReviewCv] = useState<CvProfileRecord | null>(null);
-  const [reviewNonce, setReviewNonce] = useState(0);
   const [busyCvId, setBusyCvId] = useState<number | null>(null);
   const [busyAppId, setBusyAppId] = useState<number | null>(null);
   const [busyInterviewId, setBusyInterviewId] = useState<number | null>(null);
@@ -210,12 +233,7 @@ export function CandidateAccountClient({
     }
   }
 
-  function openReview(cv: CvProfileRecord) {
-    setReviewNonce((n) => n + 1);
-    setReviewCv(cv);
-  }
-
-  /** Tải CV lên -> lưu CV + bóc tách -> mở hộp thoại duyệt để điền vào hồ sơ. */
+  /** Tải CV lên -> đọc nội dung sạch & kỹ năng phục vụ chấm AI CV-JD. */
   async function uploadCvFile(file: File, title?: string): Promise<boolean> {
     if (!/\.(pdf|docx)$/i.test(file.name)) {
       toast.error("Chỉ hỗ trợ tệp .pdf hoặc .docx.");
@@ -238,7 +256,6 @@ export function CandidateAccountClient({
       }
       toast.success(data.message || "Đã lưu CV.");
       await refreshAuth();
-      if (data.cv_profile?.parsed_data) openReview(data.cv_profile);
       return true;
     } catch {
       toast.error("Lỗi kết nối khi tải lên CV.");
@@ -251,14 +268,40 @@ export function CandidateAccountClient({
   async function handleUploadRealCv(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedFile) {
-      toast.error("Vui lòng chọn tệp CV (.pdf hoặc .docx) từ máy tính.");
+      toast.error("Vui lòng chọn hoặc kéo thả tệp CV (.pdf hoặc .docx).");
       return;
     }
     const ok = await uploadCvFile(selectedFile, cvTitleInput);
     if (ok) {
       setSelectedFile(null);
       setCvTitleInput("");
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleRenameCv(cvId: number) {
+    if (!renamingCv || renamingCv.id !== cvId) return;
+    const clean = renamingCv.title.trim();
+    if (clean.length < 2) {
+      toast.error("Tên hồ sơ CV cần tối thiểu 2 ký tự.");
+      return;
+    }
+    setBusyCvId(cvId);
+    try {
+      const res = await fetch(`/api/cv-profiles/${cvId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cv_title: clean }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error || "Không thể đổi tên CV.");
+        return;
+      }
+      toast.success("Đã cập nhật tên hồ sơ CV.");
+      setRenamingCv(null);
+      await refreshAuth();
+    } finally {
+      setBusyCvId(null);
     }
   }
 
@@ -285,18 +328,18 @@ export function CandidateAccountClient({
       const res = await fetch(`/api/cv-profiles/${cvId}/reparse`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error || "Không thể bóc tách lại CV.");
+        toast.error(data.error || "Không thể đọc lại tệp CV.");
         return;
       }
-      toast.success(data.message || "Đã bóc tách lại CV.");
+      toast.success(data.message || "Đã đọc lại nội dung CV.");
       await refreshAuth();
-      if (data.cv_profile?.parsed_data) openReview(data.cv_profile);
     } finally {
       setBusyCvId(null);
     }
   }
 
   async function handleDeleteCv(cvId: number) {
+    setBusyCvId(cvId);
     try {
       const res = await fetch(`/api/cv-profiles?id=${cvId}`, {
         method: "DELETE",
@@ -307,9 +350,12 @@ export function CandidateAccountClient({
         return;
       }
       toast.success("Đã xóa hồ sơ CV.");
+      setConfirmDeleteCv(null);
       await refreshAuth();
     } catch {
       toast.error("Lỗi khi xóa CV.");
+    } finally {
+      setBusyCvId(null);
     }
   }
 
@@ -432,33 +478,33 @@ export function CandidateAccountClient({
     <>
       <SiteHeader />
 
-      <main className="min-h-screen bg-[#F4F6FA] pb-16 pt-6">
+      <main className="min-h-screen bg-[#F4F6FA] pb-20 pt-4 sm:pt-6">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
-          <div className="grid gap-6 lg:grid-cols-[290px_1fr]">
-            {/* Cột Trái: Thẻ Ứng viên & Menu điều hướng */}
-            <aside className="space-y-4">
+          <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-6">
+            {/* Cột Trái: Thẻ Ứng viên & Menu điều hướng (gọn trên mobile) */}
+            <aside className="min-w-0 space-y-4">
               <div className="overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white shadow-2xs">
-                <div className="bg-gradient-to-r from-[#1E4FBF] to-[#306BD9] p-5 text-white">
+                <div className="bg-gradient-to-r from-[#1E4FBF] to-[#306BD9] p-4 text-white lg:p-5">
                   <div className="flex items-center gap-3.5">
-                    <span className="grid size-14 shrink-0 place-items-center rounded-full border-2 border-white/80 bg-white/20 text-[20px] font-extrabold text-white backdrop-blur-xs">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-white/80 bg-white/20 text-[17px] font-extrabold text-white backdrop-blur-xs lg:size-14 lg:text-[20px]">
                       {userInitial}
                     </span>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <span className="inline-block rounded-full bg-[#FFBA00] px-2 py-0.5 text-[10px] font-extrabold text-[#222222]">
                         ỨNG VIÊN
                       </span>
-                      <h2 className="mt-1 truncate text-[16px] font-extrabold">
+                      <h2 className="mt-1 truncate text-[15px] font-extrabold lg:text-[16px]">
                         {user?.full_name || "Đang tải..."}
                       </h2>
-                      <p className="truncate text-[12px] text-white/85">
+                      <p className="truncate text-[11.5px] text-white/85 lg:text-[12px]">
                         {user?.email}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Thống kê nhanh */}
-                <div className="grid grid-cols-2 divide-x divide-[#EBEBEB] border-b border-[#EBEBEB] bg-[#F8FAFC] py-3 text-center">
+                {/* Thống kê nhanh (ẩn trên mobile để nội dung tab hiển thị ngay trên màn hình đầu) */}
+                <div className="hidden grid-cols-2 divide-x divide-[#EBEBEB] border-b border-[#EBEBEB] bg-[#F8FAFC] py-3 text-center lg:grid">
                   <div>
                     <p className="text-[16px] font-extrabold text-[#306BD9]">
                       {cvProfiles.length}
@@ -473,8 +519,54 @@ export function CandidateAccountClient({
                   </div>
                 </div>
 
-                {/* Menu 4 mục */}
-                <nav className="p-2.5">
+                {/* Thanh tab cuộn ngang trên mobile (< 1200px) */}
+                <nav
+                  className="flex gap-1.5 overflow-x-auto border-t border-[#EBEBEB] p-2.5 lg:hidden"
+                  aria-label="Điều hướng tài khoản ứng viên"
+                >
+                  {[
+                    { id: "info" as const, label: "Hồ sơ", icon: IdCard, badge: undefined as number | undefined },
+                    { id: "cv" as const, label: "CV của tôi", icon: FileText, badge: cvProfiles.length },
+                    { id: "applications" as const, label: "Đã ứng tuyển", icon: FileCheck2, badge: applications.length },
+                    { id: "profile" as const, label: "Tài khoản", icon: Settings, badge: undefined as number | undefined },
+                  ].map((item) => {
+                    const active = activeTab === item.id;
+                    return (
+                      <Button
+                        key={item.id}
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          router.replace(`/ung-vien/tai-khoan?tab=${item.id}`, {
+                            scroll: false,
+                          });
+                        }}
+                        className={`h-8 shrink-0 gap-1.5 rounded-full px-3 text-[12px] font-bold ${
+                          active
+                            ? "bg-[#EBF2FF] text-[#306BD9] hover:bg-[#EBF2FF] hover:text-[#306BD9]"
+                            : "bg-[#F8FAFC] text-[#555555] hover:bg-[#F1F5F9]"
+                        }`}
+                      >
+                        <item.icon className="size-3.5" />
+                        <span>{item.label}</span>
+                        {item.badge !== undefined && (
+                          <span
+                            className={`rounded-full px-1.5 py-0.2 text-[10px] font-extrabold ${
+                              active ? "bg-[#306BD9] text-white" : "bg-white text-[#475569]"
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </Button>
+                    );
+                  })}
+                </nav>
+
+                {/* Menu 4 mục đầy đủ trên desktop (>= 1200px) */}
+                <nav className="hidden p-2.5 lg:block">
                   {[
                     {
                       id: "info" as const,
@@ -567,16 +659,17 @@ export function CandidateAccountClient({
 
             {/* Cột Phải: Nội dung chi tiết từng Tab */}
             <div className="min-w-0 space-y-5">
-              {/* TAB 0: HỒ SƠ CÁ NHÂN (tự điền từ CV, sửa linh động) */}
+              {/* TAB 0: HỒ SƠ CÁ NHÂN (tự nhập và quản lý thủ công) */}
               {activeTab === "info" && user && (
                 <CandidateProfileTab
                   user={{ full_name: user.full_name, phone: user.phone, email: user.email }}
                   profile={candidateProfile}
                   cvProfiles={cvProfiles}
                   onRefresh={refreshAuth}
-                  onQuickUpload={(f) => uploadCvFile(f)}
-                  uploading={uploadingCv}
-                  onOpenReview={openReview}
+                  onGoToCvTab={() => {
+                    setActiveTab("cv");
+                    router.replace("/ung-vien/tai-khoan?tab=cv", { scroll: false });
+                  }}
                 />
               )}
 
@@ -586,15 +679,15 @@ export function CandidateAccountClient({
                   <section className="rounded-[16px] border border-[#E2E8F0] bg-white p-5 shadow-2xs sm:p-6">
                     <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#EBEBEB] pb-4">
                       <div>
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[11px] font-bold text-[#306BD9]">
+                        <Badge className="mb-1.5 gap-1.5 bg-[#EBF2FF] px-2.5 py-0.5 text-[11px] font-bold text-[#306BD9]">
                           <Sparkles className="size-3" />
-                          Phân tích CV đa tầng · PyMuPDF 2-Cột &amp; AI OCR Việt-Anh
-                        </span>
-                        <h1 className="mt-1.5 text-[19px] font-extrabold text-[#222222] sm:text-[21px]">
+                          Đọc CV đa tầng · PyMuPDF 2-Cột &amp; OCR Việt–Anh
+                        </Badge>
+                        <h1 className="text-[19px] font-extrabold text-[#222222] sm:text-[21px]">
                           Tải lên hồ sơ CV của bạn
                         </h1>
                         <p className="mt-0.5 text-[13px] text-[#666666]">
-                          Hỗ trợ PDF chuẩn, PDF thiết kế 2 cột (TopCV/Canva), PDF bản scan ảnh (tự động quét OCR Tiếng Việt + Anh) và Word (.docx) tối đa 5 MB. Hệ thống tự động trích xuất thông tin liên hệ, kỹ năng, kinh nghiệm và học vấn.
+                          Hỗ trợ PDF 1–2 cột (TopCV/Canva), PDF bản scan ảnh (quét OCR Tiếng Việt + Anh) và Word (.docx) tối đa 5 MB. Hệ thống trích xuất toàn văn và kỹ năng từ CV để mô hình AI đối chiếu độ phù hợp với từng tin tuyển dụng.
                         </p>
                       </div>
                     </div>
@@ -603,67 +696,85 @@ export function CandidateAccountClient({
                       onSubmit={handleUploadRealCv}
                       className="mt-4 space-y-4"
                     >
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-1.5">
-                          <Label className="text-[13px] font-bold text-[#222222]">
-                            Tên hồ sơ CV
-                          </Label>
-                          <Input
-                            value={cvTitleInput}
-                            onChange={(e) => setCvTitleInput(e.target.value)}
-                            placeholder="VD: CV Kỹ sư Phần mềm 2026"
-                            className="h-10 rounded-[10px]"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-[13px] font-bold text-[#222222]">
-                            Tệp CV từ máy tính (.pdf hoặc .docx, tối đa 5 MB) *
-                          </Label>
-                          <Input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                            onChange={(e) =>
-                              setSelectedFile(e.target.files?.[0] || null)
-                            }
-                            className="block h-10 w-full cursor-pointer rounded-[10px] border-[#D9D9D9] bg-[#F8FAFC] px-3 py-1.5 text-[12.5px] text-[#222222] file:mr-3 file:h-auto file:cursor-pointer file:rounded-md file:border-0 file:bg-[#306BD9] file:px-3 file:py-1 file:text-[12px] file:font-bold file:text-white"
-                          />
-                        </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="cv-title-input" className="text-[13px] font-bold text-[#222222]">
+                          Tên gợi nhớ cho hồ sơ CV (không bắt buộc)
+                        </Label>
+                        <Input
+                          id="cv-title-input"
+                          value={cvTitleInput}
+                          onChange={(e) => setCvTitleInput(e.target.value)}
+                          placeholder="VD: CV Backend Python 2026 (mặc định dùng tên tệp)"
+                          className="h-10 rounded-[10px]"
+                        />
                       </div>
 
-                      {selectedFile && (
-                        <div className="flex items-center justify-between rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-3.5 py-2 text-[12.5px] text-[#1E3A8A]">
-                          <span>
-                            Đã chọn: <strong>{selectedFile.name}</strong> (
-                            {(selectedFile.size / 1024).toFixed(1)} KB)
-                          </span>
-                          <Button
-                            type="button"
-                            variant="link"
-                            size="xs"
-                            onClick={() => {
-                              setSelectedFile(null);
-                              if (fileInputRef.current)
-                                fileInputRef.current.value = "";
-                            }}
-                            className="h-auto p-0 font-bold text-[#DC2626]"
-                          >
-                            Bỏ chọn
-                          </Button>
+                      <div className="space-y-1.5">
+                        <Label className="text-[13px] font-bold text-[#222222]">
+                          Tệp CV từ máy tính (.pdf hoặc .docx, tối đa 5 MB) *
+                        </Label>
+                        <div
+                          {...getRootProps()}
+                          className={`cursor-pointer rounded-2xl border-2 border-dashed p-5 text-center transition-colors ${
+                            isDragActive
+                              ? "border-[#306BD9] bg-[#EBF2FF]/70"
+                              : selectedFile
+                                ? "border-[#93C5FD] bg-[#F5F9FF]"
+                                : "border-[#CBD5E1] bg-[#FAFBFD] hover:border-[#306BD9] hover:bg-[#F5F9FF]"
+                          }`}
+                        >
+                          <input {...getInputProps()} aria-label="Tải tệp CV" />
+                          {selectedFile ? (
+                            <div className="flex flex-wrap items-center justify-center gap-3 text-left">
+                              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#EBF2FF] text-[#306BD9]">
+                                <FileText className="size-5" />
+                              </span>
+                              <div className="min-w-0">
+                                <p className="truncate text-[13.5px] font-bold text-[#111111]">
+                                  {selectedFile.name}
+                                </p>
+                                <p className="text-[12px] text-[#64748B]">
+                                  {(selectedFile.size / 1024).toFixed(1)} KB · Bấm hoặc kéo tệp khác để thay thế
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Bỏ chọn tệp CV"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedFile(null);
+                                }}
+                                className="rounded-full text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <UploadCloud className="mx-auto size-8 text-[#306BD9]" />
+                              <p className="mt-1.5 text-[13.5px] font-bold text-[#222222]">
+                                Kéo thả tệp CV vào đây hoặc bấm để chọn tệp từ máy
+                              </p>
+                              <p className="mt-0.5 text-[12px] text-[#64748B]">
+                                Chấp nhận định dạng .pdf hoặc .docx · tối đa 5 MB
+                              </p>
+                            </>
+                          )}
                         </div>
-                      )}
+                      </div>
 
                       <div className="flex justify-end">
                         <Button
                           type="submit"
-                          disabled={uploadingCv}
+                          disabled={uploadingCv || !selectedFile}
                           className="h-10 rounded-[10px] bg-[#306BD9] px-5 font-bold text-white hover:bg-[#2456B6]"
                         >
                           {uploadingCv ? (
                             <>
                               <Loader2 className="size-4 animate-spin" />
-                              Đang tải lên &amp; phân tích CV...
+                              Đang tải lên &amp; đọc nội dung CV...
                             </>
                           ) : (
                             <>
@@ -696,217 +807,257 @@ export function CandidateAccountClient({
                           Bạn chưa tải lên hồ sơ CV nào
                         </p>
                         <p className="mt-1 text-[12.5px] text-[#64748B]">
-                          Hãy tải lên CV ở khung bên trên để ứng tuyển nhanh
-                          chóng hơn.
+                          Hãy tải lên CV ở khung bên trên để AI đọc nội dung và ứng tuyển nhanh chóng hơn.
                         </p>
                       </div>
                     ) : (
-                      cvProfiles.map((cv) => (
-                        <article
-                          key={cv.id}
-                          className="rounded-[16px] border border-[#E2E8F0] bg-white p-5 shadow-2xs transition-shadow hover:shadow-md"
-                        >
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div className="flex items-start gap-3.5">
-                              <div className="grid size-11 shrink-0 place-items-center rounded-[12px] bg-[#EBF2FF] text-[12px] font-extrabold uppercase text-[#306BD9]">
-                                {cv.file_type || "PDF"}
-                              </div>
-                              <div>
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <h3 className="text-[15px] font-extrabold text-[#222222]">
-                                    {cv.cv_title}
-                                  </h3>
-                                  {cv.is_default && (
-                                    <span className="rounded-full bg-[#DCFCE7] px-2 py-0.5 text-[10.5px] font-bold text-[#15803D]">
-                                      CV chính
-                                    </span>
-                                  )}
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-[#EBF2FF] px-2.5 py-0.5 text-[10.5px] font-bold text-[#1D4ED8]">
-                                    {cv.ocr_applied && <Sparkles className="size-3" />}
-                                    {extractionLabel(cv)}
-                                  </span>
-                                  {cv.parse_status === "needs_review" && (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[10.5px] font-bold text-[#B45309]">
-                                      <AlertTriangle className="size-3" /> Cần kiểm tra
-                                    </span>
-                                  )}
-                                  {(cv.ocr_required || cv.parse_status === "failed") && (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE2E2] px-2 py-0.5 text-[10.5px] font-bold text-[#B91C1C]">
-                                      <AlertTriangle className="size-3" /> Không đọc được chữ
-                                    </span>
-                                  )}
-                                  {!cv.parsed_data && (
-                                    <span className="rounded-full bg-[#F1F5F9] px-2 py-0.5 text-[10.5px] font-semibold text-[#64748B]">
-                                      Parser cũ
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="mt-0.5 text-[12px] text-[#666666]">
-                                  Tệp đính kèm:{" "}
-                                  <strong className="text-[#333333]">
-                                    {cv.file_name}
-                                  </strong>{" "}
-                                  · Cập nhật ngày{" "}
-                                  {new Date(cv.created_at).toLocaleDateString(
-                                    "vi-VN"
-                                  )}
-                                  {cv.processing_time_ms
-                                    ? ` · Xử lý ${cv.processing_time_ms}ms`
-                                    : ""}
-                                </p>
-                                {(cv.extracted_job_title ||
-                                  cv.extracted_phone ||
-                                  cv.extracted_location) && (
-                                  <p className="mt-1 text-[12px] text-[#334155]">
-                                    {cv.extracted_job_title && (
-                                      <span>
-                                        Vị trí:{" "}
-                                        <strong className="text-[#1E3A8A]">
-                                          {cv.extracted_job_title}
-                                        </strong>{" "}
-                                        ·{" "}
-                                      </span>
-                                    )}
-                                    {cv.extracted_phone && (
-                                      <span>
-                                        SĐT: <strong>{cv.extracted_phone}</strong>{" "}
-                                        ·{" "}
-                                      </span>
-                                    )}
-                                    {cv.extracted_location && (
-                                      <span>
-                                        Khu vực:{" "}
-                                        <strong>{cv.extracted_location}</strong>
-                                      </span>
-                                    )}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
+                      cvProfiles.map((cv) => {
+                        const rawText = cv.raw_text?.trim() || "";
+                        const wordCount = rawText ? rawText.split(/\s+/).length : 0;
+                        const isRenaming = renamingCv?.id === cv.id;
+                        const hasReadError = !!cv.ocr_required || cv.parse_status === "failed";
 
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Button
-                                type="button"
-                                size="sm"
-                                disabled={busyCvId === cv.id}
-                                onClick={() => (cv.parsed_data ? openReview(cv) : handleReparse(cv.id))}
-                                className="rounded-lg bg-[#306BD9] text-[12px] font-bold text-white hover:bg-[#2456B6]"
-                              >
-                                <ListChecks className="size-3.5" />
-                                Cập nhật vào hồ sơ
-                              </Button>
-                              {!cv.is_default && (
+                        return (
+                          <article
+                            key={cv.id}
+                            className="rounded-[16px] border border-[#E2E8F0] bg-white p-5 shadow-2xs transition-shadow hover:shadow-md"
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div className="flex min-w-0 flex-1 items-start gap-3.5">
+                                <div className="grid size-11 shrink-0 place-items-center rounded-[12px] bg-[#EBF2FF] text-[12px] font-extrabold uppercase text-[#306BD9]">
+                                  {cv.file_type || "PDF"}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  {isRenaming ? (
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <Input
+                                        value={renamingCv.title}
+                                        onChange={(e) =>
+                                          setRenamingCv({ id: cv.id, title: e.target.value })
+                                        }
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") {
+                                            e.preventDefault();
+                                            void handleRenameCv(cv.id);
+                                          } else if (e.key === "Escape") {
+                                            setRenamingCv(null);
+                                          }
+                                        }}
+                                        aria-label="Tên mới cho hồ sơ CV"
+                                        className="h-8 max-w-xs rounded-lg text-[13px]"
+                                        autoFocus
+                                      />
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        disabled={busyCvId === cv.id}
+                                        onClick={() => void handleRenameCv(cv.id)}
+                                        className="h-8 rounded-lg bg-[#306BD9] px-3 text-[12px] font-bold text-white hover:bg-[#2456B6]"
+                                      >
+                                        <Check className="size-3.5" />
+                                        Lưu
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setRenamingCv(null)}
+                                        className="h-8 rounded-lg px-2.5 text-[12px] font-bold"
+                                      >
+                                        Hủy
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <h3 className="text-[15px] font-extrabold text-[#222222]">
+                                        {cv.cv_title}
+                                      </h3>
+                                      {cv.is_default && (
+                                        <Badge className="bg-[#DCFCE7] px-2 py-0.5 text-[10.5px] font-bold text-[#15803D]">
+                                          CV chính
+                                        </Badge>
+                                      )}
+                                      <Badge className="gap-1 bg-[#EBF2FF] px-2.5 py-0.5 text-[10.5px] font-bold text-[#1D4ED8]">
+                                        {cv.ocr_applied && <Sparkles className="size-3" />}
+                                        {extractionLabel(cv)}
+                                      </Badge>
+                                      {hasReadError && (
+                                        <Badge className="gap-1 bg-[#FEE2E2] px-2 py-0.5 text-[10.5px] font-bold text-[#B91C1C]">
+                                          <AlertTriangle className="size-3" /> Không đọc được chữ
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  <p className="mt-1 text-[12px] text-[#666666]">
+                                    Tệp đính kèm:{" "}
+                                    <strong className="text-[#333333]">{cv.file_name}</strong>
+                                    {" · "}
+                                    Cập nhật {new Date(cv.created_at).toLocaleDateString("vi-VN")}
+                                    {cv.page_count ? ` · ${cv.page_count} trang` : ""}
+                                    {cv.file_size_bytes
+                                      ? ` · ${(cv.file_size_bytes / 1024).toFixed(1)} KB`
+                                      : ""}
+                                    {cv.processing_time_ms ? ` · ${cv.processing_time_ms}ms` : ""}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={() => setPreviewCv(cv)}
+                                  className="h-8 rounded-lg bg-[#306BD9] px-3 text-[12px] font-bold text-white hover:bg-[#2456B6]"
+                                >
+                                  <Eye className="size-3.5" />
+                                  Xem CV
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setRenamingCv({ id: cv.id, title: cv.cv_title })
+                                  }
+                                  className="h-8 rounded-lg px-2.5 text-[12px] font-bold"
+                                  aria-label={`Đổi tên ${cv.cv_title}`}
+                                >
+                                  <Pencil className="size-3.5" />
+                                  Đổi tên
+                                </Button>
                                 <Button
                                   type="button"
                                   variant="outline"
                                   size="sm"
                                   disabled={busyCvId === cv.id}
-                                  onClick={() => handleSetDefault(cv.id)}
-                                  className="rounded-lg text-[12px] font-bold"
-                                  title="Đặt làm CV chính"
+                                  onClick={() => handleReparse(cv.id)}
+                                  className="h-8 rounded-lg px-2.5 text-[12px] font-bold"
+                                  aria-label={`Đọc lại nội dung ${cv.cv_title}`}
                                 >
-                                  <Star className="size-3.5" />
+                                  <RefreshCw
+                                    className={`size-3.5 ${
+                                      busyCvId === cv.id ? "animate-spin" : ""
+                                    }`}
+                                  />
+                                  Đọc lại
                                 </Button>
-                              )}
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={busyCvId === cv.id}
-                                onClick={() => handleReparse(cv.id)}
-                                className="rounded-lg text-[12px] font-bold"
-                                title="Bóc tách lại bằng Parser mới nhất"
-                              >
-                                <RefreshCw className={`size-3.5 ${busyCvId === cv.id ? "animate-spin" : ""}`} />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPreviewCv(cv)}
-                                className="rounded-lg text-[12px] font-bold"
-                              >
-                                <Eye className="size-3.5" />
-                                Xem CV
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteCv(cv.id)}
-                                className="rounded-lg border-[#FECACA] text-[12px] font-bold text-[#DC2626] hover:bg-[#FEF2F2]"
-                              >
-                                <Trash2 className="size-3.5" />
-                              </Button>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 grid gap-3 rounded-[12px] bg-[#F8FAFC] p-3.5 sm:grid-cols-3">
-                            <div className="flex items-center gap-2.5">
-                              <Briefcase className="size-4 text-[#306BD9]" />
-                              <div>
-                                <p className="text-[11px] text-[#666666]">
-                                  Kinh nghiệm làm việc
-                                </p>
-                                <p className="text-[13px] font-bold text-[#222222]">
-                                  {cv.years_of_experience ?? 0} năm
-                                </p>
+                                {!cv.is_default && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={busyCvId === cv.id}
+                                    onClick={() => handleSetDefault(cv.id)}
+                                    className="h-8 rounded-lg px-2.5 text-[12px] font-bold"
+                                    aria-label={`Đặt ${cv.cv_title} làm CV chính`}
+                                  >
+                                    <Star className="size-3.5" />
+                                    Đặt CV chính
+                                  </Button>
+                                )}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={busyCvId === cv.id}
+                                  onClick={() => setConfirmDeleteCv(cv)}
+                                  aria-label={`Xóa ${cv.cv_title}`}
+                                  title="Xóa hồ sơ CV"
+                                  className="h-8 rounded-lg border-[#FECACA] px-2.5 text-[12px] font-bold text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </Button>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2.5">
-                              <GraduationCap className="size-4 text-[#16A34A]" />
-                              <div>
-                                <p className="text-[11px] text-[#666666]">
-                                  Trình độ học vấn
-                                </p>
-                                <p className="text-[13px] font-bold text-[#222222]">
-                                  {cv.education_level || "Đại học / Cao đẳng"}
-                                </p>
+                            {hasReadError && (
+                              <div className="mt-3 rounded-[10px] border border-[#FECACA] bg-[#FEF2F2] px-3.5 py-2.5 text-[12px] text-[#991B1B]">
+                                Hệ thống chưa đọc được đủ văn bản từ tệp này (có thể là ảnh mờ hoặc PDF khóa text). Vui lòng tải lên tệp PDF/Word rõ nét hơn để AI chấm điểm chính xác.
+                              </div>
+                            )}
+
+                            <div className="mt-3.5 grid gap-3 rounded-[12px] bg-[#F8FAFC] p-3.5 sm:grid-cols-3">
+                              <div className="flex items-center gap-2.5">
+                                <FileText className="size-4 text-[#306BD9]" />
+                                <div>
+                                  <p className="text-[11px] text-[#666666]">
+                                    Văn bản AI đọc được
+                                  </p>
+                                  <p className="text-[13px] font-bold text-[#222222]">
+                                    {wordCount > 0 ? `${wordCount} từ` : "Chưa có văn bản"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2.5">
+                                <FileCheck2 className="size-4 text-[#16A34A]" />
+                                <div>
+                                  <p className="text-[11px] text-[#666666]">
+                                    Kỹ năng nhận diện
+                                  </p>
+                                  <p className="text-[13px] font-bold text-[#222222]">
+                                    {cv.extracted_skills?.length || 0} kỹ năng
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2.5">
+                                <Sparkles className="size-4 text-[#D97706]" />
+                                <div>
+                                  <p className="text-[11px] text-[#666666]">
+                                    Trạng thái chấm AI CV–JD
+                                  </p>
+                                  <p className="text-[13px] font-bold text-[#222222]">
+                                    {hasReadError ? "Cần tệp rõ chữ" : "Sẵn sàng so khớp"}
+                                  </p>
+                                </div>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2.5">
-                              <Sparkles className="size-4 text-[#D97706]" />
-                              <div>
-                                <p className="text-[11px] text-[#666666]">
-                                  Kỹ năng chuyên môn
-                                </p>
-                                <p className="text-[13px] font-bold text-[#222222]">
-                                  {cv.extracted_skills?.length || 0} kỹ năng
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {cv.extracted_skills &&
-                            cv.extracted_skills.length > 0 && (
+                            {cv.extracted_skills && cv.extracted_skills.length > 0 && (
                               <div className="mt-3">
                                 <p className="mb-1.5 text-[11.5px] font-bold text-[#555555]">
-                                  Kỹ năng chuyên môn &amp; chứng chỉ bóc tách từ CV:
+                                  Kỹ năng nhận diện dùng đối chiếu với JD:
                                 </p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {cv.extracted_skills.map((skill) => (
-                                    <span
+                                    <Badge
                                       key={skill}
-                                      className="rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-2.5 py-0.5 text-[11.5px] font-semibold text-[#1D4ED8]"
+                                      variant="outline"
+                                      className="border-[#BFDBFE] bg-[#EFF6FF] px-2.5 py-0.5 text-[11.5px] font-semibold text-[#1D4ED8]"
                                     >
                                       {skill}
-                                    </span>
-                                  ))}
-                                  {cv.certifications?.map((cert) => (
-                                    <span
-                                      key={cert}
-                                      className="rounded-full border border-[#BBF7D0] bg-[#F0FDF4] px-2.5 py-0.5 text-[11.5px] font-semibold text-[#15803D]"
-                                    >
-                                      {cert}
-                                    </span>
+                                    </Badge>
                                   ))}
                                 </div>
                               </div>
                             )}
-                        </article>
-                      ))
+
+                            {rawText && (
+                              <div className="mt-3 rounded-[10px] border border-[#E2E8F0] bg-[#FAFBFD] px-3.5 py-2.5">
+                                <div className="mb-1 flex items-center justify-between gap-2">
+                                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
+                                    Trích đoạn nội dung đọc từ CV
+                                  </span>
+                                  <Button
+                                    type="button"
+                                    variant="link"
+                                    size="xs"
+                                    onClick={() => setPreviewCv(cv)}
+                                    className="h-auto p-0 text-[11.5px] font-bold text-[#306BD9]"
+                                  >
+                                    Xem toàn bộ &rarr;
+                                  </Button>
+                                </div>
+                                <p className="line-clamp-3 whitespace-pre-line text-[12px] leading-relaxed text-[#475569]">
+                                  {rawText}
+                                </p>
+                              </div>
+                            )}
+                          </article>
+                        );
+                      })
                     )}
                   </section>
                 </>
@@ -1333,78 +1484,177 @@ export function CandidateAccountClient({
         open={!!previewCv}
         onOpenChange={(o) => !o && setPreviewCv(null)}
       >
-        <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-y-auto rounded-[16px] sm:max-w-3xl">
-          <DialogHeader>
+        <DialogContent className="flex max-h-[90vh] max-w-[95vw] flex-col gap-0 overflow-hidden rounded-[16px] p-0 sm:max-w-3xl">
+          <DialogHeader className="shrink-0 border-b border-[#E2E8F0] px-6 py-4 pr-12">
             <DialogTitle className="text-[17px] font-extrabold text-[#222222]">
               {previewCv?.cv_title}
             </DialogTitle>
             <DialogDescription className="text-[12.5px] text-[#666666]">
-              Kinh nghiệm:{" "}
-              <strong>{previewCv?.years_of_experience} năm</strong> · Học vấn:{" "}
-              <strong>{previewCv?.education_level}</strong>
+              {previewCv && (
+                <>
+                  Tệp <strong>{previewCv.file_name}</strong> ·{" "}
+                  <strong className="text-[#1D4ED8]">{extractionLabel(previewCv)}</strong>
+                  {previewCv.page_count ? ` · ${previewCv.page_count} trang` : ""}
+                  {previewCv.processing_time_ms ? ` · ${previewCv.processing_time_ms}ms` : ""}
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
 
           {previewCv && (
-            <div className="space-y-4">
-              <div className="grid gap-2.5 rounded-[12px] border border-[#DCE7F9] bg-[#F8FAFF] p-3.5 text-[12.5px] sm:grid-cols-2">
-                <div>
-                  <span className="text-[#64748B]">Họ tên nhận diện: </span>
-                  <strong className="text-[#0F172A]">
-                    {previewCv.extracted_full_name || user?.full_name || "—"}
-                  </strong>
-                </div>
-                <div>
-                  <span className="text-[#64748B]">Email nhận diện: </span>
-                  <strong className="text-[#0F172A]">
-                    {previewCv.extracted_email || user?.email || "—"}
-                  </strong>
-                </div>
-                <div>
-                  <span className="text-[#64748B]">Số điện thoại: </span>
-                  <strong className="text-[#0F172A]">
-                    {previewCv.extracted_phone || user?.phone || "—"}
-                  </strong>
-                </div>
-                <div>
-                  <span className="text-[#64748B]">Phương thức đọc CV: </span>
-                  <strong className="text-[#1D4ED8]">
-                    {extractionLabel(previewCv)}
-                  </strong>
-                </div>
-              </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+              <Tabs defaultValue="text" className="space-y-3">
+                <TabsList className="grid w-full max-w-md grid-cols-2 rounded-xl bg-[#F1F5F9] p-1">
+                  <TabsTrigger value="text" className="rounded-lg text-[12.5px] font-bold">
+                    Nội dung AI đọc được
+                  </TabsTrigger>
+                  <TabsTrigger value="file" className="rounded-lg text-[12.5px] font-bold">
+                    Tệp CV gốc ({previewCv.file_type?.toUpperCase()})
+                  </TabsTrigger>
+                </TabsList>
 
-              {previewCv.file_type === "pdf" && previewCv.file_url && (
-                <div className="overflow-hidden rounded-[12px] border border-[#E2E8F0]">
-                  <div className="flex items-center justify-between bg-[#F8FAFC] px-3.5 py-2 text-[12px] font-bold text-[#334155]">
-                    <span>Bản xem trước CV gốc</span>
-                    <a
-                      href={previewCv.file_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-[#306BD9] hover:underline"
-                    >
-                      Mở rộng <ExternalLink className="size-3.5" />
-                    </a>
+                <TabsContent value="text" className="space-y-3.5">
+                  {previewCv.extracted_skills && previewCv.extracted_skills.length > 0 && (
+                    <div className="rounded-[12px] border border-[#DCE7F9] bg-[#F8FAFF] p-3.5">
+                      <p className="mb-2 text-[11.5px] font-bold uppercase tracking-wider text-[#1E3A8A]">
+                        Kỹ năng nhận diện ({previewCv.extracted_skills.length})
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {previewCv.extracted_skills.map((s) => (
+                          <Badge
+                            key={s}
+                            variant="outline"
+                            className="border-[#BFDBFE] bg-white px-2.5 py-0.5 text-[11.5px] font-semibold text-[#1D4ED8]"
+                          >
+                            {s}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+                    <p className="text-[12px] font-bold uppercase tracking-wider text-[#64748B]">
+                      Toàn văn bản trích xuất (dữ liệu AI dùng chấm điểm CV–JD)
+                    </p>
+                    <div className="mt-2 whitespace-pre-line font-sans text-[13px] leading-relaxed text-[#334155]">
+                      {previewCv.raw_text?.trim() || "Chưa có nội dung văn bản cho CV này."}
+                    </div>
                   </div>
-                  <iframe
-                    src={previewCv.file_url}
-                    title={previewCv.cv_title}
-                    className="h-[340px] w-full bg-white"
-                  />
-                </div>
-              )}
+                </TabsContent>
 
-              <div className="rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-                <p className="text-[12px] font-bold uppercase tracking-wider text-[#64748B]">
-                  Nội dung hồ sơ
-                </p>
-                <div className="mt-2 max-h-72 overflow-y-auto whitespace-pre-line font-sans text-[13px] leading-relaxed text-[#334155]">
-                  {previewCv.raw_text?.trim() || "Chưa có nội dung văn bản cho CV này."}
-                </div>
-              </div>
+                <TabsContent value="file">
+                  {previewCv.file_type === "pdf" && previewCv.file_url ? (
+                    <div className="space-y-2">
+                      <div className="overflow-hidden rounded-[12px] border border-[#E2E8F0]">
+                        <iframe
+                          src={`${previewCv.file_url}#toolbar=0&navpanes=0`}
+                          title={previewCv.cv_title}
+                          className="h-[420px] w-full bg-[#F8FAFC]"
+                        />
+                      </div>
+                      <p className="text-[11.5px] text-[#64748B]">
+                        Nếu trình duyệt không hiển thị bản xem trước PDF bên trên, bạn có thể bấm{" "}
+                        <strong>Mở tab mới</strong> hoặc <strong>Tải tệp gốc</strong> ở bên dưới.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-[12px] border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-8 text-center">
+                      <FileText className="mx-auto size-10 text-[#64748B]" />
+                      <p className="mt-2 text-[14px] font-bold text-[#1E293B]">
+                        Tệp Word (.docx): {previewCv.file_name}
+                      </p>
+                      <p className="mt-1 text-[12.5px] text-[#64748B]">
+                        Trình duyệt không hỗ trợ xem trực tiếp định dạng Word. Hãy xem văn bản trích xuất ở tab bên cạnh hoặc tải tệp gốc về máy.
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           )}
+
+          {previewCv && (
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-[#E2E8F0] bg-[#FAFBFD] px-6 py-3.5">
+              <div className="flex flex-wrap items-center gap-2">
+                {previewCv.file_url && (
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="h-9 gap-1.5 rounded-full border-[#D9D9D9] bg-white px-4 text-[12.5px] font-bold text-[#334155]"
+                  >
+                    <a
+                      href={`${previewCv.file_url}${previewCv.file_url.includes("?") ? "&" : "?"}download=1`}
+                    >
+                      <Download className="size-3.5 text-[#306BD9]" />
+                      Tải tệp gốc
+                    </a>
+                  </Button>
+                )}
+                {previewCv.file_type === "pdf" && previewCv.file_url && (
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="h-9 gap-1.5 rounded-full border-[#D9D9D9] bg-white px-4 text-[12.5px] font-bold text-[#334155]"
+                  >
+                    <a href={previewCv.file_url} target="_blank" rel="noreferrer">
+                      <ExternalLink className="size-3.5 text-[#306BD9]" />
+                      Mở tab mới
+                    </a>
+                  </Button>
+                )}
+              </div>
+              <Button
+                type="button"
+                onClick={() => setPreviewCv(null)}
+                className="h-9 rounded-full bg-[#306BD9] px-5 text-[13px] font-bold text-white hover:bg-[#2456B6]"
+              >
+                Đóng
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal xác nhận xóa CV */}
+      <Dialog
+        open={!!confirmDeleteCv}
+        onOpenChange={(o) => !o && setConfirmDeleteCv(null)}
+      >
+        <DialogContent className="rounded-[16px] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[17px] font-extrabold text-[#222222]">
+              <Trash2 className="size-5 text-[#DC2626]" />
+              Xóa hồ sơ CV?
+            </DialogTitle>
+            <DialogDescription className="text-[13px] leading-relaxed text-[#555555]">
+              Bạn có chắc chắn muốn xóa <strong>{confirmDeleteCv?.cv_title}</strong>? Nếu CV này đã được dùng để ứng tuyển trước đó, hệ thống chỉ ẩn khỏi danh sách của bạn để bảo toàn hồ sơ cho Nhà tuyển dụng.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDeleteCv(null)}
+              className="h-9 rounded-full px-4 text-[13px] font-bold"
+            >
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={!confirmDeleteCv || busyCvId === confirmDeleteCv.id}
+              onClick={() => confirmDeleteCv && void handleDeleteCv(confirmDeleteCv.id)}
+              className="h-9 rounded-full px-5 text-[13px] font-bold"
+            >
+              {confirmDeleteCv && busyCvId === confirmDeleteCv.id && (
+                <Loader2 className="size-3.5 animate-spin" />
+              )}
+              Xác nhận xóa
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -1469,20 +1719,6 @@ export function CandidateAccountClient({
           </div>
         </DialogContent>
       </Dialog>
-
-      <CvReviewDialog
-        key={`${reviewCv?.id ?? "none"}-${reviewNonce}`}
-        open={!!reviewCv}
-        onOpenChange={(o) => !o && setReviewCv(null)}
-        cv={reviewCv}
-        profile={candidateProfile}
-        user={user}
-        onApplied={async () => {
-          await refreshAuth();
-          setActiveTab("info");
-          router.replace("/ung-vien/tai-khoan?tab=info", { scroll: false });
-        }}
-      />
 
       <SiteFooter />
     </>

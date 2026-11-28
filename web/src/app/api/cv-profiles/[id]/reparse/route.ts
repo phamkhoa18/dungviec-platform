@@ -38,7 +38,9 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
     writeDb(db);
     return NextResponse.json({
       status: "ok",
-      message: `Đã bóc tách lại CV bằng ${cv.parser_version}.`,
+      message: parsed.ocr_required
+        ? "Đã đọc lại tệp nhưng chưa trích xuất đủ văn bản."
+        : "Đã đọc lại nội dung văn bản và kỹ năng từ tệp CV.",
       cv_profile: cv,
     });
   } catch (err) {
